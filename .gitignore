@@ -1,0 +1,50 @@
+# Prerequisites
+*.d
+
+# Compiled Object files
+*.slo
+*.lo
+*.o
+*.obj
+
+# Precompiled Headers
+*.gch
+*.pch
+
+# Compiled Dynamic libraries
+*.so
+*.dylib
+*.dll
+
+# Fortran module files
+*.mod
+*.smod
+
+# Compiled Static libraries
+*.lai
+*.la
+*.a
+*.lib
+
+# Executables
+*.exe
+*.out
+*.app
+
+# Debug Info
+*.pdb
+*.rdi
+*.ilk
+
+# c-build
+build_*/
+/Tests/CoreTest/build_*/
+/Tests/GraphicsTest/build_*/
+
+
+./ckg/
+c_build/
+*.ps1
+!bootstrap.ps1
+ckg/
+c_build_dependency_cache_*.json
