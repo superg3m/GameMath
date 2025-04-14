@@ -1,5 +1,12 @@
+#pragma once
+
+#include <math.h>
 // Vector
 // Matrix
+
+#define PI 3.14159265359
+#define DEGREES_TO_RAD(degrees) (degrees*(PI/180))
+#define RAD_TO_DEGREES(rad) (rad*(180/PI))
 
 // row major
 typedef struct GM_Matix4 {
@@ -7,15 +14,39 @@ typedef struct GM_Matix4 {
 } Matrix4;
 
 typedef struct GM_Vec2 {
-    float x, y;
+    union {
+        struct {
+            float x;
+            float y;
+        };
+
+        float data[2];
+    };
 } GM_Vec2;
 
 typedef struct GM_Vec3 {
-    float x, y, z;
+    union {
+        struct {
+            float x;
+            float y;
+            float z;
+        };
+
+        float data[3];
+    };
 } GM_Vec3;
 
 typedef struct GM_Vec4 {
-    float x, y, z, w;
+    union {
+        struct {
+            float x;
+            float y;
+            float z;
+            float w;
+        };
+
+        float data[4];
+    };
 } GM_Vec4;
 
 
@@ -30,7 +61,7 @@ Matrix4 mat4_rotation_y(float degress);
 Matrix4 mat4_rotation_z(float degress);
 
 
-Matrix4 mat4_perspective(float fov_rad, float aspect, float near, float far);
+Matrix4 mat4_perspective(float fov_degrees, float aspect, float near, float far);
 Matrix4 mat4_orthographic(float left, float right, float bottom, float top, float near, float far);
 Matrix4 mat4_look_at(GM_Vec3 eye, GM_Vec3 center, GM_Vec3 up);
 
