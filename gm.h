@@ -9,9 +9,6 @@
 #define RAD_TO_DEGREES(rad) (rad*(180/PI))
 
 // row major
-typedef struct GM_Matix4 {
-    float data[16]; 
-} Matrix4;
 
 typedef struct GM_Vec2 {
     union {
@@ -49,26 +46,33 @@ typedef struct GM_Vec4 {
     };
 } GM_Vec4;
 
+typedef struct GM_Matix4 {
+    union {
+        float data[16]; 
+        GM_Vec4 v[4];
+    };
+} GM_Matix4;
+
 
 // Creation
-Matrix4 mat4_identity();
-Matrix4 mat4_translation(GM_Vec3 t);
-Matrix4 mat4_scale(GM_Vec3 s);
+GM_Matix4 gm_mat4_identity();
+GM_Matix4 mat4_translation(GM_Vec3 t);
+GM_Matix4 mat4_scale(GM_Vec3 s);
 
 // Convert to radians in the implementation
-Matrix4 mat4_rotation_x(float degrees);
-Matrix4 mat4_rotation_y(float degress);
-Matrix4 mat4_rotation_z(float degress);
+GM_Matix4 mat4_rotation_x(float degrees);
+GM_Matix4 mat4_rotation_y(float degress);
+GM_Matix4 mat4_rotation_z(float degress);
 
 
-Matrix4 mat4_perspective(float fov_degrees, float aspect, float near, float far);
-Matrix4 mat4_orthographic(float left, float right, float bottom, float top, float near, float far);
-Matrix4 mat4_look_at(GM_Vec3 eye, GM_Vec3 center, GM_Vec3 up);
+GM_Matix4 mat4_perspective(float fov_degrees, float aspect, float near, float far);
+GM_Matix4 mat4_orthographic(float left, float right, float bottom, float top, float near, float far);
+GM_Matix4 mat4_look_at(GM_Vec3 eye, GM_Vec3 center, GM_Vec3 up);
 
 // Math
-Matrix4 gm_mat4_mult(Matrix4 a, Matrix4 b);
-GM_Vec4 mat4_mult_vec4(Matrix4 m, GM_Vec4 v);
-Matrix4 mat4_inverse(Matrix4 m);
-Matrix4 mat4_transpose(Matrix4 m);
+GM_Matix4 gm_mat4_mult(GM_Matix4 A, GM_Matix4 B);
+//GM_Vec4 mat4_mult_vec4(GM_Matix4 m, GM_Vec4 v);
+GM_Matix4 mat4_inverse(GM_Matix4 m);
+GM_Matix4 mat4_transpose(GM_Matix4 m);
 
 // float  gm_dot_product()
