@@ -7,6 +7,17 @@ float gm_range_map(float x, float s_min, float s_max, float e_min, float e_max) 
     return e_min + (s_ratio * (e_max - e_min));
 }
 
+float gm_move_toward(float current, float target, float delta) {
+    float diff = target - current;
+
+    if (fabsf(diff) <= delta) {
+        return target;
+    }
+
+    return current + (diff > 0 ? delta : -delta);
+}
+
+
 float gm_v3_dot_product(GM_Vec3 A, GM_Vec3 B) {
     return (A.x * B.x) + (A.y * B.y) + (A.z * B.z);
 }

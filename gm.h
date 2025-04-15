@@ -9,6 +9,7 @@
 #define RAD_TO_DEGREES(rad) (rad*(180/PI))
 
 float gm_range_map(float x, float s_min, float s_max, float e_min, float e_max);
+float gm_move_toward(float current, float target, float delta);
 
 
 // row major
