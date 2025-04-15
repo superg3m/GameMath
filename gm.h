@@ -8,8 +8,10 @@
 #define DEGREES_TO_RAD(degrees) (degrees*(PI/180))
 #define RAD_TO_DEGREES(rad) (rad*(180/PI))
 
-// row major
+float gm_range_map(float x, float s_min, float s_max, float e_min, float e_max);
 
+
+// row major
 typedef struct GM_Vec2 {
     union {
         struct {

@@ -1,12 +1,33 @@
 #define GM_IMPL
 #include "gm.h"
 
+float gm_range_map(float x, float s_min, float s_max, float e_min, float e_max) {
+    x = CLAMP(x, s_min, s_max);
+    float s_ratio = (x - s_min) / (s_max - s_min);
+    return e_min + (s_ratio * (e_max - e_min));
+}
+
 float gm_v3_dot_product(GM_Vec3 A, GM_Vec3 B) {
     return (A.x * B.x) + (A.y * B.y) + (A.z * B.z);
 }
 
 float gm_v4_dot_product(GM_Vec4 A, GM_Vec4 B) {
     return (A.x * B.x) + (A.y * B.y) + (A.z * B.z) + (A.w * B.w);
+}
+
+float gm_v4_magnitude(GM_Vec4 A) {
+    return sqrt((A.x*A.x) + (A.x*A.x) + (A.z*A.z));
+}
+
+GM_Vec4 gm_v4_normalize(GM_Vec4 A) {
+    GM_Vec4 ret;
+    const float magnitude = gm_v4_magnitude(A);
+    ret.x = A.x / magnitude;
+    ret.y = A.y / magnitude;
+    ret.z = A.z / magnitude;
+    ret.w = A.w / magnitude;
+
+    return ret;
 }
 
 GM_Matix4 mat4_identity() {
