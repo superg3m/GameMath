@@ -6,7 +6,13 @@
     #define GM_API
 #endif
 
-#if defined(CKG_INCLUDE_TYPES)
+#define GM_INCLUDE_TYPES
+#define GM_INCLUDE_VECTOR
+#define GM_INCLUDE_MATRIX
+#define GM_INCLUDE_UTILITY
+#define GM_INCLUDE_SMOOTHING_FUCNTIONS
+
+#if defined(GM_INCLUDE_TYPES)
     #include <stdint.h>
     #include <stdio.h>
     #include <stdarg.h>
@@ -55,9 +61,6 @@
     #define PLATFORM_MAX_PATH 256
 
     #if defined(_WIN32)
-        #define NOMINMAX
-        #define WIN32_LEAN_AND_MEAN
-        #include <windows.h>
         #define PLATFORM_WINDOWS
         #define OS_DELIMITER '\\'
         #define CRASH __debugbreak()
@@ -86,14 +89,9 @@
         #define WRITE_FENCE() _WriteBarrier(); _mm_sfence()
         #define READ_FENCE() _ReadBarrier()
     #endif
-
-    CKG_API void ckg_stack_trace_dump();
 #endif
 
 #include <math.h>
-
-float gm_range_map(float x, float s_min, float s_max, float e_min, float e_max);
-float gm_move_toward(float current, float target, float delta);
 
 typedef struct CKIT_Vector2 {
     union {
@@ -163,12 +161,6 @@ typedef struct GM_Circle3D {
     u32 radius;
 } CKIT_Circle3D;
 
-GM_API double gm_lerp(double a, double b, double t);
-GM_API GM_Vector2 gm_vector2_lerp(GM_Vector2 a, GM_Vector2 b, double t);
-GM_API GM_Vector3 gm_vector3_lerp(GM_Vector3 a, GM_Vector3 b, double t);
-GM_API GM_Vector4 gm_vector4_lerp(GM_Vector4 a, GM_Vector4 b, double t);
-GM_API GM_Vector2 gm_vector2_spline_point(GM_Vector2* spline_points, u32 spline_points_count, double t);
-
 
 // row major
 typedef struct GM_Vec2 {
@@ -188,11 +180,6 @@ typedef struct GM_Vec3 {
             double y;
             double z;
         };
-        struct {
-            double r;
-            double g;
-            double b;
-        };
         double v[3];
     };
 } GM_Vec3;
@@ -205,21 +192,57 @@ typedef struct GM_Vec4 {
             double z;
             double w;
         };
-        struct {
-            double r;
-            double g;
-            double b;
-            double a;
-        };
         double v[4];
     };
 } GM_Vec4;
 
-GM_API CKIT_Vector2 ckit_vector2_lerp(CKIT_Vector2 a, CKIT_Vector2 b, double t);
-GM_API CKIT_Vector3 ckit_vector3_lerp(CKIT_Vector3 a, CKIT_Vector3 b, double t);
-GM_API CKIT_Vector4 ckit_vector4_lerp(CKIT_Vector4 a, CKIT_Vector4 b, double t);
 
-GM_API CKIT_Vector2 ckit_vector2_spline_point(CKIT_Vector2* spline_points, u32 spline_points_count, double t);
+typedef struct GM_RGB {
+    union {
+        union {
+            struct {
+                u8 r;
+                u8 g;
+                u8 b;
+            };
+            u8 c[3];
+        } rgb;
+    };
+} GM_RGB;
+
+typedef struct GM_RGBA {
+    union {
+        union {
+            struct {
+                u8 a;
+                u8 r;
+                u8 g;
+                u8 b;
+            };
+            u32 hex;
+            u8 c[4];
+        } argb;
+
+        union {
+            struct {
+                u8 r;
+                u8 g;
+                u8 b;
+                u8 a;
+            };
+            u32 hex;
+            u8 c[4];
+        } rgba;
+    };
+} GM_RGBA;
+
+
+
+GM_API double gm_lerp(double a, double b, double t);
+GM_API GM_Vec2 gm_vector2_lerp(GM_Vec2 a, GM_Vec2 b, double t);
+GM_API GM_Vec3 gm_vector3_lerp(GM_Vec3 a, GM_Vec3 b, double t);
+GM_API GM_Vec4 gm_vector4_lerp(GM_Vec4 a, GM_Vec4 b, double t);
+GM_API GM_Vec2 gm_vector2_spline_point(GM_Vec2* spline_points, u32 spline_points_count, double t);
 
 
 typedef struct GM_Matix4 {
@@ -252,3 +275,6 @@ GM_Matix4 mat4_inverse(GM_Matix4 m);
 GM_Matix4 mat4_transpose(GM_Matix4 m);
 
 // float  gm_dot_product()
+
+float gm_range_mapper(float x, float s_min, float s_max, float e_min, float e_max);
+float gm_move_toward(float current, float target, float delta);
