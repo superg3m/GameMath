@@ -237,7 +237,6 @@ typedef struct GM_RGBA {
 } GM_RGBA;
 
 
-
 GM_API double gm_lerp(double a, double b, double t);
 GM_API GM_Vec2 gm_vector2_lerp(GM_Vec2 a, GM_Vec2 b, double t);
 GM_API GM_Vec3 gm_vector3_lerp(GM_Vec3 a, GM_Vec3 b, double t);
