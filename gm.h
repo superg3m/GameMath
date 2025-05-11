@@ -96,44 +96,44 @@
 typedef struct CKIT_Vector2 {
     union {
         struct {
-            double x;
-            double y;
+            float x;
+            float y;
         };
-        double v[2];
+        float v[2];
     };
 } CKIT_Vector2;
 
 typedef struct CKIT_Vector3 {
     union {
         struct {
-            double x;
-            double y;
-            double z;
+            float x;
+            float y;
+            float z;
         };
         struct {
-            double r;
-            double g;
-            double b;
+            float r;
+            float g;
+            float b;
         };
-        double v[3];
+        float v[3];
     };
 } CKIT_Vector3;
 
 typedef struct CKIT_Vector4 {
     union {
         struct {
-            double x;
-            double y;
-            double z;
-            double w;
+            float x;
+            float y;
+            float z;
+            float w;
         };
         struct {
-            double r;
-            double g;
-            double b;
-            double a;
+            float r;
+            float g;
+            float b;
+            float a;
         };
-        double v[4];
+        float v[4];
     };
 } CKIT_Vector4;
 
@@ -166,33 +166,33 @@ typedef struct GM_Circle3D {
 typedef struct GM_Vec2 {
     union {
         struct {
-            double x;
-            double y;
+            float x;
+            float y;
         };
-        double v[2];
+        float v[2];
     };
 } GM_Vec2;
 
 typedef struct GM_Vec3 {
     union {
         struct {
-            double x;
-            double y;
-            double z;
+            float x;
+            float y;
+            float z;
         };
-        double v[3];
+        float v[3];
     };
 } GM_Vec3;
 
 typedef struct GM_Vec4 {
     union {
         struct {
-            double x;
-            double y;
-            double z;
-            double w;
+            float x;
+            float y;
+            float z;
+            float w;
         };
-        double v[4];
+        float v[4];
     };
 } GM_Vec4;
 
@@ -236,12 +236,19 @@ typedef struct GM_RGBA {
     };
 } GM_RGBA;
 
+typedef struct GM_AABB {
+    GM_Vec3 min;
+    GM_Vec3 max;
+} GM_AABB;
 
-GM_API double gm_lerp(double a, double b, double t);
-GM_API GM_Vec2 gm_vector2_lerp(GM_Vec2 a, GM_Vec2 b, double t);
-GM_API GM_Vec3 gm_vector3_lerp(GM_Vec3 a, GM_Vec3 b, double t);
-GM_API GM_Vec4 gm_vector4_lerp(GM_Vec4 a, GM_Vec4 b, double t);
-GM_API GM_Vec2 gm_vector2_spline_point(GM_Vec2* spline_points, u32 spline_points_count, double t);
+GM_API bool gm_aabb_point_colliding(GM_Vec3 point, GM_AABB aabb);
+GM_API bool gm_aabb_aabb_colliding(GM_AABB a, GM_AABB b);
+
+GM_API float gm_lerp(float a, float b, float t);
+GM_API GM_Vec2 gm_vector2_lerp(GM_Vec2 a, GM_Vec2 b, float t);
+GM_API GM_Vec3 gm_vector3_lerp(GM_Vec3 a, GM_Vec3 b, float t);
+GM_API GM_Vec4 gm_vector4_lerp(GM_Vec4 a, GM_Vec4 b, float t);
+GM_API GM_Vec2 gm_vector2_spline_point(GM_Vec2* spline_points, u32 spline_points_count, float t);
 
 
 typedef struct GM_Matix4 {
