@@ -343,3 +343,76 @@ float gm_ease_in_out_bounce(float t) {
     ? (1 - gm_ease_out_bounce(1 - 2 * t)) / 2
     : (1 + gm_ease_out_bounce(2 * t - 1)) / 2;
 }
+
+u32 gm_rgba_to_u32(GM_RGBA color) {
+	u32 alpha = ((int)(color.rgba.a) << 24);
+	u32 red = ((int)(color.rgba.r) << 16);
+	u32 green = ((int)(color.rgba.g) << 8);
+	u32 blue = ((int)(color.rgba.b) << 0);
+					
+	u32 rgba = alpha|red|green|blue;
+
+	return rgba;
+}
+
+GM_RGBA gm_rgba_from_u32(u32 color) {
+	GM_RGBA ret = {0};
+
+	ret.rgba.b = ((color >> 0) & 0xFF); 
+	ret.rgba.g = ((color >> 8) & 0xFF); 
+	ret.rgba.r = ((color >> 16) & 0xFF); 
+	ret.rgba.a = ((color >> 24) & 0xFF); 
+				
+	return ret;
+}
+
+GM_RGBA gm_rgba_multiply(GM_RGBA color, float value) {
+	GM_RGBA ret = {0};
+	ret.rgba.r = color.rgba.r * value;
+	ret.rgba.g = color.rgba.g * value;
+	ret.rgba.b = color.rgba.b * value;
+	ret.rgba.a = color.rgba.a * value;
+
+	return ret;
+}
+
+u32 gm_rgba_u32_multiply(u32 color, float value) {
+	u8 b = (u8)(((color >> 0) & 0xFF)  * value);
+	u8 g = (u8)(((color >> 8) & 0xFF)  * value);
+	u8 r = (u8)(((color >> 16) & 0xFF) * value);
+	u8 a = (u8)(((color >> 24) & 0xFF) * value);
+
+	color = r|g|b|a;
+
+	return color;
+}
+
+GM_RGBA gm_rgba_alpha_blend(GM_RGBA front_color, GM_RGBA back_color) {
+	GM_RGBA ret = {0};
+
+	float normalized_back_alpha = (float)back_color.a / 255.0f;
+
+	ret.rgba.a = back_color.rgba.a;
+	ret.rgba.r = (back_color.rgba.r * normalized_back_alpha) + ((u32)front_color.rgba.r * (1 - normalized_back_alpha));
+	ret.rgba.g = (back_color.rgba.g * normalized_back_alpha) + ((u32)front_color.rgba.g * (1 - normalized_back_alpha));
+	ret.rgba.b = (back_color.rgba.b * normalized_back_alpha) + ((u32)front_color.rgba.b * (1 - normalized_back_alpha));
+
+	return ret;
+}
+
+GM_RGBA gm_rgba_u32_alpha_blend(u32 front_color_u32, u32 back_color_u32) {
+	GM_RGBA front_color = {0};
+	front_color.rgba.a = (u8)(((u32)front_color_u32 >> 24) & 0xFF);
+	front_color.rgba.r = (u8)(((u32)front_color_u32 >> 16) & 0xFF);
+	front_color.rgba.g = (u8)(((u32)front_color_u32 >> 8) & 0xFF);
+	front_color.rgba.b = (u8)(((u32)front_color_u32 >> 0) & 0xFF);
+
+	GM_RGBA back_color = {0};
+	back_color.rgba.a = (u8)(((u32)back_color_u32 >> 24) & 0xFF);
+	back_color.rgba.r = (u8)(((u32)back_color_u32 >> 16) & 0xFF);
+	back_color.rgba.g = (u8)(((u32)back_color_u32 >> 8) & 0xFF);
+	back_color.rgba.b = (u8)(((u32)back_color_u32 >> 0) & 0xFF);
+				
+	return gm_rgba_alpha_blend(front_color, back_color);
+}
+
