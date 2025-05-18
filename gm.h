@@ -166,6 +166,25 @@
     GM_API GM_RGBA ckit_color_from_u32(u32 color);
     GM_API GM_RGBA ckit_color_alpha_blend(GM_RGBA front_color, GM_RGBA back_color);
     GM_API GM_RGBA ckit_color_u32_alpha_blend(u32 front_color_u32, u32 back_color_u32);
+    /**
+	 * @brief value from 0.0 to 1.0
+	 * 
+	 * @param color 
+	 * @param value 
+	 * @return CKIT_Color 
+	 */
+	GM_API GM_RGBA ckit_color_multiply(GM_RGBA color, float value);
+
+    #define GM_COLOR_BLACK ((GM_RGBA){0, 0, 0, 255})
+    #define GM_COLOR_RED ((GM_RGBA){255, 0, 0, 255})
+    #define GM_COLOR_BLUE ((GM_RGBA){0, 0, 255, 255})
+    #define GM_COLOR_GREEN ((GM_RGBA){0, 255, 0, 255})
+    #define GM_COLOR_WHITE ((GM_RGBA){255, 255, 255, 255})
+    #define GM_COLOR_PINK ((GM_RGBA){255, 105, 180, 255})
+    #define GM_COLOR_LIME ((GM_RGBA){0, 255, 128, 255})
+    #define GM_COLOR_CYAN ((GM_RGBA){0, 255, 255, 255})
+    #define GM_COLOR_PURPLE ((GM_RGBA){128, 0, 128, 255})
+    #define GM_COLOR_YELLOW ((GM_RGBA){255, 255, 0, 255})
 #endif
 
 #if defined(GM_INCLUDE_COLLISION)
