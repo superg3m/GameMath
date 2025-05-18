@@ -199,6 +199,7 @@
     GM_API bool gm_aabb_aabb_colliding(GM_AABB a, GM_AABB b);
 #endif
 
+// https://www.youtube.com/watch?v=QS3677PlIos
 // https://www.youtube.com/watch?v=YJB1QnEmlTs
 #if defined(GM_INCLUDE_INTERPOLATION)
     GM_API float gm_lerp(float a, float b, float t);
