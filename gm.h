@@ -161,6 +161,11 @@
             } rgba;
         };
     } GM_RGBA;
+
+    GM_API u32 ckit_color_to_u32(GM_RGBA color);
+    GM_API GM_RGBA ckit_color_from_u32(u32 color);
+    GM_API GM_RGBA ckit_color_alpha_blend(GM_RGBA front_color, GM_RGBA back_color);
+    GM_API GM_RGBA ckit_color_u32_alpha_blend(u32 front_color_u32, u32 back_color_u32);
 #endif
 
 #if defined(GM_INCLUDE_COLLISION)
