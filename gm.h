@@ -261,8 +261,11 @@
     GM_API float gm_v3_magnitude(GM_Vec3 A);
     GM_API float gm_v4_magnitude(GM_Vec4 A);
 
-    GM_API float gm_v3_dot_product(GM_Vec3 A, GM_Vec3 B);
-    GM_API float gm_v4_dot_product(GM_Vec4 A, GM_Vec4 B);
+    GM_API float gm_v2_dot(GM_Vec2 A, GM_Vec2 B);
+    GM_API float gm_v3_dot(GM_Vec3 A, GM_Vec3 B);
+    GM_API float gm_v4_dot(GM_Vec4 A, GM_Vec4 B);
+
+    GM_API float gm_v3_cross(GM_Vec4 A, GM_Vec4 B);
 #endif
 
 #if defined(CKG_INCLUDE_MATRIX)
@@ -298,8 +301,8 @@
     } GM_Quaternion;
 
     GM_Quaternion gm_quat_create(GM_Vec3 axis, float theta);
-    GM_Quaternion gm_quat_mult(GM_Quaternion q1, GM_Quaternion q2);
     GM_Quaternion gm_quat_inverse(GM_Quaternion quat);
+    GM_Quaternion gm_quat_mult(GM_Quaternion q1, GM_Quaternion q2);
     GM_Vec3 gm_quat_vector_mult(GM_Quaternion quat, GM_Vec3 vec);
 #endif
 
@@ -308,8 +311,6 @@
 #if defined(GM_INCLUDE_INTERPOLATION)
     GM_API float gm_lerp(float a, float b, float t);
     GM_API float gm_inverse_lerp(float a, float b, float value);
-    
-    GM_API GM_Quaternion gm_slerp(GM_Quaternion a, GM_Quaternion b, float t);
     GM_API GM_Vec3 gm_barycentric(GM_Vec3 a, GM_Vec3 b, GM_Vec3 c, float u, float v);
 
     GM_API float gm_remap(float x, float s_min, float s_max, float e_min, float e_max);
@@ -441,12 +442,26 @@
 //
 
 #if defined(CKG_IMPL_VECTOR) 
-    float gm_v3_dot_product(GM_Vec3 A, GM_Vec3 B) {
+    float gm_v2_dot(GM_Vec2 A, GM_Vec2 B) {
+        return (A.x * B.x) + (A.y * B.y);
+    }
+
+    float gm_v3_dot(GM_Vec3 A, GM_Vec3 B) {
         return (A.x * B.x) + (A.y * B.y) + (A.z * B.z);
     }
 
-    float gm_v4_dot_product(GM_Vec4 A, GM_Vec4 B) {
+    float gm_v4_dot(GM_Vec4 A, GM_Vec4 B) {
         return (A.x * B.x) + (A.y * B.y) + (A.z * B.z) + (A.w * B.w);
+    }
+
+    float gm_v3_cross(GM_Vec3 A, GM_Vec3 B) {
+        GM_Vec3 ret;
+
+        ret.x = A.y * B.z - A.z * B.y;
+        ret.y = A.z * B.x - A.x * B.z;
+        ret.z = A.x * B.y - A.y * B.x;
+
+        return ret;
     }
 
     float gm_v2_magnitude(GM_Vec2 A) {
@@ -487,6 +502,60 @@
         ret.y = A.y / magnitude;
         ret.z = A.z / magnitude;
         ret.w = A.w / magnitude;
+
+        return ret;
+    }
+
+    GM_Vec2 gm_v2_create(float x, float y) {
+        GM_Vec2 ret = {0};
+        ret.x = x;
+        ret.y = y;
+
+        return ret;
+    }
+
+    GM_Vec3 gm_v3_create(float x, float y, float z) {
+        GM_Vec3 ret = {0};
+        ret.x = x;
+        ret.y = y;
+        ret.z = z; 
+
+        return ret;
+    }
+
+    GM_Vec4 gm_v4_create(float x, float y, float z, float w) {
+        GM_Vec4 ret = {0};
+        ret.x = x;
+        ret.y = y;
+        ret.z = z; 
+        ret.w = w; 
+
+        return ret;
+    }
+
+    GM_Vec2 gm_v2_scale(GM_Vec2 v, float scale); {
+        GM_Vec2 ret = {0};
+        ret.x = v.x * scale;
+        ret.y = v.y * scale;
+
+        return ret;
+    }
+
+    GM_Vec3 gm_v3_scale(GM_Vec3 v, float scale) {
+        GM_Vec3 ret = {0};
+        ret.x = v.x * scale;
+        ret.y = v.y * scale;
+        ret.z = v.z * scale; 
+
+        return ret;
+    }
+
+    GM_Vec4 gm_v4_scale(GM_Vec4 v, float scale) {
+        GM_Vec4 ret = {0};
+        ret.x = v.x * scale;
+        ret.y = v.y * scale;
+        ret.z = v.z * scale; 
+        ret.w = v.w * scale; 
 
         return ret;
     }
@@ -679,10 +748,8 @@
         GM_Quaternion ret = {0};
 
         float radians = DEGREES_TO_RAD(theta);
-        ret. w = cos(radians / 2);
-        ret. x = axis.x * sin(radians / 2);
-        ret. y = axis.y * sin(radians / 2);
-        ret. z = axis.z * sin(radians / 2);
+        ret.w = cos(radians / 2);
+        ret.v = gm_v3_scale(axis, sin(radians / 2));
 
         return ret;
     }
@@ -691,9 +758,7 @@
         GM_Quaternion ret = {0};
 
         ret.w = quat.w;
-        ret.x = -quat.x;
-        ret.y = -quat.y;
-        ret.z = -quat.z;
+        ret.v = gm_v3_scale(quat.v, -1);
 
         return ret;
     }
@@ -701,9 +766,18 @@
     GM_Quaternion gm_quat_mult(GM_Quaternion q1, GM_Quaternion q2) {
         GM_Quaternion ret;
 
-        ret.w = (q1.w * q2.w) + q2.v
+        ret.w = (q1.w * q2.w) + gm_v3_dot(q1.v, q2.v);
+        ret.v = gm_v3_scale(q1.v, q2.w) + gm_v3_scale(q2.v, q1.w) + gm_v3_cross(q1.v, q2.v);
+
+        return ret;
     }
 
-    GM_Vec3 gm_quat_vector_mult(GM_Quaternion quat, GM_Vec3 vec);
+    // Rotate a vector with this quaternion.
+    GM_Vec3 gm_quat_vector_mult(GM_Quaternion quat, GM_Vec3 vec) {
+        GM_Quaternion p;
+        p.w = 0;
+        p.v = vec;
 
+        return gm_quat_mult(gm_quat_mult(quat, p),  gm_quat_inverse(quat)).v;
+    }
 #endif
