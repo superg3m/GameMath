@@ -45,6 +45,8 @@ build_*/
 ./ckg/
 c_build/
 *.ps1
+*.sh
 !bootstrap.ps1
+!bootstrap.sh
 ckg/
 c_build_dependency_cache_*.json

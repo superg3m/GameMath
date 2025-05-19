@@ -72,7 +72,7 @@
     typedef uint64_t u64;
 
     #define NULLPTR 0
-    #define PI 3.14159265359
+    #define PI 3.14159265359f
     #define DEGREES_TO_RAD(degrees) ((degrees)*(PI/180))
     #define RAD_TO_DEGREES(rad) ((rad)*(180/PI))
 
@@ -238,6 +238,10 @@
     GM_API GM_Vec3 gm_v3_create(float x, float y, float z);
     GM_API GM_Vec4 gm_v4_create(float x, float y, float z, float w);
 
+    GM_API GM_Vec2 gm_v2_add(GM_Vec2 A, GM_Vec2 B);
+    GM_API GM_Vec3 gm_v3_add(GM_Vec3 A, GM_Vec3 B);
+    GM_API GM_Vec4 gm_v4_add(GM_Vec4 A, GM_Vec4 B);
+
     GM_API GM_Vec2 gm_v2_scale(GM_Vec2 v, float scale);
     GM_API GM_Vec3 gm_v3_scale(GM_Vec3 v, float scale);
     GM_API GM_Vec4 gm_v4_scale(GM_Vec4 v, float scale);
@@ -263,7 +267,7 @@
     GM_API float gm_v3_dot(GM_Vec3 A, GM_Vec3 B);
     GM_API float gm_v4_dot(GM_Vec4 A, GM_Vec4 B);
 
-    GM_API float gm_v3_cross(GM_Vec4 A, GM_Vec4 B);
+    GM_API GM_Vec3 gm_v3_cross(GM_Vec3 A, GM_Vec3 B);
 #endif
 
 #if defined(GM_INCLUDE_MATRIX)
@@ -388,63 +392,10 @@
         u32 radius;
     } GM_Circle3D;
 
-    GM_Rectangle2D gm_rectangle2d_create(s32 x, s32 y, u32 width, u32 height) {
-        GM_Rectangle2D ret = {0};
-        ret.position.x = x;
-        ret.position.y = y;
-        ret.width = width;
-        ret.height = height;
-
-        return ret;
-    }
-
-    GM_Rectangle3D gm_rectangle3d_create(s32 x, s32 y, s32 z, u32 length, u32 width, u32 height) {
-        GM_Rectangle3D ret = {0};
-        ret.position.x = x;
-        ret.position.y = y;
-        ret.position.z = z;
-        ret.length = length;
-        ret.width = width;
-        ret.height = height;
-
-        return ret;
-    }
-
-    bool gm_rectangle_check_aabb_collision(GM_Rectangle2D rect1, GM_Rectangle2D rect2) {
-        if (rect1.position.x < rect2.position.x + rect2.width && rect1.position.x + rect1.width > rect2.position.x &&
-            rect1.position.y < rect2.position.y + rect2.height && rect1.position.y + rect1.height > rect2.position.y) {
-            return true;
-        }
-
-        return false;
-    }
-
-    GM_Rectangle2D gm_rectangle_get_aabb_collision(GM_Rectangle2D rect1, GM_Rectangle2D rect2) {
-        GM_Rectangle2D ret = {0};
-        (void)rect1;
-        (void)rect2;
-        
-        return ret;
-    }
-
-    GM_Circle2D gm_circle2d_create(s32 x, s32 y, u32 radius) {
-        GM_Circle2D ret = {0};
-        ret.position.x = x;
-        ret.position.y = y;
-        ret.radius = radius;
-
-        return ret;
-    }
-
-    GM_Circle3D gm_circle3d_create(s32 x, s32 y, s32 z, u32 radius) {
-        GM_Circle3D ret = {0};
-        ret.position.x = x;
-        ret.position.y = y;
-        ret.position.z = z;
-        ret.radius = radius;
-
-        return ret;
-    }
+    GM_Rectangle2D gm_rectangle2d_create(float x, float y, u32 width, u32 height);
+    GM_Rectangle3D gm_rectangle3d_create(float x, float y, float z, u32 length, u32 width, u32 height);
+    GM_Circle2D gm_circle2d_create(float x, float y, u32 radius);
+    GM_Circle3D gm_circle3d_create(float x, float y, float z, u32 radius);
 #endif
 
 //
@@ -476,10 +427,10 @@
 
     GM_RGBA gm_rgba_multiply(GM_RGBA color, float value) {
         GM_RGBA ret = {0};
-        ret.rgba.r = color.rgba.r * value;
-        ret.rgba.g = color.rgba.g * value;
-        ret.rgba.b = color.rgba.b * value;
-        ret.rgba.a = color.rgba.a * value;
+        ret.rgba.r = (u8)CLAMP(color.rgba.r * value, 0, 255);
+        ret.rgba.g = (u8)CLAMP(color.rgba.g * value, 0, 255);
+        ret.rgba.b = (u8)CLAMP(color.rgba.b * value, 0, 255);
+        ret.rgba.a = (u8)CLAMP(color.rgba.a * value, 0, 255);
 
         return ret;
     }
@@ -498,12 +449,12 @@
     GM_RGBA gm_rgba_alpha_blend(GM_RGBA front_color, GM_RGBA back_color) {
         GM_RGBA ret = {0};
 
-        float normalized_back_alpha = (float)back_color.a / 255.0f;
+        float normalized_back_alpha = (float)back_color.rgba.a / 255.0f;
 
         ret.rgba.a = back_color.rgba.a;
-        ret.rgba.r = (back_color.rgba.r * normalized_back_alpha) + ((u32)front_color.rgba.r * (1 - normalized_back_alpha));
-        ret.rgba.g = (back_color.rgba.g * normalized_back_alpha) + ((u32)front_color.rgba.g * (1 - normalized_back_alpha));
-        ret.rgba.b = (back_color.rgba.b * normalized_back_alpha) + ((u32)front_color.rgba.b * (1 - normalized_back_alpha));
+        ret.rgba.r = (u8)CLAMP((back_color.rgba.r * normalized_back_alpha) + ((u32)front_color.rgba.r * (1 - normalized_back_alpha)), 0, 255);
+        ret.rgba.g = (u8)CLAMP((back_color.rgba.g * normalized_back_alpha) + ((u32)front_color.rgba.g * (1 - normalized_back_alpha)), 0, 255);
+        ret.rgba.b = (u8)CLAMP((back_color.rgba.b * normalized_back_alpha) + ((u32)front_color.rgba.b * (1 - normalized_back_alpha)), 0, 255);
 
         return ret;
     }
@@ -538,7 +489,7 @@
         return (A.x * B.x) + (A.y * B.y) + (A.z * B.z) + (A.w * B.w);
     }
 
-    float gm_v3_cross(GM_Vec3 A, GM_Vec3 B) {
+    GM_Vec3 gm_v3_cross(GM_Vec3 A, GM_Vec3 B) {
         GM_Vec3 ret;
 
         ret.x = A.y * B.z - A.z * B.y;
@@ -549,20 +500,20 @@
     }
 
     float gm_v2_magnitude(GM_Vec2 A) {
-        return sqrt((A.x*A.x) + (A.x*A.x));
+        return sqrtf((A.x*A.x) + (A.x*A.x));
     }
 
     float gm_v3_magnitude(GM_Vec3 A) {
-        return sqrt((A.x*A.x) + (A.x*A.x) + (A.z*A.z));
+        return sqrtf((A.x*A.x) + (A.x*A.x) + (A.z*A.z));
     }
 
     float gm_v4_magnitude(GM_Vec4 A) {
-        return sqrt((A.x*A.x) + (A.x*A.x) + (A.z*A.z) + (A.w*A.w));
+        return sqrtf((A.x*A.x) + (A.x*A.x) + (A.z*A.z) + (A.w*A.w));
     }
 
     GM_Vec2 gm_v2_normalize(GM_Vec2 A) {
         GM_Vec2 ret;
-        const float magnitude = gm_v4_magnitude(A);
+        const float magnitude = gm_v2_magnitude(A);
         ret.x = A.x / magnitude;
         ret.y = A.y / magnitude;
 
@@ -571,7 +522,7 @@
 
     GM_Vec3 gm_v3_normalize(GM_Vec3 A) {
         GM_Vec3 ret;
-        const float magnitude = gm_v4_magnitude(A);
+        const float magnitude = gm_v3_magnitude(A);
         ret.x = A.x / magnitude;
         ret.y = A.y / magnitude;
         ret.z = A.z / magnitude;
@@ -617,7 +568,34 @@
         return ret;
     }
 
-    GM_Vec2 gm_v2_scale(GM_Vec2 v, float scale); {
+    GM_Vec2 gm_v2_add(GM_Vec2 A, GM_Vec2 B) {
+        GM_Vec2 ret = {0};
+        ret.x = A.x + B.x;
+        ret.y = A.y + B.y;
+
+        return ret;
+    }
+
+    GM_Vec3 gm_v3_add(GM_Vec3 A, GM_Vec3 B) {
+        GM_Vec3 ret = {0};
+        ret.x = A.x + B.x;
+        ret.y = A.y + B.y;
+        ret.z = A.z + B.z; 
+
+        return ret;
+    }
+    
+    GM_Vec4 gm_v4_add(GM_Vec4 A, GM_Vec4 B) {
+        GM_Vec4 ret = {0};
+        ret.x = A.x + B.x;
+        ret.y = A.y + B.y;
+        ret.z = A.z + B.z; 
+        ret.w = A.w + B.w; 
+
+        return ret;
+    }
+    
+    GM_Vec2 gm_v2_scale(GM_Vec2 v, float scale) {
         GM_Vec2 ret = {0};
         ret.x = v.x * scale;
         ret.y = v.y * scale;
@@ -739,11 +717,11 @@
     // Z is negative going away from the viewer here so Right-handed coordinate system OpenGL
     GM_Matix4 gm_mat4_perspective(float fov_degrees, float aspect, float near_plane, float far_plane) {
         float fov_radians = DEGREES_TO_RAD(fov_degrees);
-        float p = 1 / (tan(fov_radians) / 2.0f);
+        float p = 1 / (tanf(fov_radians) / 2.0f);
 
-        const range = near_plane - far_plane;
-        const A = (-far_plane - near_plane) / range; 
-        const B = (2 * far_plane * near_plane) / range; 
+        const float range = near_plane - far_plane;
+        const float A = (-far_plane - near_plane) / range; 
+        const float B = (2 * far_plane * near_plane) / range; 
 
         GM_Matix4 ret = {
             .data = {
@@ -761,8 +739,7 @@
         GM_Matix4 ret = {0};
         
         for (int i = 0; i < 16; i++) {
-            const row = i / 4;
-            const column = i % 4;
+            const int column = i % 4;
 
             const GM_Vec4 a_row = A.v[i / 4];
             const GM_Vec4 b_column = {
@@ -772,7 +749,7 @@
                 B.data[column + (3 * 4)]
             };
 
-            ret.data[i] = gm_v4_dot_product(a_row, b_column);
+            ret.data[i] = gm_v4_dot(a_row, b_column);
         }
 
         return ret;
@@ -791,8 +768,8 @@
         GM_Quaternion ret = {0};
 
         float radians = DEGREES_TO_RAD(theta);
-        ret.w = cos(radians / 2);
-        ret.v = gm_v3_scale(axis, sin(radians / 2));
+        ret.w = cosf(radians / 2);
+        ret.v = gm_v3_scale(axis, sinf(radians / 2));
 
         return ret;
     }
@@ -810,7 +787,7 @@
         GM_Quaternion ret;
 
         ret.w = (q1.w * q2.w) + gm_v3_dot(q1.v, q2.v);
-        ret.v = gm_v3_scale(q1.v, q2.w) + gm_v3_scale(q2.v, q1.w) + gm_v3_cross(q1.v, q2.v);
+        ret.v = gm_v3_add(gm_v3_add(gm_v3_scale(q1.v, q2.w), gm_v3_scale(q2.v, q1.w)), gm_v3_cross(q1.v, q2.v));
 
         return ret;
     }
@@ -1008,11 +985,6 @@
 #endif
 
 #if defined(GM_IMPL_COLLISION)
-    typedef struct GM_AABB {
-        GM_Vec3 min;
-        GM_Vec3 max;
-    } GM_AABB;
-
     // SAT collision
 
     bool gm_aabb_point_colliding(GM_Vec3 point, GM_AABB aabb) {
@@ -1035,5 +1007,57 @@
             a.min.z <= b.max.z &&
             a.max.z >= b.min.z
         );
+    }
+#endif
+
+#if defined(GM_IMPL_SHAPES)
+    GM_Rectangle2D gm_rectangle2d_create(float x, float y, u32 width, u32 height) {
+        GM_Rectangle2D ret = {0};
+        ret.position.x = x;
+        ret.position.y = y;
+        ret.width = width;
+        ret.height = height;
+
+        return ret;
+    }
+
+    GM_Rectangle3D gm_rectangle3d_create(float x, float y, float z, u32 length, u32 width, u32 height) {
+        GM_Rectangle3D ret = {0};
+        ret.position.x = x;
+        ret.position.y = y;
+        ret.position.z = z;
+        ret.length = length;
+        ret.width = width;
+        ret.height = height;
+
+        return ret;
+    }
+
+    bool gm_rectangle_check_aabb_collision(GM_Rectangle2D rect1, GM_Rectangle2D rect2) {
+        if (rect1.position.x < rect2.position.x + rect2.width && rect1.position.x + rect1.width > rect2.position.x &&
+            rect1.position.y < rect2.position.y + rect2.height && rect1.position.y + rect1.height > rect2.position.y) {
+            return true;
+        }
+
+        return false;
+    }
+
+    GM_Circle2D gm_circle2d_create(float x, float y, u32 radius) {
+        GM_Circle2D ret = {0};
+        ret.position.x = x;
+        ret.position.y = y;
+        ret.radius = radius;
+
+        return ret;
+    }
+
+    GM_Circle3D gm_circle3d_create(float x, float y, float z, u32 radius) {
+        GM_Circle3D ret = {0};
+        ret.position.x = x;
+        ret.position.y = y;
+        ret.position.z = z;
+        ret.radius = radius;
+
+        return ret;
     }
 #endif

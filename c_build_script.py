@@ -16,22 +16,14 @@ from c_build.source.UserUtilities import *
 from c_build.source.Manager import *
 # --------------------------------------------------------------------------------------s
 
-pc: ProjectConfig = ProjectConfig(
-    project_name = "some_project",
-    project_dependencies = [""],
-    project_debug_with_visual_studio = True,
-    project_rebuild_project_dependencies = False,
-    project_executable_procedures  = ["some_project.exe"]
-)
-
 cc: CompilerConfig = CompilerConfig(
     compiler_name = C_BUILD_COMPILER_NAME() if C_BUILD_IS_DEPENDENCY() else "INVALID_COMPILER",
-    compiler_std_version = "",
-    compiler_warning_level = "",
-    compiler_disable_specific_warnings = [""],
-    compiler_treat_warnings_as_errors = True,
-    compiler_disable_warnings  = False,
-    compiler_disable_sanitizer = True
+)
+
+pc: ProjectConfig = ProjectConfig(
+    project_name = "GameMath",
+    project_debug_with_visual_studio = True,
+    project_executable_names = []
 )
 
 if IS_WINDOWS() and not C_BUILD_IS_DEPENDENCY():
@@ -47,25 +39,17 @@ if cc.compiler_name == "cl":
     cc.compiler_disable_specific_warnings = ["5105", "4668", "4820", "4996"]
 else:
     cc.compiler_warning_level = "all"
-    cc.compiler_disable_specific_warnings = ["deprecated", "parentheses"]
+    cc.compiler_disable_specific_warnings = ["deprecated", "parentheses", "missing-braces"]
 
-executable_procedure_libs = []
-if IS_WINDOWS():
-    windows_libs = ["User32.lib", "Gdi32.lib"] if cc.compiler_name == "cl" else ["-lUser32", "-lGdi32"]
-    executable_procedure_libs += windows_libs
 
-procedures_config = {
-    "some_project_exe": ProcedureConfigElement(
-        build_directory = f"./build_{cc.compiler_name}",
-        output_name = "some_project.exe",
-        source_files = ["../Source/*.c"],
-        additional_libs = [],
-        compile_time_defines = [],
-        compiler_inject_into_args = [],
-        include_paths = []
-    ),
+build_postfix = f"build_{cc.compiler_name}/{C_BUILD_BUILD_TYPE()}"
+procedures: Dict[str, ProcedureConfig] = {
+    "GameMath": ProcedureConfig(
+        build_directory=f"./{build_postfix}",
+        output_name="gm.lib",
+        source_files=["../../*.c"]
+    )
 }
 
-manager: Manager = Manager(cc, pc, procedures_config)
+manager: Manager = Manager(cc, pc, procedures)
 manager.build_project()
-# -------------------------------------------------------------------------------------
