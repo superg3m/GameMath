@@ -6,15 +6,26 @@
     #define GM_API
 #endif
 
+#if defined(GM_IMPL) 
+    #define GM_IMPL_COLOR
+    #define GM_IMPL_VECTOR
+    #define GM_IMPL_MATRIX
+    #define GM_IMPL_QUATERNION
+    #define GM_IMPL_INTERPOLATION
+    #define GM_IMPL_EASE_FUNCTIONS
+    #define GM_IMPL_COLLISION
+    #define GM_IMPL_SHAPES
+#endif
+
 #define GM_INCLUDE_TYPES
 #define GM_INCLUDE_COLOR
-#define GM_INCLUDE_INTERPOLATION
 #define GM_INCLUDE_VECTOR
 #define GM_INCLUDE_MATRIX
-#define CKG_INCLUDE_QUATERNION
+#define GM_INCLUDE_QUATERNION
+#define GM_INCLUDE_INTERPOLATION
+#define GM_INCLUDE_EASE_FUNCTIONS
 #define GM_INCLUDE_COLLISION
 #define GM_INCLUDE_SHAPES
-#define GM_INCLUDE_EASE_FUNCTIONS
 
 #if defined(GM_INCLUDE_TYPES)
     #undef NULLPTR
@@ -48,6 +59,7 @@
     #include <stdarg.h>
     #include <stdlib.h>
     #include <stdbool.h>
+    #include <math.h>
 
     typedef int8_t  s8;
     typedef int16_t s16;
@@ -122,8 +134,6 @@
     #endif
 #endif
 
-#include <math.h>
-
 #if defined(GM_INCLUDE_COLOR)
     typedef struct GM_RGB {
         union {
@@ -187,18 +197,6 @@
     #define GM_COLOR_CYAN ((GM_RGBA){0, 255, 255, 255})
     #define GM_COLOR_PURPLE ((GM_RGBA){128, 0, 128, 255})
     #define GM_COLOR_YELLOW ((GM_RGBA){255, 255, 0, 255})
-#endif
-
-#if defined(GM_INCLUDE_COLLISION)
-    typedef struct GM_AABB {
-        GM_Vec3 min;
-        GM_Vec3 max;
-    } GM_AABB;
-
-    // SAT collision
-
-    GM_API bool gm_aabb_point_colliding(GM_Vec3 point, GM_AABB aabb);
-    GM_API bool gm_aabb_aabb_colliding(GM_AABB a, GM_AABB b);
 #endif
 
 #if defined(GM_INCLUDE_VECTOR)
@@ -268,7 +266,7 @@
     GM_API float gm_v3_cross(GM_Vec4 A, GM_Vec4 B);
 #endif
 
-#if defined(CKG_INCLUDE_MATRIX)
+#if defined(GM_INCLUDE_MATRIX)
     typedef struct GM_Matix4 {
         union {
             float data[16]; 
@@ -294,7 +292,7 @@
     GM_API GM_Matix4 gm_mat4_transpose(GM_Matix4 m);
 #endif
 
-#if defined(CKG_INCLUDE_QUATERNION)
+#if defined(GM_INCLUDE_QUATERNION)
     typedef struct GM_Quaternion {
         float w;
         GM_Vec3 v;
@@ -320,90 +318,7 @@
     GM_API float gm_smootherstep(float edge0, float edge1, float x);
 #endif
 
-#if defined(CKG_INCLUDE_SHAPES)
-    typedef struct GM_Rectangle2D {
-        GM_Vec2 position;
-        u32 width;
-        u32 height;
-    } CKIT_Rectangle2D;
-
-    typedef struct GM_Rectangle3D {
-        GM_Vec3 position;
-        u32 length;
-        u32 width;
-        u32 height;
-    } CKIT_Rectangle3D;
-
-    typedef struct GM_Circle2D {
-        GM_Vec2 position;
-        u32 radius;
-    } CKIT_Circle2D;
-
-    typedef struct GM_Circle3D {
-        GM_Vec3 position;
-        u32 radius;
-    } CKIT_Circle3D;
-
-    GM_Rectangle2D gm_rectangle2d_create(s32 x, s32 y, u32 width, u32 height) {
-        GM_Rectangle2D ret = {0};
-        ret.position.x = x;
-        ret.position.y = y;
-        ret.width = width;
-        ret.height = height;
-
-        return ret;
-    }
-
-    GM_Rectangle3D gm_rectangle3d_create(s32 x, s32 y, s32 z, u32 length, u32 width, u32 height) {
-        GM_Rectangle3D ret = {0};
-        ret.position.x = x;
-        ret.position.y = y;
-        ret.position.z = z;
-        ret.length = length;
-        ret.width = width;
-        ret.height = height;
-
-        return ret;
-    }
-
-    bool gm_rectangle_check_aabb_collision(GM_Rectangle2D rect1, GM_Rectangle2D rect2) {
-        if (rect1.position.x < rect2.position.x + rect2.width && rect1.position.x + rect1.width > rect2.position.x &&
-            rect1.position.y < rect2.position.y + rect2.height && rect1.position.y + rect1.height > rect2.position.y) {
-            return true;
-        }
-
-        return false;
-    }
-
-    CKIT_Rectangle2D gm_rectangle_get_aabb_collision(GM_Rectangle2D rect1, GM_Rectangle2D rect2) {
-        GM_Rectangle2D ret = {0};
-        (void)rect1;
-        (void)rect2;
-        
-        return ret;
-    }
-
-    GM_Circle2D gm_circle2d_create(s32 x, s32 y, u32 radius) {
-        GM_Circle2D ret = {0};
-        ret.position.x = x;
-        ret.position.y = y;
-        ret.radius = radius;
-
-        return ret;
-    }
-
-    GM_Circle3D gm_circle3d_create(s32 x, s32 y, s32 z, u32 radius) {
-        GM_Circle3D ret = {0};
-        ret.position.x = x;
-        ret.position.y = y;
-        ret.position.z = z;
-        ret.radius = radius;
-
-        return ret;
-    }
-#endif
-
-#if defined(CKG_INCLUDE_EASE_FUNCTIONS)
+#if defined(GM_INCLUDE_EASE_FUNCTIONS)
     // Date: May 18, 2025
     // NOTE(Jovanni): Visualize these at: https://easings.net/
     GM_API float gm_ease_in_sine(float t);
@@ -437,11 +352,180 @@
     GM_API float gm_ease_in_out_bounce(float t);
 #endif
 
+#if defined(GM_INCLUDE_COLLISION)
+    typedef struct GM_AABB {
+        GM_Vec3 min;
+        GM_Vec3 max;
+    } GM_AABB;
+
+    // SAT collision
+
+    GM_API bool gm_aabb_point_colliding(GM_Vec3 point, GM_AABB aabb);
+    GM_API bool gm_aabb_aabb_colliding(GM_AABB a, GM_AABB b);
+#endif
+
+#if defined(GM_INCLUDE_SHAPES)
+    typedef struct GM_Rectangle2D {
+        GM_Vec2 position;
+        u32 width;
+        u32 height;
+    } GM_Rectangle2D;
+
+    typedef struct GM_Rectangle3D {
+        GM_Vec3 position;
+        u32 length;
+        u32 width;
+        u32 height;
+    } GM_Rectangle3D;
+
+    typedef struct GM_Circle2D {
+        GM_Vec2 position;
+        u32 radius;
+    } GM_Circle2D;
+
+    typedef struct GM_Circle3D {
+        GM_Vec3 position;
+        u32 radius;
+    } GM_Circle3D;
+
+    GM_Rectangle2D gm_rectangle2d_create(s32 x, s32 y, u32 width, u32 height) {
+        GM_Rectangle2D ret = {0};
+        ret.position.x = x;
+        ret.position.y = y;
+        ret.width = width;
+        ret.height = height;
+
+        return ret;
+    }
+
+    GM_Rectangle3D gm_rectangle3d_create(s32 x, s32 y, s32 z, u32 length, u32 width, u32 height) {
+        GM_Rectangle3D ret = {0};
+        ret.position.x = x;
+        ret.position.y = y;
+        ret.position.z = z;
+        ret.length = length;
+        ret.width = width;
+        ret.height = height;
+
+        return ret;
+    }
+
+    bool gm_rectangle_check_aabb_collision(GM_Rectangle2D rect1, GM_Rectangle2D rect2) {
+        if (rect1.position.x < rect2.position.x + rect2.width && rect1.position.x + rect1.width > rect2.position.x &&
+            rect1.position.y < rect2.position.y + rect2.height && rect1.position.y + rect1.height > rect2.position.y) {
+            return true;
+        }
+
+        return false;
+    }
+
+    GM_Rectangle2D gm_rectangle_get_aabb_collision(GM_Rectangle2D rect1, GM_Rectangle2D rect2) {
+        GM_Rectangle2D ret = {0};
+        (void)rect1;
+        (void)rect2;
+        
+        return ret;
+    }
+
+    GM_Circle2D gm_circle2d_create(s32 x, s32 y, u32 radius) {
+        GM_Circle2D ret = {0};
+        ret.position.x = x;
+        ret.position.y = y;
+        ret.radius = radius;
+
+        return ret;
+    }
+
+    GM_Circle3D gm_circle3d_create(s32 x, s32 y, s32 z, u32 radius) {
+        GM_Circle3D ret = {0};
+        ret.position.x = x;
+        ret.position.y = y;
+        ret.position.z = z;
+        ret.radius = radius;
+
+        return ret;
+    }
+#endif
+
 //
 // ===================================================== CKIT_IMPL =====================================================
 //
 
-#if defined(CKG_IMPL_VECTOR) 
+#if defined(GM_IMPL_COLOR)
+    u32 gm_rgba_to_u32(GM_RGBA color) {
+        u32 alpha = ((int)(color.rgba.a) << 24);
+        u32 red = ((int)(color.rgba.r) << 16);
+        u32 green = ((int)(color.rgba.g) << 8);
+        u32 blue = ((int)(color.rgba.b) << 0);
+                        
+        u32 rgba = alpha|red|green|blue;
+
+        return rgba;
+    }
+
+    GM_RGBA gm_rgba_from_u32(u32 color) {
+        GM_RGBA ret = {0};
+
+        ret.rgba.b = ((color >> 0) & 0xFF); 
+        ret.rgba.g = ((color >> 8) & 0xFF); 
+        ret.rgba.r = ((color >> 16) & 0xFF); 
+        ret.rgba.a = ((color >> 24) & 0xFF); 
+                    
+        return ret;
+    }
+
+    GM_RGBA gm_rgba_multiply(GM_RGBA color, float value) {
+        GM_RGBA ret = {0};
+        ret.rgba.r = color.rgba.r * value;
+        ret.rgba.g = color.rgba.g * value;
+        ret.rgba.b = color.rgba.b * value;
+        ret.rgba.a = color.rgba.a * value;
+
+        return ret;
+    }
+
+    u32 gm_rgba_u32_multiply(u32 color, float value) {
+        u8 b = (u8)(((color >> 0) & 0xFF)  * value);
+        u8 g = (u8)(((color >> 8) & 0xFF)  * value);
+        u8 r = (u8)(((color >> 16) & 0xFF) * value);
+        u8 a = (u8)(((color >> 24) & 0xFF) * value);
+
+        color = r|g|b|a;
+
+        return color;
+    }
+
+    GM_RGBA gm_rgba_alpha_blend(GM_RGBA front_color, GM_RGBA back_color) {
+        GM_RGBA ret = {0};
+
+        float normalized_back_alpha = (float)back_color.a / 255.0f;
+
+        ret.rgba.a = back_color.rgba.a;
+        ret.rgba.r = (back_color.rgba.r * normalized_back_alpha) + ((u32)front_color.rgba.r * (1 - normalized_back_alpha));
+        ret.rgba.g = (back_color.rgba.g * normalized_back_alpha) + ((u32)front_color.rgba.g * (1 - normalized_back_alpha));
+        ret.rgba.b = (back_color.rgba.b * normalized_back_alpha) + ((u32)front_color.rgba.b * (1 - normalized_back_alpha));
+
+        return ret;
+    }
+
+    GM_RGBA gm_rgba_u32_alpha_blend(u32 front_color_u32, u32 back_color_u32) {
+        GM_RGBA front_color = {0};
+        front_color.rgba.a = (u8)(((u32)front_color_u32 >> 24) & 0xFF);
+        front_color.rgba.r = (u8)(((u32)front_color_u32 >> 16) & 0xFF);
+        front_color.rgba.g = (u8)(((u32)front_color_u32 >> 8) & 0xFF);
+        front_color.rgba.b = (u8)(((u32)front_color_u32 >> 0) & 0xFF);
+
+        GM_RGBA back_color = {0};
+        back_color.rgba.a = (u8)(((u32)back_color_u32 >> 24) & 0xFF);
+        back_color.rgba.r = (u8)(((u32)back_color_u32 >> 16) & 0xFF);
+        back_color.rgba.g = (u8)(((u32)back_color_u32 >> 8) & 0xFF);
+        back_color.rgba.b = (u8)(((u32)back_color_u32 >> 0) & 0xFF);
+                    
+        return gm_rgba_alpha_blend(front_color, back_color);
+    }
+#endif
+
+#if defined(GM_IMPL_VECTOR) 
     float gm_v2_dot(GM_Vec2 A, GM_Vec2 B) {
         return (A.x * B.x) + (A.y * B.y);
     }
@@ -561,7 +645,187 @@
     }
 #endif
 
-#if defined(CKG_IMPL_INTERPOLATION) 
+#if defined(GM_IMPL_MATRIX)
+    GM_Matix4 mat4_identity() {
+        GM_Matix4 ret = {
+            .data = {
+                1, 0, 0, 0,
+                0, 1, 0, 0,
+                0, 0, 1, 0,
+                0, 0, 0, 1
+            }
+        };
+        
+        return ret;
+    }
+
+    GM_Matix4 mat4_translation(GM_Vec3 t) {
+        GM_Matix4 ret = {
+            .data = {
+                1, 0, 0, t.x,
+                0, 1, 0, t.y,
+                0, 0, 1, t.z,
+                0, 0, 0, 1
+            }
+        };
+        
+        return ret;
+    }
+
+    GM_Matix4 mat4_scale(GM_Vec3 s) {
+        GM_Matix4 ret = {
+            .data = {
+                s.x, 0, 0, 0,
+                0, s.y, 0, 0,
+                0, 0, s.z, 0,
+                0, 0, 0, 1
+            }
+        };
+        
+        return ret;
+    }
+
+    GM_Matix4 gm_mat4_rotation_x(float degrees) {
+        float radians = DEGREES_TO_RAD(degrees);
+        float c = cosf(radians);
+        float s = sinf(radians);
+        
+        GM_Matix4 ret = {
+            .data = {
+                1, 0,  0, 0,
+                0, c, -s, 0,
+                0, s,  c, 0,
+                0, 0,  0, 1
+            }
+        };
+        
+        return ret;
+    }
+
+    GM_Matix4 gm_mat4_rotation_y(float degrees) {
+        float radians = DEGREES_TO_RAD(degrees);
+        float c = cosf(radians);
+        float s = sinf(radians);
+        
+        GM_Matix4 ret = {
+            .data = {
+                c, 0, -s, 0,
+                0, 1,  0, 0,
+                s, 0,  c, 0,
+                0, 0,  0, 1
+            }
+        };
+        
+        return ret;
+    }
+
+    GM_Matix4 gm_mat4_rotation_z(float degrees) {
+        float radians = DEGREES_TO_RAD(degrees);
+        float c = cosf(radians);
+        float s = sinf(radians);
+        
+        GM_Matix4 ret = {
+            .data = {
+                c, -s, 0, 0,
+                s, c,  0, 0,
+                0, 0,  1, 0,
+                0, 0,  0, 1
+            }
+        };
+        
+        return ret;
+    }
+
+    // Z is negative going away from the viewer here so Right-handed coordinate system OpenGL
+    GM_Matix4 gm_mat4_perspective(float fov_degrees, float aspect, float near_plane, float far_plane) {
+        float fov_radians = DEGREES_TO_RAD(fov_degrees);
+        float p = 1 / (tan(fov_radians) / 2.0f);
+
+        const range = near_plane - far_plane;
+        const A = (-far_plane - near_plane) / range; 
+        const B = (2 * far_plane * near_plane) / range; 
+
+        GM_Matix4 ret = {
+            .data = {
+                p / aspect, 0, 0, 0,
+                0, p, 0, 0,
+                0, 0, A, B,
+                0, 0, 1, 0
+            }
+        };
+        
+        return ret;
+    }
+
+    GM_Matix4 gm_mat4_mult(GM_Matix4 A, GM_Matix4 B) {
+        GM_Matix4 ret = {0};
+        
+        for (int i = 0; i < 16; i++) {
+            const row = i / 4;
+            const column = i % 4;
+
+            const GM_Vec4 a_row = A.v[i / 4];
+            const GM_Vec4 b_column = {
+                B.data[column + (0 * 4)], 
+                B.data[column + (1 * 4)], 
+                B.data[column + (2 * 4)], 
+                B.data[column + (3 * 4)]
+            };
+
+            ret.data[i] = gm_v4_dot_product(a_row, b_column);
+        }
+
+        return ret;
+    }
+
+    GM_Matix4 gm_mat4_scale_xyz(float x, float y, float z);
+    GM_Matix4 gm_mat4_orthographic(float left, float right, float bottom, float top, float near, float far);
+    GM_Matix4 gm_mat4_look_at(GM_Vec3 eye, GM_Vec3 center, GM_Vec3 up);
+
+    GM_Matix4 gm_mat4_inverse(GM_Matix4 m, bool* success);
+    GM_Matix4 gm_mat4_transpose(GM_Matix4 m);
+#endif
+
+#if defined(GM_IMPL_QUATERNION)
+    GM_Quaternion gm_quat_create(GM_Vec3 axis, float theta) {
+        GM_Quaternion ret = {0};
+
+        float radians = DEGREES_TO_RAD(theta);
+        ret.w = cos(radians / 2);
+        ret.v = gm_v3_scale(axis, sin(radians / 2));
+
+        return ret;
+    }
+
+    GM_Quaternion gm_quat_inverse(GM_Quaternion quat) {
+        GM_Quaternion ret = {0};
+
+        ret.w = quat.w;
+        ret.v = gm_v3_scale(quat.v, -1);
+
+        return ret;
+    }
+
+    GM_Quaternion gm_quat_mult(GM_Quaternion q1, GM_Quaternion q2) {
+        GM_Quaternion ret;
+
+        ret.w = (q1.w * q2.w) + gm_v3_dot(q1.v, q2.v);
+        ret.v = gm_v3_scale(q1.v, q2.w) + gm_v3_scale(q2.v, q1.w) + gm_v3_cross(q1.v, q2.v);
+
+        return ret;
+    }
+
+    // Rotate a vector with this quaternion.
+    GM_Vec3 gm_quat_vector_mult(GM_Quaternion quat, GM_Vec3 vec) {
+        GM_Quaternion p;
+        p.w = 0;
+        p.v = vec;
+
+        return gm_quat_mult(gm_quat_mult(quat, p),  gm_quat_inverse(quat)).v;
+    }
+#endif
+
+#if defined(GM_IMPL_INTERPOLATION) 
     float gm_lerp(float a, float b, float t) {
         return a + ((b - a) * t);
     }
@@ -743,41 +1007,33 @@
     }
 #endif
 
-#if defined(CKG_IMPL_QUATERNION)
-    GM_Quaternion gm_quat_create(GM_Vec3 axis, float theta) {
-        GM_Quaternion ret = {0};
+#if defined(GM_IMPL_COLLISION)
+    typedef struct GM_AABB {
+        GM_Vec3 min;
+        GM_Vec3 max;
+    } GM_AABB;
 
-        float radians = DEGREES_TO_RAD(theta);
-        ret.w = cos(radians / 2);
-        ret.v = gm_v3_scale(axis, sin(radians / 2));
+    // SAT collision
 
-        return ret;
+    bool gm_aabb_point_colliding(GM_Vec3 point, GM_AABB aabb) {
+        return (
+            point.x >= aabb.min.x &&
+            point.x <= aabb.max.x &&
+            point.y >= aabb.min.y &&
+            point.y <= aabb.max.y &&
+            point.z >= aabb.min.z &&
+            point.z <= aabb.max.z
+        );
     }
 
-    GM_Quaternion gm_quat_inverse(GM_Quaternion quat) {
-        GM_Quaternion ret = {0};
-
-        ret.w = quat.w;
-        ret.v = gm_v3_scale(quat.v, -1);
-
-        return ret;
-    }
-
-    GM_Quaternion gm_quat_mult(GM_Quaternion q1, GM_Quaternion q2) {
-        GM_Quaternion ret;
-
-        ret.w = (q1.w * q2.w) + gm_v3_dot(q1.v, q2.v);
-        ret.v = gm_v3_scale(q1.v, q2.w) + gm_v3_scale(q2.v, q1.w) + gm_v3_cross(q1.v, q2.v);
-
-        return ret;
-    }
-
-    // Rotate a vector with this quaternion.
-    GM_Vec3 gm_quat_vector_mult(GM_Quaternion quat, GM_Vec3 vec) {
-        GM_Quaternion p;
-        p.w = 0;
-        p.v = vec;
-
-        return gm_quat_mult(gm_quat_mult(quat, p),  gm_quat_inverse(quat)).v;
+    bool gm_aabb_aabb_colliding(GM_AABB a, GM_AABB b) {
+        return (
+            a.min.x <= b.max.x &&
+            a.max.x >= b.min.x &&
+            a.min.y <= b.max.y &&
+            a.max.y >= b.min.y &&
+            a.min.z <= b.max.z &&
+            a.max.z >= b.min.z
+        );
     }
 #endif

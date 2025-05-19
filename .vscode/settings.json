@@ -2,6 +2,7 @@
     "files.associations": {
         "*.mysql": "sql",
         "gm.h": "c",
-        "math.h": "c"
+        "math.h": "c",
+        "stdbool.h": "c"
     }
 }
