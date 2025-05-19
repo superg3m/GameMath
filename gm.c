@@ -1,45 +1,10 @@
 #define GM_IMPL
 #include "gm.h"
 
-float gm_remap(float x, float s_min, float s_max, float e_min, float e_max) {
-    x = CLAMP(x, s_min, s_max);
-    float s_ratio = (x - s_min) / (s_max - s_min);
-    return e_min + (s_ratio * (e_max - e_min));
-}
-
-float gm_move_toward(float current, float target, float delta) {
-    float diff = target - current;
-
-    if (fabsf(diff) <= delta) {
-        return target;
-    }
-
-    return current + (diff > 0 ? delta : -delta);
-}
 
 
-float gm_v3_dot_product(GM_Vec3 A, GM_Vec3 B) {
-    return (A.x * B.x) + (A.y * B.y) + (A.z * B.z);
-}
 
-float gm_v4_dot_product(GM_Vec4 A, GM_Vec4 B) {
-    return (A.x * B.x) + (A.y * B.y) + (A.z * B.z) + (A.w * B.w);
-}
 
-float gm_v4_magnitude(GM_Vec4 A) {
-    return sqrt((A.x*A.x) + (A.x*A.x) + (A.z*A.z));
-}
-
-GM_Vec4 gm_v4_normalize(GM_Vec4 A) {
-    GM_Vec4 ret;
-    const float magnitude = gm_v4_magnitude(A);
-    ret.x = A.x / magnitude;
-    ret.y = A.y / magnitude;
-    ret.z = A.z / magnitude;
-    ret.w = A.w / magnitude;
-
-    return ret;
-}
 
 GM_Matix4 mat4_identity() {
     GM_Matix4 ret = {
@@ -195,154 +160,23 @@ bool gm_aabb_aabb_colliding(GM_AABB a, GM_AABB b) {
   );
 }
 
-float gm_ease_in_sine(float t) {
-  return 1 - cos((t * PI) / 2);
+CKIT_Vector2 ckit_vector2_spline_point(CKIT_Vector2* spline_points, u32 spline_points_count, double t) {
+    if (spline_points_count == 1) {
+        return spline_points[0];
+    }
+
+    CKIT_Vector2* points_vector = NULLPTR;
+    for (u32 i = 0; i < spline_points_count - 1; i++) { // get lerp points
+        CKIT_Vector2 lerp_point = ckit_vector2_lerp(spline_points[i + 1], spline_points[i], t);
+        ckit_vector_push(points_vector, lerp_point);
+    }
+
+    CKIT_Vector2 ret = ckit_vector2_spline_point(points_vector, ckit_vector_count(points_vector), t); // feed back points
+    ckit_vector_free(points_vector);
+    return ret;
 }
 
-float gm_ease_out_sine(float t) {
-  return sin((t * PI) / 2);
-}
 
-float gm_ease_in_out_sine(float t) {
-  return -(cos(PI * t) - 1) / 2;
-}
-
-float gm_ease_in_quad(float t) {
-  return t * t;
-}
-
-float gm_ease_out_quad(float t) {
-  return 1 - (1 - t) * (1 - t);
-}
-
-float gm_ease_in_cubic(float t) {
-  return t * t * t;
-}
-
-float gm_ease_out_cubic(float t) {
-  return 1 - pow(1 - t, 3);
-}
-
-float gm_ease_in_out_cubic(float t) {
-  return t < 0.5 ? 4 * t * t * t : 1 - pow(-2 * t + 2, 3) / 2;
-}
-
-float gm_ease_in_quart(float t) {
-  return t * t * t * t;
-}
-
-float gm_ease_out_quart(float t) {
-  return 1 - pow(1 - t, 4);
-}
-
-float gm_ease_in_out_quart(float t) {
-  return t < 0.5 ? 8 * t * t * t * t : 1 - pow(-2 * t + 2, 4) / 2;
-}
-
-float gm_ease_in_quint(float t) {
-  return t * t * t * t * t;
-}
-
-float gm_ease_out_quint(float t) {
-  return 1 + pow(t - 1, 5);
-}
-
-float gm_ease_in_out_quint(float t) {
-  return t < 0.5 ? 16 * t * t * t * t * t : 1 - pow(-2 * t + 2, 5) / 2;
-}
-
-float gm_ease_in_expo(float t) {
-  return t == 0 ? 0 : pow(2, 10 * t - 10);
-}
-
-float gm_ease_out_expo(float t) {
-  return t == 1 ? 1 : 1 - pow(2, -10 * t);
-}
-
-float gm_ease_in_out_expo(float t) {
-  if (t == 0) return 0;
-  if (t == 1) return 1;
-  if (t < 0.5) return pow(2, 20 * t - 10) / 2;
-  return (2 - pow(2, -20 * t + 10)) / 2;
-}
-
-float gm_ease_in_circ(float t) {
-  return 1 - sqrt(1 - (t * t));
-}
-
-float gm_ease_out_circ(float t) {
-  return sqrt(1 - pow(t - 1, 2));
-}
-
-float gm_ease_in_out_circ(float t) {
-  if (t < 0.5) return (1 - sqrt(1 - pow(2 * t, 2))) / 2;
-  return (sqrt(1 - pow(-2 * t + 2, 2)) + 1) / 2;
-}
-
-float gm_ease_in_back(float t) {
-  float c1 = 1.70158;
-  float c3 = c1 + 1;
-  return c3 * t * t * t - c1 * t * t;
-}
-
-float gm_ease_out_back(float t) {
-  float c1 = 1.70158;
-  float c3 = c1 + 1;
-  return 1 + c3 * pow(t - 1, 3) + c1 * pow(t - 1, 2);
-}
-
-float gm_ease_in_out_back(float t) {
-  float c1 = 1.70158;
-  float c2 = c1 * 1.525;
-  if (t < 0.5) return (pow(2 * t, 2) * ((c2 + 1) * 2 * t - c2)) / 2;
-  return (pow(2 * t - 2, 2) * ((c2 + 1) * (t * 2 - 2) + c2) + 2) / 2;
-}
-
-float gm_ease_in_elastic(float t) {
-  float c4 = (2 * PI) / 3;
-  if (t == 0) return 0;
-  if (t == 1) return 1;
-  return -pow(2, 10 * t - 10) * sin((t * 10 - 10.75) * c4);
-}
-
-float gm_ease_out_elastic(float t) {
-  float c4 = (2 * PI) / 3;
-  if (t == 0) return 0;
-  if (t == 1) return 1;
-  return pow(2, -10 * t) * sin((t * 10 - 0.75) * c4) + 1;
-}
-
-float gm_ease_in_out_elastic(float t) {
-  float c5 = (2 * PI) / 4.5;
-  if (t == 0) return 0;
-  if (t == 1) return 1;
-  if (t < 0.5) return -(pow(2, 20 * t - 10) * sin((20 * t - 11.125) * c5)) / 2;
-  return (pow(2, -20 * t + 10) * sin((20 * t - 11.125) * c5)) / 2 + 1;
-}
-
-float gm_ease_in_bounce(float t) {
-  return 1 - gm_ease_out_bounce(1 - t);
-}
-
-float gm_ease_out_bounce(float t) {
-  float n1 = 7.5625;
-  float d1 = 2.75;
-  if (t < 1 / d1) {
-    return n1 * t * t;
-  } else if (t < 2 / d1) {
-    return n1 * (t -= 1.5 / d1) * t + 0.75;
-  } else if (t < 2.5 / d1) {
-    return n1 * (t -= 2.25 / d1) * t + 0.9375;
-  } else {
-    return n1 * (t -= 2.625 / d1) * t + 0.984375;
-  }
-}
-
-float gm_ease_in_out_bounce(float t) {
-  return t < 0.5
-    ? (1 - gm_ease_out_bounce(1 - 2 * t)) / 2
-    : (1 + gm_ease_out_bounce(2 * t - 1)) / 2;
-}
 
 u32 gm_rgba_to_u32(GM_RGBA color) {
 	u32 alpha = ((int)(color.rgba.a) << 24);
