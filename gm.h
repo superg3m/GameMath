@@ -279,7 +279,7 @@
     } GM_Matrix4;
 
     GM_API GM_Matrix4 gm_mat4_identity();
-    GM_API GM_Matrix4 gm_mat4_translate(GM_Matrix4* mat, GM_Vec3 t);
+    GM_API GM_Matrix4 gm_mat4_translate(GM_Matrix4 mat, GM_Vec3 t);
     GM_API GM_Matrix4 gm_mat4_scale(GM_Vec3 s);
     GM_API GM_Matrix4 gm_mat4_scale_xyz(float x, float y, float z);
 
@@ -624,7 +624,7 @@
 #endif
 
 #if defined(GM_IMPL_MATRIX)
-    GM_Matrix4 mat4_identity() {
+    GM_Matrix4 gm_mat4_identity() {
         GM_Matrix4 ret = {
             .data = {
                 1, 0, 0, 0,
@@ -637,7 +637,7 @@
         return ret;
     }
 
-    GM_Matrix4 mat4_translation(GM_Vec3 t) {
+    GM_Matrix4 gm_mat4_translate(GM_Vec3 t) {
         GM_Matrix4 ret = {
             .data = {
                 1, 0, 0, t.x,
@@ -650,7 +650,7 @@
         return ret;
     }
 
-    GM_Matrix4 mat4_scale(GM_Vec3 s) {
+    GM_Matrix4 gm_mat4_scale(GM_Vec3 s) {
         GM_Matrix4 ret = {
             .data = {
                 s.x, 0, 0, 0,
