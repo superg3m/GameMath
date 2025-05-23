@@ -280,7 +280,8 @@
 
     GM_API GM_Matrix4 gm_mat4_identity();
     GM_API GM_Matrix4 gm_mat4_translate(GM_Matrix4 mat, GM_Vec3 t);
-    GM_API GM_Matrix4 gm_mat4_scale(GM_Vec3 s);
+    GM_API GM_Matrix4 gm_mat4_translate_xyz(GM_Matrix4 mat, float x, float y, float z);
+    GM_API GM_Matrix4 gm_mat4_scale(GM_Matrix4 mat, GM_Vec3 s);
     GM_API GM_Matrix4 gm_mat4_scale_xyz(float x, float y, float z);
 
     GM_API GM_Matrix4 gm_mat4_rotation_x(float degrees);
@@ -637,30 +638,28 @@
         return ret;
     }
 
-    GM_Matrix4 gm_mat4_translate(GM_Vec3 t) {
-        GM_Matrix4 ret = {
-            .data = {
-                1, 0, 0, t.x,
-                0, 1, 0, t.y,
-                0, 0, 1, t.z,
-                0, 0, 0, 1
-            }
-        };
+    GM_Matrix4 gm_mat4_translate(GM_Matrix4 mat, GM_Vec3 t) {
+        mat.data[3]  += t.x;
+        mat.data[7]  += t.y;
+        mat.data[11] += t.z;
         
-        return ret;
+        return mat;
     }
 
-    GM_Matrix4 gm_mat4_scale(GM_Vec3 s) {
-        GM_Matrix4 ret = {
-            .data = {
-                s.x, 0, 0, 0,
-                0, s.y, 0, 0,
-                0, 0, s.z, 0,
-                0, 0, 0, 1
-            }
-        };
+    GM_Matrix4 gm_mat4_translate_xyz(GM_Matrix4 mat, float x, float y, float z) {
+        mat.data[3]  += x;
+        mat.data[7]  += y;
+        mat.data[11] += z;
         
-        return ret;
+        return mat;
+    }
+
+    GM_Matrix4 gm_mat4_scale(GM_Matrix4 mat, GM_Vec3 s) {
+        mat.data[0]  *= s.x;
+        mat.data[5]  *= s.y;
+        mat.data[10] *= s.z;
+        
+        return mat;
     }
 
     GM_Matrix4 gm_mat4_rotation_x(float degrees) {
