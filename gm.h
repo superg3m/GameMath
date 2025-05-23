@@ -284,9 +284,8 @@
     GM_API GM_Matrix4 gm_mat4_scale(GM_Matrix4 mat, GM_Vec3 s);
     GM_API GM_Matrix4 gm_mat4_scale_xyz(float x, float y, float z);
 
-    GM_API GM_Matrix4 gm_mat4_rotation_x(float degrees);
-    GM_API GM_Matrix4 gm_mat4_rotation_y(float degress);
-    GM_API GM_Matrix4 gm_mat4_rotation_z(float degress);
+    GM_API GM_Matrix4 gm_mat4_rotate(GM_Matrix4 mat, float degrees, GM_Vec3 axis);
+    GM_API GM_Matrix4 gm_mat4_rotate_xyz(GM_Matrix4 mat, float degrees, float x, float y, float z);
 
     GM_API GM_Matrix4 gm_mat4_perspective(float fov_degrees, float aspect, float near_plane, float far_plane);
     GM_API GM_Matrix4 gm_mat4_orthographic(float left, float right, float bottom, float top, float near_plane, float far_plane);
@@ -662,55 +661,52 @@
         return mat;
     }
 
-    GM_Matrix4 gm_mat4_rotation_x(float degrees) {
-        float radians = DEGREES_TO_RAD(degrees);
-        float c = cosf(radians);
-        float s = sinf(radians);
-        
-        GM_Matrix4 ret = {
+    GM_Matrix4 gm_mat4_rotate(GM_Matrix4 mat, float degrees, GM_Vec3 axis) {
+        float len = sqrtf(axis.x*axis.x + axis.y*axis.y + axis.z*axis.z);
+        float x = axis.x / len;
+        float y = axis.y / len;
+        float z = axis.z / len;
+
+        float rad = DEGREES_TO_RAD(degrees);
+
+        float c = cosf(rad);
+        float s = sinf(rad);
+        float t = 1.0f - c;
+
+        GM_Matrix4 rot = {
             .data = {
-                1, 0,  0, 0,
-                0, c, -s, 0,
-                0, s,  c, 0,
-                0, 0,  0, 1
+                t*x*x + c,     t*x*y - s*z,   t*x*z + s*y,   0.0f,
+                t*x*y + s*z,   t*y*y + c,     t*y*z - s*x,   0.0f,
+                t*x*z - s*y,   t*y*z + s*x,   t*z*z + c,     0.0f,
+                0.0f,          0.0f,          0.0f,          1.0f
             }
         };
-        
-        return ret;
+
+        return gm_mat4_mult(mat, rot);
     }
 
-    GM_Matrix4 gm_mat4_rotation_y(float degrees) {
-        float radians = DEGREES_TO_RAD(degrees);
-        float c = cosf(radians);
-        float s = sinf(radians);
-        
-        GM_Matrix4 ret = {
-            .data = {
-                c, 0, -s, 0,
-                0, 1,  0, 0,
-                s, 0,  c, 0,
-                0, 0,  0, 1
-            }
-        };
-        
-        return ret;
-    }
+    GM_Matrix4 gm_mat4_rotate_xyz(GM_Matrix4 mat, float degrees, float x1, float y1, float z1) {
+        float len = sqrtf(x1 * x1 +  y1 * y1 +  z1 * z1);
+        float x = x1 / len;
+        float y = y1 / len;
+        float z = z1 / len;
 
-    GM_Matrix4 gm_mat4_rotation_z(float degrees) {
-        float radians = DEGREES_TO_RAD(degrees);
-        float c = cosf(radians);
-        float s = sinf(radians);
-        
-        GM_Matrix4 ret = {
+        float rad = DEGREES_TO_RAD(degrees);
+
+        float c = cosf(rad);
+        float s = sinf(rad);
+        float t = 1.0f - c;
+
+        GM_Matrix4 rot = {
             .data = {
-                c, -s, 0, 0,
-                s, c,  0, 0,
-                0, 0,  1, 0,
-                0, 0,  0, 1
+                t*x*x + c,     t*x*y - s*z,   t*x*z + s*y,   0.0f,
+                t*x*y + s*z,   t*y*y + c,     t*y*z - s*x,   0.0f,
+                t*x*z - s*y,   t*y*z + s*x,   t*z*z + c,     0.0f,
+                0.0f,          0.0f,          0.0f,          1.0f
             }
         };
-        
-        return ret;
+
+        return gm_mat4_mult(mat, rot);
     }
 
     // Z is negative going away from the viewer here so Right-handed coordinate system OpenGL
