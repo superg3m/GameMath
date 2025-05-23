@@ -287,8 +287,8 @@
     GM_API GM_Matix4 gm_mat4_rotation_y(float degress);
     GM_API GM_Matix4 gm_mat4_rotation_z(float degress);
 
-    GM_API GM_Matix4 gm_mat4_perspective(float fov_degrees, float aspect, float near, float far);
-    GM_API GM_Matix4 gm_mat4_orthographic(float left, float right, float bottom, float top, float near, float far);
+    GM_API GM_Matix4 gm_mat4_perspective(float fov_degrees, float aspect, float near_plane, float far_plane);
+    GM_API GM_Matix4 gm_mat4_orthographic(float left, float right, float bottom, float top, float near_plane, float far_plane);
     GM_API GM_Matix4 gm_mat4_look_at(GM_Vec3 eye, GM_Vec3 center, GM_Vec3 up);
 
     GM_API GM_Matix4 gm_mat4_mult(GM_Matix4 A, GM_Matix4 B);
