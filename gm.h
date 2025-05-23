@@ -271,29 +271,29 @@
 #endif
 
 #if defined(GM_INCLUDE_MATRIX)
-    typedef struct GM_Matix4 {
+    typedef struct GM_Matrix4 {
         union {
             float data[16]; 
             GM_Vec4 v[4];
         };
-    } GM_Matix4;
+    } GM_Matrix4;
 
-    GM_API GM_Matix4 gm_mat4_identity();
-    GM_API GM_Matix4 gm_mat4_translation(GM_Vec3 t);
-    GM_API GM_Matix4 gm_mat4_scale(GM_Vec3 s);
-    GM_API GM_Matix4 gm_mat4_scale_xyz(float x, float y, float z);
+    GM_API GM_Matrix4 gm_mat4_identity();
+    GM_API GM_Matrix4 gm_mat4_translate(GM_Matrix4* mat, GM_Vec3 t);
+    GM_API GM_Matrix4 gm_mat4_scale(GM_Vec3 s);
+    GM_API GM_Matrix4 gm_mat4_scale_xyz(float x, float y, float z);
 
-    GM_API GM_Matix4 gm_mat4_rotation_x(float degrees);
-    GM_API GM_Matix4 gm_mat4_rotation_y(float degress);
-    GM_API GM_Matix4 gm_mat4_rotation_z(float degress);
+    GM_API GM_Matrix4 gm_mat4_rotation_x(float degrees);
+    GM_API GM_Matrix4 gm_mat4_rotation_y(float degress);
+    GM_API GM_Matrix4 gm_mat4_rotation_z(float degress);
 
-    GM_API GM_Matix4 gm_mat4_perspective(float fov_degrees, float aspect, float near_plane, float far_plane);
-    GM_API GM_Matix4 gm_mat4_orthographic(float left, float right, float bottom, float top, float near_plane, float far_plane);
-    GM_API GM_Matix4 gm_mat4_look_at(GM_Vec3 eye, GM_Vec3 center, GM_Vec3 up);
+    GM_API GM_Matrix4 gm_mat4_perspective(float fov_degrees, float aspect, float near_plane, float far_plane);
+    GM_API GM_Matrix4 gm_mat4_orthographic(float left, float right, float bottom, float top, float near_plane, float far_plane);
+    GM_API GM_Matrix4 gm_mat4_look_at(GM_Vec3 eye, GM_Vec3 center, GM_Vec3 up);
 
-    GM_API GM_Matix4 gm_mat4_mult(GM_Matix4 A, GM_Matix4 B);
-    GM_API GM_Matix4 gm_mat4_inverse(GM_Matix4 m, bool* success);
-    GM_API GM_Matix4 gm_mat4_transpose(GM_Matix4 m);
+    GM_API GM_Matrix4 gm_mat4_mult(GM_Matrix4 A, GM_Matrix4 B);
+    GM_API GM_Matrix4 gm_mat4_inverse(GM_Matrix4 m, bool* success);
+    GM_API GM_Matrix4 gm_mat4_transpose(GM_Matrix4 m);
 #endif
 
 #if defined(GM_INCLUDE_QUATERNION)
@@ -624,8 +624,8 @@
 #endif
 
 #if defined(GM_IMPL_MATRIX)
-    GM_Matix4 mat4_identity() {
-        GM_Matix4 ret = {
+    GM_Matrix4 mat4_identity() {
+        GM_Matrix4 ret = {
             .data = {
                 1, 0, 0, 0,
                 0, 1, 0, 0,
@@ -637,8 +637,8 @@
         return ret;
     }
 
-    GM_Matix4 mat4_translation(GM_Vec3 t) {
-        GM_Matix4 ret = {
+    GM_Matrix4 mat4_translation(GM_Vec3 t) {
+        GM_Matrix4 ret = {
             .data = {
                 1, 0, 0, t.x,
                 0, 1, 0, t.y,
@@ -650,8 +650,8 @@
         return ret;
     }
 
-    GM_Matix4 mat4_scale(GM_Vec3 s) {
-        GM_Matix4 ret = {
+    GM_Matrix4 mat4_scale(GM_Vec3 s) {
+        GM_Matrix4 ret = {
             .data = {
                 s.x, 0, 0, 0,
                 0, s.y, 0, 0,
@@ -663,12 +663,12 @@
         return ret;
     }
 
-    GM_Matix4 gm_mat4_rotation_x(float degrees) {
+    GM_Matrix4 gm_mat4_rotation_x(float degrees) {
         float radians = DEGREES_TO_RAD(degrees);
         float c = cosf(radians);
         float s = sinf(radians);
         
-        GM_Matix4 ret = {
+        GM_Matrix4 ret = {
             .data = {
                 1, 0,  0, 0,
                 0, c, -s, 0,
@@ -680,12 +680,12 @@
         return ret;
     }
 
-    GM_Matix4 gm_mat4_rotation_y(float degrees) {
+    GM_Matrix4 gm_mat4_rotation_y(float degrees) {
         float radians = DEGREES_TO_RAD(degrees);
         float c = cosf(radians);
         float s = sinf(radians);
         
-        GM_Matix4 ret = {
+        GM_Matrix4 ret = {
             .data = {
                 c, 0, -s, 0,
                 0, 1,  0, 0,
@@ -697,12 +697,12 @@
         return ret;
     }
 
-    GM_Matix4 gm_mat4_rotation_z(float degrees) {
+    GM_Matrix4 gm_mat4_rotation_z(float degrees) {
         float radians = DEGREES_TO_RAD(degrees);
         float c = cosf(radians);
         float s = sinf(radians);
         
-        GM_Matix4 ret = {
+        GM_Matrix4 ret = {
             .data = {
                 c, -s, 0, 0,
                 s, c,  0, 0,
@@ -715,7 +715,7 @@
     }
 
     // Z is negative going away from the viewer here so Right-handed coordinate system OpenGL
-    GM_Matix4 gm_mat4_perspective(float fov_degrees, float aspect, float near_plane, float far_plane) {
+    GM_Matrix4 gm_mat4_perspective(float fov_degrees, float aspect, float near_plane, float far_plane) {
         float fov_radians = DEGREES_TO_RAD(fov_degrees);
         float p = 1 / (tanf(fov_radians) / 2.0f);
 
@@ -723,7 +723,7 @@
         const float A = (-far_plane - near_plane) / range; 
         const float B = (2 * far_plane * near_plane) / range; 
 
-        GM_Matix4 ret = {
+        GM_Matrix4 ret = {
             .data = {
                 p / aspect, 0, 0, 0,
                 0, p, 0, 0,
@@ -735,8 +735,8 @@
         return ret;
     }
 
-    GM_Matix4 gm_mat4_mult(GM_Matix4 A, GM_Matix4 B) {
-        GM_Matix4 ret = {0};
+    GM_Matrix4 gm_mat4_mult(GM_Matrix4 A, GM_Matrix4 B) {
+        GM_Matrix4 ret = {0};
         
         for (int i = 0; i < 16; i++) {
             const int column = i % 4;
@@ -755,12 +755,12 @@
         return ret;
     }
 
-    GM_Matix4 gm_mat4_scale_xyz(float x, float y, float z);
-    GM_Matix4 gm_mat4_orthographic(float left, float right, float bottom, float top, float near, float far);
-    GM_Matix4 gm_mat4_look_at(GM_Vec3 eye, GM_Vec3 center, GM_Vec3 up);
+    GM_Matrix4 gm_mat4_scale_xyz(float x, float y, float z);
+    GM_Matrix4 gm_mat4_orthographic(float left, float right, float bottom, float top, float near, float far);
+    GM_Matrix4 gm_mat4_look_at(GM_Vec3 eye, GM_Vec3 center, GM_Vec3 up);
 
-    GM_Matix4 gm_mat4_inverse(GM_Matix4 m, bool* success);
-    GM_Matix4 gm_mat4_transpose(GM_Matix4 m);
+    GM_Matrix4 gm_mat4_inverse(GM_Matrix4 m, bool* success);
+    GM_Matrix4 gm_mat4_transpose(GM_Matrix4 m);
 #endif
 
 #if defined(GM_IMPL_QUATERNION)
