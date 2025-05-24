@@ -638,27 +638,42 @@
     }
 
     GM_Matrix4 gm_mat4_translate(GM_Matrix4 mat, GM_Vec3 t) {
-        mat.data[3]  += t.x;
-        mat.data[7]  += t.y;
-        mat.data[11] += t.z;
-        
-        return mat;
+        GM_Matrix4 trans = {
+            .data = {
+                1.0f, 0.0f, 0.0f, t.x,
+                0.0f, 1.0f, 0.0f, t.y,
+                0.0f, 0.0f, 1.0f, t.z,
+                0.0f, 0.0f, 0.0f, 1.0f
+            }
+        };
+
+        return gm_mat4_mult(trans, mat);
     }
 
     GM_Matrix4 gm_mat4_translate_xyz(GM_Matrix4 mat, float x, float y, float z) {
-        mat.data[3]  += x;
-        mat.data[7]  += y;
-        mat.data[11] += z;
+        GM_Matrix4 trans = {
+            .data = {
+                1.0f, 0.0f, 0.0f, x,
+                0.0f, 1.0f, 0.0f, y,
+                0.0f, 0.0f, 1.0f, z,
+                0.0f, 0.0f, 0.0f, 1.0f
+            }
+        };
         
-        return mat;
+        return gm_mat4_mult(trans, mat);
     }
 
     GM_Matrix4 gm_mat4_scale(GM_Matrix4 mat, GM_Vec3 s) {
-        mat.data[0]  *= s.x;
-        mat.data[5]  *= s.y;
-        mat.data[10] *= s.z;
+        GM_Matrix4 scale = {
+            .data = {
+                s.x,  0.0f, 0.0f, 0.0f,
+                0.0f, s.y,  0.0f, 0.0f,
+                0.0f, 0.0f, s.z,  0.0f,
+                0.0f, 0.0f, 0.0f, 1.0f
+            }
+        };
         
-        return mat;
+        return gm_mat4_mult(scale, mat);
     }
 
     GM_Matrix4 gm_mat4_rotate(GM_Matrix4 mat, float degrees, GM_Vec3 axis) {
