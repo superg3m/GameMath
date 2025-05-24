@@ -638,7 +638,7 @@
     }
 
     GM_Matrix4 gm_mat4_translate(GM_Matrix4 mat, GM_Vec3 t) {
-        GM_Matrix4 trans = {
+        GM_Matrix4 translate = {
             .data = {
                 1.0f, 0.0f, 0.0f, t.x,
                 0.0f, 1.0f, 0.0f, t.y,
@@ -647,11 +647,11 @@
             }
         };
 
-        return gm_mat4_mult(trans, mat);
+        return gm_mat4_mult(translate, mat);
     }
 
     GM_Matrix4 gm_mat4_translate_xyz(GM_Matrix4 mat, float x, float y, float z) {
-        GM_Matrix4 trans = {
+        GM_Matrix4 translate = {
             .data = {
                 1.0f, 0.0f, 0.0f, x,
                 0.0f, 1.0f, 0.0f, y,
@@ -660,7 +660,7 @@
             }
         };
         
-        return gm_mat4_mult(mat, trans);
+        return gm_mat4_mult(translate, mat);
     }
 
     GM_Matrix4 gm_mat4_scale(GM_Matrix4 mat, GM_Vec3 s) {
