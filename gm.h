@@ -744,23 +744,18 @@
     }
 
     GM_Matrix4 gm_mat4_mult(GM_Matrix4 A, GM_Matrix4 B) {
-        GM_Matrix4 ret = {0};
+        GM_Matrix4 C = {0};
         
-        for (int i = 0; i < 16; i++) {
-            const int column = i % 4;
-
-            const GM_Vec4 a_row = A.v[i / 4];
-            const GM_Vec4 b_column = {
-                B.data[column + (0 * 4)], 
-                B.data[column + (1 * 4)], 
-                B.data[column + (2 * 4)], 
-                B.data[column + (3 * 4)]
-            };
-
-            ret.data[i] = gm_v4_dot(a_row, b_column);
+        for (int i = 0; i < 4; i++) {
+            for (int j = 0; j < 4; j++) {
+                C.data[i * 4 + j] = 0.0f;
+                for (int k = 0; k < 4; k++) {
+                    C.data[i * 4 + j] += A.data[i * 4 + k] * B.data[k * 4 + j];
+                }
+            }
         }
-
-        return ret;
+        
+        return C;
     }
 
     GM_Matrix4 gm_mat4_scale_xyz(float x, float y, float z);
