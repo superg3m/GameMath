@@ -660,7 +660,7 @@
             }
         };
         
-        return gm_mat4_mult(trans, mat);
+        return gm_mat4_mult(mat, trans);
     }
 
     GM_Matrix4 gm_mat4_scale(GM_Matrix4 mat, GM_Vec3 s) {
