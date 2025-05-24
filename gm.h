@@ -690,23 +690,21 @@
         float x = x1 / len;
         float y = y1 / len;
         float z = z1 / len;
-
         float rad = DEGREES_TO_RAD(degrees);
-
         float c = cosf(rad);
         float s = sinf(rad);
         float t = 1.0f - c;
-
+        
         GM_Matrix4 rot = {
             .data = {
-                t*x*x + c,     t*x*y - s*z,   t*x*z + s*y,   0.0f,
-                t*x*y + s*z,   t*y*y + c,     t*y*z - s*x,   0.0f,
-                t*x*z - s*y,   t*y*z + s*x,   t*z*z + c,     0.0f,
+                t*x*x + c,     t*x*y + s*z,   t*x*z - s*y,   0.0f,
+                t*x*y - s*z,   t*y*y + c,     t*y*z + s*x,   0.0f,
+                t*x*z + s*y,   t*y*z - s*x,   t*z*z + c,     0.0f,
                 0.0f,          0.0f,          0.0f,          1.0f
             }
         };
 
-        return gm_mat4_mult(mat, rot);
+        return gm_mat4_mult(rot, mat);
     }
 
     // Z is negative going away from the viewer here so Right-handed coordinate system OpenGL
