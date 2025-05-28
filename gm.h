@@ -30,6 +30,8 @@
 #if defined(GM_INCLUDE_TYPES)
     #undef NULLPTR
     #undef PI
+    #undef DEGREES_TO_RAD
+    #undef RAD_TO_DEGREES
     #undef stringify
     #undef glue
     #undef KiloBytes
@@ -40,13 +42,11 @@
     #undef CLAMP
     #undef local_persist
     #undef internal
-    #undef OFFSET_OF
     #undef FIRST_DIGIT
     #undef GET_BIT
     #undef SET_BIT
     #undef UNSET_BIT
     #undef ArrayCount
-    #undef PLATFORM_MAX_PATH
     #undef PLATFORM_WINDOWS
     #undef PLATFORM_APPLE
     #undef PLATFORM_LINUX
