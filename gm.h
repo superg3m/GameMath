@@ -6,7 +6,7 @@
     #define GM_API
 #endif
 
-#if defined(GM_IMPL) 
+#if defined(GM_IMPL)
     #define GM_IMPL_COLOR
     #define GM_IMPL_VECTOR
     #define GM_IMPL_MATRIX
@@ -60,7 +60,7 @@
     #include <stdlib.h>
     #include <stdbool.h>
     #include <math.h>
-
+    
     typedef int8_t  s8;
     typedef int16_t s16;
     typedef int32_t s32;
@@ -73,8 +73,8 @@
 
     #define NULLPTR 0
     #define PI 3.14159265359f
-    #define DEGREES_TO_RAD(degrees) ((degrees)*(PI/180))
-    #define RAD_TO_DEGREES(rad) ((rad)*(180/PI))
+    #define DEGREES_TO_RAD(degrees) ((degrees)*(PI/180.0f))
+    #define RAD_TO_DEGREES(rad) ((rad)*(180.0f/PI))
 
     #define stringify(entry) #entry
     #define glue(a, b) a##b
@@ -148,44 +148,33 @@
         };
     } GM_RGB;
 
+    // NOTE: Union for hex in RGBA is potentially problematic due to endianness.
+    // It's safer to use explicit conversion functions (like gm_rgba_to_u32).
     typedef struct GM_RGBA {
         union {
-            union {
-                struct {
-                    u8 a;
-                    u8 r;
-                    u8 g;
-                    u8 b;
-                };
-                u32 hex;
-                u8 c[4];
-            } argb;
-
-            union {
-                struct {
-                    u8 r;
-                    u8 g;
-                    u8 b;
-                    u8 a;
-                };
-                u32 hex;
-                u8 c[4];
-            } rgba;
+            struct {
+                u8 r;
+                u8 g;
+                u8 b;
+                u8 a;
+            };
+            u8 c[4];
+            u32 hex_rgba; // Explicitly name for rgba order for hex
         };
     } GM_RGBA;
 
-    GM_API u32 ckit_color_to_u32(GM_RGBA color);
-    GM_API GM_RGBA ckit_color_from_u32(u32 color);
-    GM_API GM_RGBA ckit_color_alpha_blend(GM_RGBA front_color, GM_RGBA back_color);
-    GM_API GM_RGBA ckit_color_u32_alpha_blend(u32 front_color_u32, u32 back_color_u32);
+    GM_API u32 gm_rgba_to_u32(GM_RGBA color);
+    GM_API GM_RGBA gm_rgba_from_u32(u32 color);
+    GM_API GM_RGBA gm_rgba_alpha_blend(GM_RGBA front_color, GM_RGBA back_color);
+    GM_API GM_RGBA gm_rgba_u32_alpha_blend(u32 front_color_u32, u32 back_color_u32);
     /**
-	 * @brief value from 0.0 to 1.0
-	 * 
-	 * @param color 
-	 * @param value 
-	 * @return CKIT_Color 
-	 */
-	GM_API GM_RGBA ckit_color_multiply(GM_RGBA color, float value);
+     * @brief value from 0.0 to 1.0
+     *
+     * @param color
+     * @param value
+     * @return GM_RGBA
+     */
+    GM_API GM_RGBA gm_rgba_multiply(GM_RGBA color, float value);
 
     #define GM_COLOR_BLACK ((GM_RGBA){0, 0, 0, 255})
     #define GM_COLOR_RED ((GM_RGBA){255, 0, 0, 255})
@@ -200,7 +189,8 @@
 #endif
 
 #if defined(GM_INCLUDE_VECTOR)
-    // row major
+    // Vectors are typically treated as column vectors for post-multiplication (M * v)
+    // Their memory layout here is simple sequential (x, y, z, w)
     typedef struct GM_Vec2 {
         union {
             struct {
@@ -250,8 +240,6 @@
     GM_API GM_Vec3 gm_v3_lerp(GM_Vec3 A, GM_Vec3 B, float t);
     GM_API GM_Vec4 gm_v4_lerp(GM_Vec4 A, GM_Vec4 B, float t);
 
-    GM_API GM_Vec2 gm_v2_spline_point(GM_Vec2* spline_points, u32 spline_points_count, float t);
-
     GM_API GM_Vec2 gm_v2_projection(GM_Vec2 A, GM_Vec2 B);
     GM_API GM_Vec3 gm_v3_projection(GM_Vec3 A, GM_Vec3 B);
 
@@ -268,12 +256,18 @@
     GM_API float gm_v4_dot(GM_Vec4 A, GM_Vec4 B);
 
     GM_API GM_Vec3 gm_v3_cross(GM_Vec3 A, GM_Vec3 B);
+    GM_API GM_Vec2 gm_v2_spline_point(GM_Vec2* spline_points, u32 spline_points_count, float t); // Declaration
 #endif
 
 #if defined(GM_INCLUDE_MATRIX)
+    // Matrices are COLUMN-MAJOR (OpenGL convention)
+    // data[0-3] = Col 0 (X-axis)
+    // data[4-7] = Col 1 (Y-axis)
+    // data[8-11] = Col 2 (Z-axis)
+    // data[12-15] = Col 3 (Translation)
     typedef struct GM_Matrix4 {
         union {
-            float data[16]; 
+            float data[16];
             GM_Vec4 v[4];
         };
     } GM_Matrix4;
@@ -302,14 +296,13 @@
         GM_Vec3 v;
     } GM_Quaternion;
 
-    GM_Quaternion gm_quat_create(GM_Vec3 axis, float theta);
-    GM_Quaternion gm_quat_inverse(GM_Quaternion quat);
-    GM_Quaternion gm_quat_mult(GM_Quaternion q1, GM_Quaternion q2);
-    GM_Vec3 gm_quat_vector_mult(GM_Quaternion quat, GM_Vec3 vec);
+    GM_API GM_Quaternion gm_quat_create(GM_Vec3 axis, float theta);
+    GM_API GM_Quaternion gm_quat_inverse(GM_Quaternion quat);
+    GM_API GM_Quaternion gm_quat_mult(GM_Quaternion q1, GM_Quaternion q2);
+    GM_API GM_Vec3 gm_quat_vector_mult(GM_Quaternion quat, GM_Vec3 vec);
+    GM_API GM_Quaternion gm_slerp(GM_Quaternion a, GM_Quaternion b, float t);
 #endif
 
-// https://www.youtube.com/watch?v=QS3677PlIos
-// https://www.youtube.com/watch?v=YJB1QnEmlTs
 #if defined(GM_INCLUDE_INTERPOLATION)
     GM_API float gm_lerp(float a, float b, float t);
     GM_API float gm_inverse_lerp(float a, float b, float value);
@@ -362,7 +355,9 @@
         GM_Vec3 max;
     } GM_AABB;
 
-    // SAT collision
+    // Date: May 28, 2025
+    // TODO(Jovanni): SAT collision
+
 
     GM_API bool gm_aabb_point_colliding(GM_Vec3 point, GM_AABB aabb);
     GM_API bool gm_aabb_aabb_colliding(GM_AABB a, GM_AABB b);
@@ -392,91 +387,71 @@
         u32 radius;
     } GM_Circle3D;
 
-    GM_Rectangle2D gm_rectangle2d_create(float x, float y, u32 width, u32 height);
-    GM_Rectangle3D gm_rectangle3d_create(float x, float y, float z, u32 length, u32 width, u32 height);
-    GM_Circle2D gm_circle2d_create(float x, float y, u32 radius);
-    GM_Circle3D gm_circle3d_create(float x, float y, float z, u32 radius);
+    GM_API GM_Rectangle2D gm_rectangle2d_create(float x, float y, u32 width, u32 height);
+    GM_API GM_Rectangle3D gm_rectangle3d_create(float x, float y, float z, u32 length, u32 width, u32 height);
+    GM_API bool gm_rectangle_check_aabb_collision(GM_Rectangle2D rect1, GM_Rectangle2D rect2);
+    GM_API GM_Circle2D gm_circle2d_create(float x, float y, u32 radius);
+    GM_API GM_Circle3D gm_circle3d_create(float x, float y, float z, u32 radius);
 #endif
 
 //
-// ===================================================== CKIT_IMPL =====================================================
+// ===================================================== GM_IMPL =====================================================
 //
 
 #if defined(GM_IMPL_COLOR)
-    u32 gm_rgba_to_u32(GM_RGBA color) {
-        u32 alpha = ((int)(color.rgba.a) << 24);
-        u32 red = ((int)(color.rgba.r) << 16);
-        u32 green = ((int)(color.rgba.g) << 8);
-        u32 blue = ((int)(color.rgba.b) << 0);
-                        
-        u32 rgba = alpha|red|green|blue;
-
-        return rgba;
-    }
-
     GM_RGBA gm_rgba_from_u32(u32 color) {
         GM_RGBA ret = {0};
+        ret.r = (u8)((color >> 24) & 0xFF);
+        ret.g = (u8)((color >> 16) & 0xFF);
+        ret.b = (u8)((color >> 8) & 0xFF);
+        ret.a = (u8)((color >> 0) & 0xFF);
 
-        ret.rgba.b = ((color >> 0) & 0xFF); 
-        ret.rgba.g = ((color >> 8) & 0xFF); 
-        ret.rgba.r = ((color >> 16) & 0xFF); 
-        ret.rgba.a = ((color >> 24) & 0xFF); 
-                    
         return ret;
     }
 
     GM_RGBA gm_rgba_multiply(GM_RGBA color, float value) {
         GM_RGBA ret = {0};
-        ret.rgba.r = (u8)CLAMP(color.rgba.r * value, 0, 255);
-        ret.rgba.g = (u8)CLAMP(color.rgba.g * value, 0, 255);
-        ret.rgba.b = (u8)CLAMP(color.rgba.b * value, 0, 255);
-        ret.rgba.a = (u8)CLAMP(color.rgba.a * value, 0, 255);
+        ret.r = (u8)CLAMP(color.r * value, 0, 255);
+        ret.g = (u8)CLAMP(color.g * value, 0, 255);
+        ret.b = (u8)CLAMP(color.b * value, 0, 255);
+        ret.a = (u8)CLAMP(color.a * value, 0, 255);
 
         return ret;
     }
 
     u32 gm_rgba_u32_multiply(u32 color, float value) {
-        u8 b = (u8)(((color >> 0) & 0xFF)  * value);
-        u8 g = (u8)(((color >> 8) & 0xFF)  * value);
-        u8 r = (u8)(((color >> 16) & 0xFF) * value);
-        u8 a = (u8)(((color >> 24) & 0xFF) * value);
+        u8 r = (u8)(((color >> 24) & 0xFF) * value);
+        u8 g = (u8)(((color >> 16) & 0xFF) * value);
+        u8 b = (u8)(((color >> 8) & 0xFF) * value);
+        u8 a = (u8)(((color >> 0) & 0xFF) * value);
 
-        color = r|g|b|a;
-
-        return color;
+        u32 result = (u32)(r << 24 | g << 16 | b << 8 | a);
+        return result;
     }
 
     GM_RGBA gm_rgba_alpha_blend(GM_RGBA front_color, GM_RGBA back_color) {
         GM_RGBA ret = {0};
 
-        float normalized_back_alpha = (float)back_color.rgba.a / 255.0f;
+        float normalized_front_alpha = (float)front_color.a / 255.0f; // Alpha of the front color
+        float normalized_back_alpha = (float)back_color.a / 255.0f;  // Alpha of the back color
 
-        ret.rgba.a = back_color.rgba.a;
-        ret.rgba.r = (u8)CLAMP((back_color.rgba.r * normalized_back_alpha) + ((u32)front_color.rgba.r * (1 - normalized_back_alpha)), 0, 255);
-        ret.rgba.g = (u8)CLAMP((back_color.rgba.g * normalized_back_alpha) + ((u32)front_color.rgba.g * (1 - normalized_back_alpha)), 0, 255);
-        ret.rgba.b = (u8)CLAMP((back_color.rgba.b * normalized_back_alpha) + ((u32)front_color.rgba.b * (1 - normalized_back_alpha)), 0, 255);
+        ret.a = (u8)CLAMP((front_color.a + back_color.a * (1.0f - normalized_front_alpha)), 0, 255);
+        ret.r = (u8)CLAMP((front_color.r * normalized_front_alpha + back_color.r * normalized_back_alpha * (1.0f - normalized_front_alpha)), 0, 255);
+        ret.g = (u8)CLAMP((front_color.g * normalized_front_alpha + back_color.g * normalized_back_alpha * (1.0f - normalized_front_alpha)), 0, 255);
+        ret.b = (u8)CLAMP((front_color.b * normalized_front_alpha + back_color.b * normalized_back_alpha * (1.0f - normalized_front_alpha)), 0, 255);
 
         return ret;
     }
 
     GM_RGBA gm_rgba_u32_alpha_blend(u32 front_color_u32, u32 back_color_u32) {
-        GM_RGBA front_color = {0};
-        front_color.rgba.a = (u8)(((u32)front_color_u32 >> 24) & 0xFF);
-        front_color.rgba.r = (u8)(((u32)front_color_u32 >> 16) & 0xFF);
-        front_color.rgba.g = (u8)(((u32)front_color_u32 >> 8) & 0xFF);
-        front_color.rgba.b = (u8)(((u32)front_color_u32 >> 0) & 0xFF);
-
-        GM_RGBA back_color = {0};
-        back_color.rgba.a = (u8)(((u32)back_color_u32 >> 24) & 0xFF);
-        back_color.rgba.r = (u8)(((u32)back_color_u32 >> 16) & 0xFF);
-        back_color.rgba.g = (u8)(((u32)back_color_u32 >> 8) & 0xFF);
-        back_color.rgba.b = (u8)(((u32)back_color_u32 >> 0) & 0xFF);
-                    
+        GM_RGBA front_color = gm_rgba_from_u32(front_color_u32);
+        GM_RGBA back_color = gm_rgba_from_u32(back_color_u32);
+        
         return gm_rgba_alpha_blend(front_color, back_color);
     }
 #endif
 
-#if defined(GM_IMPL_VECTOR) 
+#if defined(GM_IMPL_VECTOR)
     float gm_v2_dot(GM_Vec2 A, GM_Vec2 B) {
         return (A.x * B.x) + (A.y * B.y);
     }
@@ -491,135 +466,131 @@
 
     GM_Vec3 gm_v3_cross(GM_Vec3 A, GM_Vec3 B) {
         GM_Vec3 ret;
-
         ret.x = A.y * B.z - A.z * B.y;
         ret.y = A.z * B.x - A.x * B.z;
         ret.z = A.x * B.y - A.y * B.x;
-
         return ret;
     }
 
     float gm_v2_magnitude(GM_Vec2 A) {
-        return sqrtf((A.x*A.x) + (A.x*A.x));
+        return sqrtf((A.x*A.x) + (A.y*A.y)); // Fixed typo: A.y*A.y
     }
 
     float gm_v3_magnitude(GM_Vec3 A) {
-        return sqrtf((A.x*A.x) + (A.x*A.x) + (A.z*A.z));
+        return sqrtf((A.x*A.x) + (A.y*A.y) + (A.z*A.z)); // Fixed typo: A.y*A.y
     }
 
     float gm_v4_magnitude(GM_Vec4 A) {
-        return sqrtf((A.x*A.x) + (A.x*A.x) + (A.z*A.z) + (A.w*A.w));
+        return sqrtf((A.x*A.x) + (A.y*A.y) + (A.z*A.z) + (A.w*A.w)); // Fixed typo: A.y*A.y
     }
 
     GM_Vec2 gm_v2_normalize(GM_Vec2 A) {
         GM_Vec2 ret;
         const float magnitude = gm_v2_magnitude(A);
+        if (magnitude == 0) return (GM_Vec2){0,0}; // Avoid division by zero
         ret.x = A.x / magnitude;
         ret.y = A.y / magnitude;
-
         return ret;
     }
 
     GM_Vec3 gm_v3_normalize(GM_Vec3 A) {
         GM_Vec3 ret;
         const float magnitude = gm_v3_magnitude(A);
+        if (magnitude == 0) return (GM_Vec3){0,0,0}; // Avoid division by zero
         ret.x = A.x / magnitude;
         ret.y = A.y / magnitude;
         ret.z = A.z / magnitude;
-
         return ret;
     }
 
     GM_Vec4 gm_v4_normalize(GM_Vec4 A) {
         GM_Vec4 ret;
         const float magnitude = gm_v4_magnitude(A);
+        if (magnitude == 0) return (GM_Vec4){0,0,0,0}; // Avoid division by zero
         ret.x = A.x / magnitude;
         ret.y = A.y / magnitude;
         ret.z = A.z / magnitude;
         ret.w = A.w / magnitude;
-
         return ret;
     }
 
     GM_Vec2 gm_v2_create(float x, float y) {
-        GM_Vec2 ret = {0};
-        ret.x = x;
-        ret.y = y;
-
+        GM_Vec2 ret = { .x = x, .y = y };
         return ret;
     }
 
     GM_Vec3 gm_v3_create(float x, float y, float z) {
-        GM_Vec3 ret = {0};
-        ret.x = x;
-        ret.y = y;
-        ret.z = z; 
-
+        GM_Vec3 ret = { .x = x, .y = y, .z = z };
         return ret;
     }
 
     GM_Vec4 gm_v4_create(float x, float y, float z, float w) {
-        GM_Vec4 ret = {0};
-        ret.x = x;
-        ret.y = y;
-        ret.z = z; 
-        ret.w = w; 
-
+        GM_Vec4 ret = { .x = x, .y = y, .z = z, .w = w };
         return ret;
     }
 
     GM_Vec2 gm_v2_add(GM_Vec2 A, GM_Vec2 B) {
-        GM_Vec2 ret = {0};
-        ret.x = A.x + B.x;
-        ret.y = A.y + B.y;
-
+        GM_Vec2 ret = { .x = A.x + B.x, .y = A.y + B.y };
         return ret;
     }
 
     GM_Vec3 gm_v3_add(GM_Vec3 A, GM_Vec3 B) {
-        GM_Vec3 ret = {0};
-        ret.x = A.x + B.x;
-        ret.y = A.y + B.y;
-        ret.z = A.z + B.z; 
-
+        GM_Vec3 ret = { .x = A.x + B.x, .y = A.y + B.y, .z = A.z + B.z };
         return ret;
     }
-    
+
     GM_Vec4 gm_v4_add(GM_Vec4 A, GM_Vec4 B) {
-        GM_Vec4 ret = {0};
-        ret.x = A.x + B.x;
-        ret.y = A.y + B.y;
-        ret.z = A.z + B.z; 
-        ret.w = A.w + B.w; 
-
+        GM_Vec4 ret = { .x = A.x + B.x, .y = A.y + B.y, .z = A.z + B.z, .w = A.w + B.w };
         return ret;
     }
-    
-    GM_Vec2 gm_v2_scale(GM_Vec2 v, float scale) {
-        GM_Vec2 ret = {0};
-        ret.x = v.x * scale;
-        ret.y = v.y * scale;
 
+    GM_Vec2 gm_v2_scale(GM_Vec2 v, float scale) {
+        GM_Vec2 ret = { .x = v.x * scale, .y = v.y * scale };
         return ret;
     }
 
     GM_Vec3 gm_v3_scale(GM_Vec3 v, float scale) {
-        GM_Vec3 ret = {0};
-        ret.x = v.x * scale;
-        ret.y = v.y * scale;
-        ret.z = v.z * scale; 
-
+        GM_Vec3 ret = { .x = v.x * scale, .y = v.y * scale, .z = v.z * scale };
         return ret;
     }
 
     GM_Vec4 gm_v4_scale(GM_Vec4 v, float scale) {
-        GM_Vec4 ret = {0};
-        ret.x = v.x * scale;
-        ret.y = v.y * scale;
-        ret.z = v.z * scale; 
-        ret.w = v.w * scale; 
-
+        GM_Vec4 ret = { .x = v.x * scale, .y = v.y * scale, .z = v.z * scale, .w = v.w * scale };
         return ret;
+    }
+
+    GM_Vec2 gm_v2_lerp(GM_Vec2 A, GM_Vec2 B, float t) {
+        return gm_v2_add(A, gm_v2_scale(gm_v2_add(B, gm_v2_scale(A, -1.0f)), t));
+    }
+
+    GM_Vec3 gm_v3_lerp(GM_Vec3 A, GM_Vec3 B, float t) {
+        return gm_v3_add(A, gm_v3_scale(gm_v3_add(B, gm_v3_scale(A, -1.0f)), t));
+    }
+
+    GM_Vec4 gm_v4_lerp(GM_Vec4 A, GM_Vec4 B, float t) {
+        return gm_v4_add(A, gm_v4_scale(gm_v4_add(B, gm_v4_scale(A, -1.0f)), t));
+    }
+
+    GM_Vec2 gm_v2_projection(GM_Vec2 A, GM_Vec2 B) {
+        float dot_product = gm_v2_dot(A, B);
+        float B_mag_sq = gm_v2_dot(B, B); // B's magnitude squared
+        if (B_mag_sq == 0) return (GM_Vec2){0,0};
+        return gm_v2_scale(B, dot_product / B_mag_sq);
+    }
+
+    GM_Vec3 gm_v3_projection(GM_Vec3 A, GM_Vec3 B) {
+        float dot_product = gm_v3_dot(A, B);
+        float B_mag_sq = gm_v3_dot(B, B); // B's magnitude squared
+        if (B_mag_sq == 0) return (GM_Vec3){0,0,0};
+        return gm_v3_scale(B, dot_product / B_mag_sq);
+    }
+
+    GM_Vec2 gm_v2_spline_point(GM_Vec2* spline_points, u32 spline_points_count, float t) {
+        // TODO: Implement spline point calculation (e.g., Catmull-Rom, Bezier)
+        (void)spline_points; // Silence unused warning
+        (void)spline_points_count; // Silence unused warning
+        (void)t; // Silence unused warning
+        return (GM_Vec2){0,0}; // Placeholder
     }
 #endif
 
@@ -627,143 +598,136 @@
     GM_Matrix4 gm_mat4_identity() {
         GM_Matrix4 ret = {
             .data = {
-                1, 0, 0, 0,
-                0, 1, 0, 0,
-                0, 0, 1, 0,
-                0, 0, 0, 1
+                1.0f, 0.0f, 0.0f, 0.0f,
+                0.0f, 1.0f, 0.0f, 0.0f,
+                0.0f, 0.0f, 1.0f, 0.0f,
+                0.0f, 0.0f, 0.0f, 1.0f
             }
         };
-        
         return ret;
     }
 
-    GM_Matrix4 gm_mat4_translate(GM_Matrix4 mat, GM_Vec3 t) {
-        GM_Matrix4 translate = {
-            .data = {
-                1.0f, 0.0f, 0.0f, t.x,
-                0.0f, 1.0f, 0.0f, t.y,
-                0.0f, 0.0f, 1.0f, t.z,
-                0.0f, 0.0f, 0.0f, 1.0f
-            }
-        };
+    GM_API GM_Matrix4 gm_mat4_mult(GM_Matrix4 A, GM_Matrix4 B) {
+        GM_Matrix4 C = {0};
 
-        return gm_mat4_mult(translate, mat);
+        for (int i = 0; i < 4; i++) {
+            for (int j = 0; j < 4; j++) {
+                C.data[j * 4 + i] = 0.0f;
+                for (int k = 0; k < 4; k++) {
+                    C.data[j * 4 + i] += A.data[k * 4 + i] * B.data[j * 4 + k];
+                }
+            }
+        }
+        return C;
     }
 
-    GM_Matrix4 gm_mat4_translate_xyz(GM_Matrix4 mat, float x, float y, float z) {
-        GM_Matrix4 translate = {
+    GM_API GM_Matrix4 gm_mat4_translate(GM_Matrix4 mat, GM_Vec3 t) {
+        GM_Matrix4 translate_matrix = {
             .data = {
-                1.0f, 0.0f, 0.0f, x,
-                0.0f, 1.0f, 0.0f, y,
-                0.0f, 0.0f, 1.0f, z,
-                0.0f, 0.0f, 0.0f, 1.0f
+                1.0f, 0.0f, 0.0f, 0.0f,
+                0.0f, 1.0f, 0.0f, 0.0f,
+                0.0f, 0.0f, 1.0f, 0.0f,
+                t.x,  t.y,  t.z,  1.0f
             }
         };
-        
-        return gm_mat4_mult(translate, mat);
+        return gm_mat4_mult(mat, translate_matrix);
     }
 
-    GM_Matrix4 gm_mat4_scale(GM_Matrix4 mat, GM_Vec3 s) {
-        GM_Matrix4 scale = {
+    GM_API GM_Matrix4 gm_mat4_translate_xyz(GM_Matrix4 mat, float x, float y, float z) {
+        return gm_mat4_translate(mat, (GM_Vec3){.x=x, .y=y, .z=z});
+    }
+
+    GM_API GM_Matrix4 gm_mat4_scale(GM_Matrix4 mat, GM_Vec3 s) {
+        GM_Matrix4 scale_matrix = {
             .data = {
                 s.x,  0.0f, 0.0f, 0.0f,
                 0.0f, s.y,  0.0f, 0.0f,
                 0.0f, 0.0f, s.z,  0.0f,
+                0.0f, 0.0f, 0.0f, 1.0f 
+            }
+        };
+        return gm_mat4_mult(mat, scale_matrix);
+    }
+
+    GM_API GM_Matrix4 gm_mat4_scale_xyz(float x, float y, float z) {
+        GM_Matrix4 scale_matrix = {
+            .data = {
+                x,    0.0f, 0.0f, 0.0f,
+                0.0f, y,    0.0f, 0.0f,
+                0.0f, 0.0f, z,    0.0f,
                 0.0f, 0.0f, 0.0f, 1.0f
             }
         };
-        
-        return gm_mat4_mult(scale, mat);
+        return scale_matrix;
     }
 
-    GM_Matrix4 gm_mat4_rotate(GM_Matrix4 mat, float degrees, GM_Vec3 axis) {
-        float len = sqrtf(axis.x*axis.x + axis.y*axis.y + axis.z*axis.z);
-        float x = axis.x / len;
-        float y = axis.y / len;
-        float z = axis.z / len;
-
+    GM_API GM_Matrix4 gm_mat4_rotate(GM_Matrix4 mat, float degrees, GM_Vec3 axis) {
         float rad = DEGREES_TO_RAD(degrees);
-
         float c = cosf(rad);
         float s = sinf(rad);
         float t = 1.0f - c;
 
+        GM_Vec3 norm_axis = gm_v3_normalize(axis);
+        float x = norm_axis.x;
+        float y = norm_axis.y;
+        float z = norm_axis.z;
+
         GM_Matrix4 rot = {
             .data = {
-                t*x*x + c,     t*x*y - s*z,   t*x*z + s*y,   0.0f,
-                t*x*y + s*z,   t*y*y + c,     t*y*z - s*x,   0.0f,
-                t*x*z - s*y,   t*y*z + s*x,   t*z*z + c,     0.0f,
-                0.0f,          0.0f,          0.0f,          1.0f
+                t*x*x + c,      t*x*y + s*z,    t*x*z - s*y,    0.0f,
+                t*x*y - s*z,    t*y*y + c,      t*y*z + s*x,    0.0f,
+                t*x*z + s*y,    t*y*z - s*x,    t*z*z + c,      0.0f,
+                0.0f,           0.0f,           0.0f,           1.0f
             }
         };
 
         return gm_mat4_mult(mat, rot);
     }
 
-    GM_Matrix4 gm_mat4_rotate_xyz(GM_Matrix4 mat, float degrees, float x1, float y1, float z1) {
-        float len = sqrtf(x1 * x1 +  y1 * y1 +  z1 * z1);
-        float x = x1 / len;
-        float y = y1 / len;
-        float z = z1 / len;
-        float rad = DEGREES_TO_RAD(degrees);
-        float c = cosf(rad);
-        float s = sinf(rad);
-        float t = 1.0f - c;
-        
-        GM_Matrix4 rot = {
-            .data = {
-                t*x*x + c,     t*x*y + s*z,   t*x*z - s*y,   0.0f,
-                t*x*y - s*z,   t*y*y + c,     t*y*z + s*x,   0.0f,
-                t*x*z + s*y,   t*y*z - s*x,   t*z*z + c,     0.0f,
-                0.0f,          0.0f,          0.0f,          1.0f
-            }
-        };
-
-        return gm_mat4_mult(rot, mat);
+    GM_API GM_Matrix4 gm_mat4_rotate_xyz(GM_Matrix4 mat, float degrees, float x1, float y1, float z1) {
+        return gm_mat4_rotate(mat, degrees, (GM_Vec3){.x=x1, .y=y1, .z=z1});
     }
 
-    // Z is negative going away from the viewer here so Right-handed coordinate system OpenGL
-    GM_Matrix4 gm_mat4_perspective(float fov_degrees, float aspect, float near_plane, float far_plane) {
+    // Z is negative going away from the viewer (Right-handed coordinate system OpenGL)
+    // This is a standard COLUMN-MAJOR perspective projection matrix
+    GM_API GM_Matrix4 gm_mat4_perspective(float fov_degrees, float aspect, float near_plane, float far_plane) {
         float fov_radians = DEGREES_TO_RAD(fov_degrees);
-        float p = 1 / (tanf(fov_radians) / 2.0f);
+        float tan_half_fov = tanf(fov_radians / 2.0f);
+        float p = 1.0f / tan_half_fov; // cot(fov/2)
 
-        const float range = near_plane - far_plane;
-        const float A = (-far_plane - near_plane) / range; 
-        const float B = (2 * far_plane * near_plane) / range; 
+        const float A = (far_plane + near_plane) / (near_plane - far_plane);
+        const float B = (2.0f * far_plane * near_plane) / (near_plane - far_plane);
 
         GM_Matrix4 ret = {
             .data = {
-                p / aspect, 0, 0, 0,
-                0, p, 0, 0,
-                0, 0, A, B,
-                0, 0, 1, 0
+                p / aspect, 0.0f,       0.0f,    0.0f,
+                0.0f,       p,          0.0f,    0.0f,
+                0.0f,       0.0f,       A,       -1.0f, // Note: -1.0f if Z clips to [-1,1], 1.0f if Z clips to [0,1] for DX/Vulkan
+                0.0f,       0.0f,       B,       0.0f
             }
         };
-        
         return ret;
     }
 
-    GM_Matrix4 gm_mat4_mult(GM_Matrix4 A, GM_Matrix4 B) {
-        GM_Matrix4 C = {0};
-        
-        for (int i = 0; i < 4; i++) {
-            for (int j = 0; j < 4; j++) {
-                C.data[i * 4 + j] = 0.0f;
-                for (int k = 0; k < 4; k++) {
-                    C.data[i * 4 + j] += A.data[i * 4 + k] * B.data[k * 4 + j];
-                }
-            }
+    GM_API GM_Matrix4 gm_mat4_orthographic(float left, float right, float bottom, float top, float near_plane, float far_plane);
+    GM_API GM_Matrix4 gm_mat4_look_at(GM_Vec3 eye, GM_Vec3 center, GM_Vec3 up);
+    GM_API GM_Matrix4 gm_mat4_inverse(GM_Matrix4 m, bool* success) {
+        if (success) {
+            *success = false;
         }
         
-        return C;
+        return gm_mat4_identity(); // Placeholder
     }
 
-    GM_Matrix4 gm_mat4_scale_xyz(float x, float y, float z);
-    GM_Matrix4 gm_mat4_orthographic(float left, float right, float bottom, float top, float near, float far);
-    GM_Matrix4 gm_mat4_look_at(GM_Vec3 eye, GM_Vec3 center, GM_Vec3 up);
-
-    GM_Matrix4 gm_mat4_inverse(GM_Matrix4 m, bool* success);
-    GM_Matrix4 gm_mat4_transpose(GM_Matrix4 m);
+    GM_API GM_Matrix4 gm_mat4_transpose(GM_Matrix4 m) {
+        GM_Matrix4 ret = {0};
+        for (int i = 0; i < 4; i++) {
+            for (int j = 0; j < 4; j++) {
+                ret.data[j * 4 + i] = m.data[i * 4 + j];
+            }
+        }
+        return ret;
+    }
 #endif
 
 #if defined(GM_IMPL_QUATERNION)
@@ -771,8 +735,10 @@
         GM_Quaternion ret = {0};
 
         float radians = DEGREES_TO_RAD(theta);
-        ret.w = cosf(radians / 2);
-        ret.v = gm_v3_scale(axis, sinf(radians / 2));
+        float half_angle = radians / 2.0f;
+        ret.w = cosf(half_angle);
+        GM_Vec3 norm_axis = gm_v3_normalize(axis);
+        ret.v = gm_v3_scale(norm_axis, sinf(half_angle));
 
         return ret;
     }
@@ -780,37 +746,46 @@
     GM_Quaternion gm_quat_inverse(GM_Quaternion quat) {
         GM_Quaternion ret = {0};
 
-        ret.w = quat.w;
-        ret.v = gm_v3_scale(quat.v, -1);
+        float mag_sq = (quat.w * quat.w) + gm_v3_dot(quat.v, quat.v);
+        if (mag_sq == 0.0f) return (GM_Quaternion){0,0,0,0};
+
+        ret.w = quat.w / mag_sq;
+        ret.v = gm_v3_scale(quat.v, -1.0f / mag_sq);
 
         return ret;
     }
 
     GM_Quaternion gm_quat_mult(GM_Quaternion q1, GM_Quaternion q2) {
         GM_Quaternion ret;
-
-        ret.w = (q1.w * q2.w) + gm_v3_dot(q1.v, q2.v);
+        ret.w = q1.w * q2.w - gm_v3_dot(q1.v, q2.v);
         ret.v = gm_v3_add(gm_v3_add(gm_v3_scale(q1.v, q2.w), gm_v3_scale(q2.v, q1.w)), gm_v3_cross(q1.v, q2.v));
-
         return ret;
     }
 
-    // Rotate a vector with this quaternion.
+    // Rotate a vector with this quaternion (q * p * q_inverse)
     GM_Vec3 gm_quat_vector_mult(GM_Quaternion quat, GM_Vec3 vec) {
         GM_Quaternion p;
-        p.w = 0;
+        p.w = 0.0f;
         p.v = vec;
 
-        return gm_quat_mult(gm_quat_mult(quat, p),  gm_quat_inverse(quat)).v;
+        // Efficient vector rotation:
+        // Quat * Vec * Quat_Inverse
+        // vprime = q * v * q_inv
+        // Where v is a pure quaternion (0, vec.x, vec.y, vec.z)
+        GM_Quaternion temp = gm_quat_mult(quat, p);
+        return gm_quat_mult(temp, gm_quat_inverse(quat)).v;
     }
+
+    GM_Quaternion gm_slerp(GM_Quaternion a, GM_Quaternion b, float t);
 #endif
 
-#if defined(GM_IMPL_INTERPOLATION) 
+#if defined(GM_IMPL_INTERPOLATION)
     float gm_lerp(float a, float b, float t) {
         return a + ((b - a) * t);
     }
 
     float gm_inverse_lerp(float a, float b, float value) {
+        if (fabsf(a - b) < 0.00001f) return 0.0f; // Avoid division by zero
         return (value - a) / (b - a);
     }
 
@@ -830,23 +805,22 @@
         return current + (diff > 0 ? delta : -delta);
     }
 
-    GM_Quaternion gm_slerp(GM_Quaternion a, GM_Quaternion b, float t);
     GM_Vec3 gm_barycentric(GM_Vec3 a, GM_Vec3 b, GM_Vec3 c, float u, float v);
     float gm_smoothstep(float edge0, float edge1, float x);
     float gm_smootherstep(float edge0, float edge1, float x);
 #endif
 
-#if defined(CKG_IMPL_EASE_FUNCTION)
+#if defined(GM_IMPL_EASE_FUNCTIONS)
     float gm_ease_in_sine(float t) {
-        return 1 - cos((t * PI) / 2);
+        return 1.0f - cosf((t * PI) / 2.0f);
     }
 
     float gm_ease_out_sine(float t) {
-            return sin((t * PI) / 2);
+        return sinf((t * PI) / 2.0f);
     }
 
     float gm_ease_in_out_sine(float t) {
-        return -(cos(PI * t) - 1) / 2;
+        return -(cosf(PI * t) - 1.0f) / 2.0f;
     }
 
     float gm_ease_in_quad(float t) {
@@ -854,7 +828,7 @@
     }
 
     float gm_ease_out_quad(float t) {
-        return 1 - (1 - t) * (1 - t);
+        return 1.0f - (1.0f - t) * (1.0f - t);
     }
 
     float gm_ease_in_cubic(float t) {
@@ -862,11 +836,11 @@
     }
 
     float gm_ease_out_cubic(float t) {
-        return 1 - pow(1 - t, 3);
+        return 1.0f - powf(1.0f - t, 3.0f);
     }
 
     float gm_ease_in_out_cubic(float t) {
-        return t < 0.5 ? 4 * t * t * t : 1 - pow(-2 * t + 2, 3) / 2;
+        return t < 0.5f ? 4.0f * t * t * t : 1.0f - powf(-2.0f * t + 2.0f, 3.0f) / 2.0f;
     }
 
     float gm_ease_in_quart(float t) {
@@ -874,11 +848,11 @@
     }
 
     float gm_ease_out_quart(float t) {
-        return 1 - pow(1 - t, 4);
+        return 1.0f - powf(1.0f - t, 4.0f);
     }
 
     float gm_ease_in_out_quart(float t) {
-        return t < 0.5 ? 8 * t * t * t * t : 1 - pow(-2 * t + 2, 4) / 2;
+        return t < 0.5f ? 8.0f * t * t * t * t : 1.0f - powf(-2.0f * t + 2.0f, 4.0f) / 2.0f;
     }
 
     float gm_ease_in_quint(float t) {
@@ -886,104 +860,104 @@
     }
 
     float gm_ease_out_quint(float t) {
-        return 1 + pow(t - 1, 5);
+        return 1.0f + powf(t - 1.0f, 5.0f);
     }
 
     float gm_ease_in_out_quint(float t) {
-        return t < 0.5 ? 16 * t * t * t * t * t : 1 - pow(-2 * t + 2, 5) / 2;
+        return t < 0.5f ? 16.0f * t * t * t * t * t : 1.0f - powf(-2.0f * t + 2.0f, 5.0f) / 2.0f;
     }
 
     float gm_ease_in_expo(float t) {
-        return t == 0 ? 0 : pow(2, 10 * t - 10);
+        return t == 0.0f ? 0.0f : powf(2.0f, 10.0f * t - 10.0f);
     }
 
     float gm_ease_out_expo(float t) {
-        return t == 1 ? 1 : 1 - pow(2, -10 * t);
+        return t == 1.0f ? 1.0f : 1.0f - powf(2.0f, -10.0f * t);
     }
 
     float gm_ease_in_out_expo(float t) {
-        if (t == 0) return 0;
-        if (t == 1) return 1;
-        if (t < 0.5) return pow(2, 20 * t - 10) / 2;
-        return (2 - pow(2, -20 * t + 10)) / 2;
+        if (t == 0.0f) return 0.0f;
+        if (t == 1.0f) return 1.0f;
+        if (t < 0.5f) return powf(2.0f, 20.0f * t - 10.0f) / 2.0f;
+        return (2.0f - powf(2.0f, -20.0f * t + 10.0f)) / 2.0f;
     }
 
     float gm_ease_in_circ(float t) {
-        return 1 - sqrt(1 - (t * t));
+        return 1.0f - sqrtf(1.0f - (t * t));
     }
 
     float gm_ease_out_circ(float t) {
-        return sqrt(1 - pow(t - 1, 2));
+        return sqrtf(1.0f - powf(t - 1.0f, 2.0f));
     }
 
     float gm_ease_in_out_circ(float t) {
-        if (t < 0.5) return (1 - sqrt(1 - pow(2 * t, 2))) / 2;
-        return (sqrt(1 - pow(-2 * t + 2, 2)) + 1) / 2;
+        if (t < 0.5f) return (1.0f - sqrtf(1.0f - powf(2.0f * t, 2.0f))) / 2.0f;
+        return (sqrtf(1.0f - powf(-2.0f * t + 2.0f, 2.0f)) + 1.0f) / 2.0f;
     }
 
     float gm_ease_in_back(float t) {
-        float c1 = 1.70158;
-        float c3 = c1 + 1;
+        float c1 = 1.70158f;
+        float c3 = c1 + 1.0f;
         return c3 * t * t * t - c1 * t * t;
     }
 
     float gm_ease_out_back(float t) {
-        float c1 = 1.70158;
-        float c3 = c1 + 1;
-        return 1 + c3 * pow(t - 1, 3) + c1 * pow(t - 1, 2);
+        float c1 = 1.70158f;
+        float c3 = c1 + 1.0f;
+        return 1.0f + c3 * powf(t - 1.0f, 3.0f) + c1 * powf(t - 1.0f, 2.0f);
     }
 
     float gm_ease_in_out_back(float t) {
-        float c1 = 1.70158;
-        float c2 = c1 * 1.525;
-        if (t < 0.5) return (pow(2 * t, 2) * ((c2 + 1) * 2 * t - c2)) / 2;
-        return (pow(2 * t - 2, 2) * ((c2 + 1) * (t * 2 - 2) + c2) + 2) / 2;
+        float c1 = 1.70158f;
+        float c2 = c1 * 1.525f;
+        if (t < 0.5f) return (powf(2.0f * t, 2.0f) * ((c2 + 1.0f) * 2.0f * t - c2)) / 2.0f;
+        return (powf(2.0f * t - 2.0f, 2.0f) * ((c2 + 1.0f) * (t * 2.0f - 2.0f) + c2) + 2.0f) / 2.0f;
     }
 
     float gm_ease_in_elastic(float t) {
-        float c4 = (2 * PI) / 3;
-        if (t == 0) return 0;
-        if (t == 1) return 1;
-        return -pow(2, 10 * t - 10) * sin((t * 10 - 10.75) * c4);
+        float c4 = (2.0f * PI) / 3.0f;
+        if (t == 0.0f) return 0.0f;
+        if (t == 1.0f) return 1.0f;
+        return -powf(2.0f, 10.0f * t - 10.0f) * sinf((t * 10.0f - 10.75f) * c4);
     }
 
     float gm_ease_out_elastic(float t) {
-        float c4 = (2 * PI) / 3;
-        if (t == 0) return 0;
-        if (t == 1) return 1;
-        return pow(2, -10 * t) * sin((t * 10 - 0.75) * c4) + 1;
+        float c4 = (2.0f * PI) / 3.0f;
+        if (t == 0.0f) return 0.0f;
+        if (t == 1.0f) return 1.0f;
+        return powf(2.0f, -10.0f * t) * sinf((t * 10.0f - 0.75f) * c4) + 1.0f;
     }
 
     float gm_ease_in_out_elastic(float t) {
-        float c5 = (2 * PI) / 4.5;
-        if (t == 0) return 0;
-        if (t == 1) return 1;
-        if (t < 0.5) return -(pow(2, 20 * t - 10) * sin((20 * t - 11.125) * c5)) / 2;
-        return (pow(2, -20 * t + 10) * sin((20 * t - 11.125) * c5)) / 2 + 1;
+        float c5 = (2.0f * PI) / 4.5f;
+        if (t == 0.0f) return 0.0f;
+        if (t == 1.0f) return 1.0f;
+        if (t < 0.5f) return -(powf(2.0f, 20.0f * t - 10.0f) * sinf((20.0f * t - 11.125f) * c5)) / 2.0f;
+        return (powf(2.0f, -20.0f * t + 10.0f) * sinf((20.0f * t - 11.125f) * c5)) / 2.0f + 1.0f;
     }
 
     float gm_ease_in_bounce(float t) {
-        return 1 - gm_ease_out_bounce(1 - t);
+        return 1.0f - gm_ease_out_bounce(1.0f - t);
     }
 
     float gm_ease_out_bounce(float t) {
-        float n1 = 7.5625;
-        float d1 = 2.75;
-        if (t < 1 / d1) {
+        float n1 = 7.5625f;
+        float d1 = 2.75f;
+        if (t < 1.0f / d1) {
             return n1 * t * t;
-        } else if (t < 2 / d1) {
-            return n1 * (t -= 1.5 / d1) * t + 0.75;
-        } else if (t < 2.5 / d1) {
-            return n1 * (t -= 2.25 / d1) * t + 0.9375;
+        } else if (t < 2.0f / d1) {
+            return n1 * (t -= 1.5f / d1) * t + 0.75f;
+        } else if (t < 2.5f / d1) {
+            return n1 * (t -= 2.25f / d1) * t + 0.9375f;
         } else {
-            return n1 * (t -= 2.625 / d1) * t + 0.984375;
+            return n1 * (t -= 2.625f / d1) * t + 0.984375f;
         }
     }
 
     float gm_ease_in_out_bounce(float t) {
-        return t < 0.5
-            ? (1 - gm_ease_out_bounce(1 - 2 * t)) / 2
-            : (1 + gm_ease_out_bounce(2 * t - 1)) / 2;
+        return t < 0.5f
+            ? (1.0f - gm_ease_out_bounce(1.0f - 2.0f * t)) / 2.0f
+            : (1.0f + gm_ease_out_bounce(2.0f * t - 1.0f)) / 2.0f;
     }
 #endif
 
@@ -1015,24 +989,12 @@
 
 #if defined(GM_IMPL_SHAPES)
     GM_Rectangle2D gm_rectangle2d_create(float x, float y, u32 width, u32 height) {
-        GM_Rectangle2D ret = {0};
-        ret.position.x = x;
-        ret.position.y = y;
-        ret.width = width;
-        ret.height = height;
-
+        GM_Rectangle2D ret = { .position.x = x, .position.y = y, .width = width, .height = height };
         return ret;
     }
 
     GM_Rectangle3D gm_rectangle3d_create(float x, float y, float z, u32 length, u32 width, u32 height) {
-        GM_Rectangle3D ret = {0};
-        ret.position.x = x;
-        ret.position.y = y;
-        ret.position.z = z;
-        ret.length = length;
-        ret.width = width;
-        ret.height = height;
-
+        GM_Rectangle3D ret = { .position.x = x, .position.y = y, .position.z = z, .length = length, .width = width, .height = height };
         return ret;
     }
 
@@ -1041,26 +1003,16 @@
             rect1.position.y < rect2.position.y + rect2.height && rect1.position.y + rect1.height > rect2.position.y) {
             return true;
         }
-
         return false;
     }
 
     GM_Circle2D gm_circle2d_create(float x, float y, u32 radius) {
-        GM_Circle2D ret = {0};
-        ret.position.x = x;
-        ret.position.y = y;
-        ret.radius = radius;
-
+        GM_Circle2D ret = { .position.x = x, .position.y = y, .radius = radius };
         return ret;
     }
 
     GM_Circle3D gm_circle3d_create(float x, float y, float z, u32 radius) {
-        GM_Circle3D ret = {0};
-        ret.position.x = x;
-        ret.position.y = y;
-        ret.position.z = z;
-        ret.radius = radius;
-
+        GM_Circle3D ret = { .position.x = x, .position.y = y, .position.z = z, .radius = radius };
         return ret;
     }
 #endif
