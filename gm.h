@@ -224,39 +224,43 @@
         };
     } GM_Vec4;
 
-    GM_API GM_Vec2 gm_v2_create(float x, float y);
-    GM_API GM_Vec3 gm_v3_create(float x, float y, float z);
-    GM_API GM_Vec4 gm_v4_create(float x, float y, float z, float w);
+    GM_API GM_Vec2 gm_vec2_create(float x, float y);
+    GM_API GM_Vec3 gm_vec3_create(float x, float y, float z);
+    GM_API GM_Vec4 gm_vec4_create(float x, float y, float z, float w);
 
-    GM_API GM_Vec2 gm_v2_add(GM_Vec2 A, GM_Vec2 B);
-    GM_API GM_Vec3 gm_v3_add(GM_Vec3 A, GM_Vec3 B);
-    GM_API GM_Vec4 gm_v4_add(GM_Vec4 A, GM_Vec4 B);
+    GM_API GM_Vec2 gm_vec2_add(GM_Vec2 A, GM_Vec2 B);
+    GM_API GM_Vec3 gm_vec3_add(GM_Vec3 A, GM_Vec3 B);
+    GM_API GM_Vec4 gm_vec4_add(GM_Vec4 A, GM_Vec4 B);
 
-    GM_API GM_Vec2 gm_v2_scale(GM_Vec2 v, float scale);
-    GM_API GM_Vec3 gm_v3_scale(GM_Vec3 v, float scale);
-    GM_API GM_Vec4 gm_v4_scale(GM_Vec4 v, float scale);
+    GM_API GM_Vec2 gm_vec2_sub(GM_Vec2 A, GM_Vec2 B);
+    GM_API GM_Vec3 gm_vec3_sub(GM_Vec3 A, GM_Vec3 B);
+    GM_API GM_Vec4 gm_vec4_sub(GM_Vec4 A, GM_Vec4 B);
 
-    GM_API GM_Vec2 gm_v2_lerp(GM_Vec2 A, GM_Vec2 B, float t);
-    GM_API GM_Vec3 gm_v3_lerp(GM_Vec3 A, GM_Vec3 B, float t);
-    GM_API GM_Vec4 gm_v4_lerp(GM_Vec4 A, GM_Vec4 B, float t);
+    GM_API GM_Vec2 gm_vec2_scale(GM_Vec2 v, float scale);
+    GM_API GM_Vec3 gm_vec3_scale(GM_Vec3 v, float scale);
+    GM_API GM_Vec4 gm_vec4_scale(GM_Vec4 v, float scale);
 
-    GM_API GM_Vec2 gm_v2_projection(GM_Vec2 A, GM_Vec2 B);
-    GM_API GM_Vec3 gm_v3_projection(GM_Vec3 A, GM_Vec3 B);
+    GM_API GM_Vec2 gm_vec2_lerp(GM_Vec2 A, GM_Vec2 B, float t);
+    GM_API GM_Vec3 gm_vec3_lerp(GM_Vec3 A, GM_Vec3 B, float t);
+    GM_API GM_Vec4 gm_vec4_lerp(GM_Vec4 A, GM_Vec4 B, float t);
 
-    GM_API GM_Vec2 gm_v2_normalize(GM_Vec2 A);
-    GM_API GM_Vec3 gm_v3_normalize(GM_Vec3 A);
-    GM_API GM_Vec4 gm_v4_normalize(GM_Vec4 A);
+    GM_API GM_Vec2 gm_vec2_projection(GM_Vec2 A, GM_Vec2 B);
+    GM_API GM_Vec3 gm_vec3_projection(GM_Vec3 A, GM_Vec3 B);
 
-    GM_API float gm_v2_magnitude(GM_Vec2 A);
-    GM_API float gm_v3_magnitude(GM_Vec3 A);
-    GM_API float gm_v4_magnitude(GM_Vec4 A);
+    GM_API GM_Vec2 gm_vec2_normalize(GM_Vec2 A);
+    GM_API GM_Vec3 gm_vec3_normalize(GM_Vec3 A);
+    GM_API GM_Vec4 gm_vec4_normalize(GM_Vec4 A);
 
-    GM_API float gm_v2_dot(GM_Vec2 A, GM_Vec2 B);
-    GM_API float gm_v3_dot(GM_Vec3 A, GM_Vec3 B);
-    GM_API float gm_v4_dot(GM_Vec4 A, GM_Vec4 B);
+    GM_API float gm_vec2_magnitude(GM_Vec2 A);
+    GM_API float gm_vec3_magnitude(GM_Vec3 A);
+    GM_API float gm_vec4_magnitude(GM_Vec4 A);
 
-    GM_API GM_Vec3 gm_v3_cross(GM_Vec3 A, GM_Vec3 B);
-    GM_API GM_Vec2 gm_v2_spline_point(GM_Vec2* spline_points, u32 spline_points_count, float t); // Declaration
+    GM_API float gm_vec2_dot(GM_Vec2 A, GM_Vec2 B);
+    GM_API float gm_vec3_dot(GM_Vec3 A, GM_Vec3 B);
+    GM_API float gm_vec4_dot(GM_Vec4 A, GM_Vec4 B);
+
+    GM_API GM_Vec3 gm_vec3_cross(GM_Vec3 A, GM_Vec3 B);
+    GM_API GM_Vec2 gm_vec2_spline_point(GM_Vec2* spline_points, u32 spline_points_count, float t); // Declaration
 #endif
 
 #if defined(GM_INCLUDE_MATRIX)
@@ -283,7 +287,7 @@
 
     GM_API GM_Matrix4 gm_mat4_perspective(float fov_degrees, float aspect, float near_plane, float far_plane);
     GM_API GM_Matrix4 gm_mat4_orthographic(float left, float right, float bottom, float top, float near_plane, float far_plane);
-    GM_API GM_Matrix4 gm_mat4_look_at(GM_Vec3 eye, GM_Vec3 center, GM_Vec3 up);
+    GM_API GM_Matrix4 gm_mat4_look_at(GM_Vec3 camera_position, GM_Vec3 target_position, GM_Vec3 world_up);
 
     GM_API GM_Matrix4 gm_mat4_mult(GM_Matrix4 A, GM_Matrix4 B);
     GM_API GM_Matrix4 gm_mat4_inverse(GM_Matrix4 m, bool* success);
@@ -452,19 +456,19 @@
 #endif
 
 #if defined(GM_IMPL_VECTOR)
-    float gm_v2_dot(GM_Vec2 A, GM_Vec2 B) {
+    float gm_vec2_dot(GM_Vec2 A, GM_Vec2 B) {
         return (A.x * B.x) + (A.y * B.y);
     }
 
-    float gm_v3_dot(GM_Vec3 A, GM_Vec3 B) {
+    float gm_vec3_dot(GM_Vec3 A, GM_Vec3 B) {
         return (A.x * B.x) + (A.y * B.y) + (A.z * B.z);
     }
 
-    float gm_v4_dot(GM_Vec4 A, GM_Vec4 B) {
+    float gm_vec4_dot(GM_Vec4 A, GM_Vec4 B) {
         return (A.x * B.x) + (A.y * B.y) + (A.z * B.z) + (A.w * B.w);
     }
 
-    GM_Vec3 gm_v3_cross(GM_Vec3 A, GM_Vec3 B) {
+    GM_Vec3 gm_vec3_cross(GM_Vec3 A, GM_Vec3 B) {
         GM_Vec3 ret;
         ret.x = A.y * B.z - A.z * B.y;
         ret.y = A.z * B.x - A.x * B.z;
@@ -472,21 +476,21 @@
         return ret;
     }
 
-    float gm_v2_magnitude(GM_Vec2 A) {
+    float gm_vec2_magnitude(GM_Vec2 A) {
         return sqrtf((A.x*A.x) + (A.y*A.y));
     }
 
-    float gm_v3_magnitude(GM_Vec3 A) {
+    float gm_vec3_magnitude(GM_Vec3 A) {
         return sqrtf((A.x*A.x) + (A.y*A.y) + (A.z*A.z));
     }
 
-    float gm_v4_magnitude(GM_Vec4 A) {
+    float gm_vec4_magnitude(GM_Vec4 A) {
         return sqrtf((A.x*A.x) + (A.y*A.y) + (A.z*A.z) + (A.w*A.w));
     }
 
-    GM_Vec2 gm_v2_normalize(GM_Vec2 A) {
+    GM_Vec2 gm_vec2_normalize(GM_Vec2 A) {
         GM_Vec2 ret;
-        const float magnitude = gm_v2_magnitude(A);
+        const float magnitude = gm_vec2_magnitude(A);
         if (magnitude == 0) return (GM_Vec2){0,0};
         ret.x = A.x / magnitude;
         ret.y = A.y / magnitude;
@@ -494,9 +498,9 @@
         return ret;
     }
 
-    GM_Vec3 gm_v3_normalize(GM_Vec3 A) {
+    GM_Vec3 gm_vec3_normalize(GM_Vec3 A) {
         GM_Vec3 ret;
-        const float magnitude = gm_v3_magnitude(A);
+        const float magnitude = gm_vec3_magnitude(A);
         if (magnitude == 0) return (GM_Vec3){0,0,0};
         ret.x = A.x / magnitude;
         ret.y = A.y / magnitude;
@@ -505,9 +509,9 @@
         return ret;
     }
 
-    GM_Vec4 gm_v4_normalize(GM_Vec4 A) {
+    GM_Vec4 gm_vec4_normalize(GM_Vec4 A) {
         GM_Vec4 ret;
-        const float magnitude = gm_v4_magnitude(A);
+        const float magnitude = gm_vec4_magnitude(A);
         if (magnitude == 0) return (GM_Vec4){0,0,0,0};
         ret.x = A.x / magnitude;
         ret.y = A.y / magnitude;
@@ -517,79 +521,94 @@
         return ret;
     }
 
-    GM_Vec2 gm_v2_create(float x, float y) {
+    GM_Vec2 gm_vec2_create(float x, float y) {
         GM_Vec2 ret = { .x = x, .y = y };
         return ret;
     }
 
-    GM_Vec3 gm_v3_create(float x, float y, float z) {
+    GM_Vec3 gm_vec3_create(float x, float y, float z) {
         GM_Vec3 ret = { .x = x, .y = y, .z = z };
         return ret;
     }
 
-    GM_Vec4 gm_v4_create(float x, float y, float z, float w) {
+    GM_Vec4 gm_vec4_create(float x, float y, float z, float w) {
         GM_Vec4 ret = { .x = x, .y = y, .z = z, .w = w };
         return ret;
     }
 
-    GM_Vec2 gm_v2_add(GM_Vec2 A, GM_Vec2 B) {
+    GM_Vec2 gm_vec2_add(GM_Vec2 A, GM_Vec2 B) {
         GM_Vec2 ret = { .x = A.x + B.x, .y = A.y + B.y };
         return ret;
     }
 
-    GM_Vec3 gm_v3_add(GM_Vec3 A, GM_Vec3 B) {
+    GM_Vec3 gm_vec3_add(GM_Vec3 A, GM_Vec3 B) {
         GM_Vec3 ret = { .x = A.x + B.x, .y = A.y + B.y, .z = A.z + B.z };
         return ret;
     }
 
-    GM_Vec4 gm_v4_add(GM_Vec4 A, GM_Vec4 B) {
+    GM_Vec4 gm_vec4_add(GM_Vec4 A, GM_Vec4 B) {
         GM_Vec4 ret = { .x = A.x + B.x, .y = A.y + B.y, .z = A.z + B.z, .w = A.w + B.w };
         return ret;
     }
 
-    GM_Vec2 gm_v2_scale(GM_Vec2 v, float scale) {
+    GM_Vec2 gm_vec2_sub(GM_Vec2 A, GM_Vec2 B) {
+        GM_Vec2 ret = { .x = A.x - B.x, .y = A.y - B.y };
+        return ret;
+    }
+
+    GM_Vec3 gm_vec3_sub(GM_Vec3 A, GM_Vec3 B) {
+        GM_Vec3 ret = { .x = A.x - B.x, .y = A.y - B.y, .z = A.z - B.z };
+        return ret;
+    }
+
+    GM_Vec4 gm_vec4_sub(GM_Vec4 A, GM_Vec4 B) {
+        GM_Vec4 ret = { .x = A.x - B.x, .y = A.y - B.y, .z = A.z - B.z, .w = A.w - B.w };
+        return ret;
+    }
+
+    GM_Vec2 gm_vec2_scale(GM_Vec2 v, float scale) {
         GM_Vec2 ret = { .x = v.x * scale, .y = v.y * scale };
         return ret;
     }
 
-    GM_Vec3 gm_v3_scale(GM_Vec3 v, float scale) {
+    GM_Vec3 gm_vec3_scale(GM_Vec3 v, float scale) {
         GM_Vec3 ret = { .x = v.x * scale, .y = v.y * scale, .z = v.z * scale };
         return ret;
     }
 
-    GM_Vec4 gm_v4_scale(GM_Vec4 v, float scale) {
+    GM_Vec4 gm_vec4_scale(GM_Vec4 v, float scale) {
         GM_Vec4 ret = { .x = v.x * scale, .y = v.y * scale, .z = v.z * scale, .w = v.w * scale };
         return ret;
     }
 
-    GM_Vec2 gm_v2_lerp(GM_Vec2 A, GM_Vec2 B, float t) {
-        return gm_v2_add(A, gm_v2_scale(gm_v2_add(B, gm_v2_scale(A, -1.0f)), t));
+    GM_Vec2 gm_vec2_lerp(GM_Vec2 A, GM_Vec2 B, float t) {
+        return gm_vec2_add(A, gm_vec2_scale(gm_vec2_add(B, gm_vec2_scale(A, -1.0f)), t));
     }
 
-    GM_Vec3 gm_v3_lerp(GM_Vec3 A, GM_Vec3 B, float t) {
-        return gm_v3_add(A, gm_v3_scale(gm_v3_add(B, gm_v3_scale(A, -1.0f)), t));
+    GM_Vec3 gm_vec3_lerp(GM_Vec3 A, GM_Vec3 B, float t) {
+        return gm_vec3_add(A, gm_vec3_scale(gm_vec3_add(B, gm_vec3_scale(A, -1.0f)), t));
     }
 
-    GM_Vec4 gm_v4_lerp(GM_Vec4 A, GM_Vec4 B, float t) {
-        return gm_v4_add(A, gm_v4_scale(gm_v4_add(B, gm_v4_scale(A, -1.0f)), t));
+    GM_Vec4 gm_vec4_lerp(GM_Vec4 A, GM_Vec4 B, float t) {
+        return gm_vec4_add(A, gm_vec4_scale(gm_vec4_add(B, gm_vec4_scale(A, -1.0f)), t));
     }
 
-    GM_Vec2 gm_v2_projection(GM_Vec2 A, GM_Vec2 B) {
-        float dot_product = gm_v2_dot(A, B);
-        float B_mag_sq = gm_v2_dot(B, B);
+    GM_Vec2 gm_vec2_projection(GM_Vec2 A, GM_Vec2 B) {
+        float dot_product = gm_vec2_dot(A, B);
+        float B_mag_sq = gm_vec2_dot(B, B);
         if (B_mag_sq == 0) return (GM_Vec2){0,0};
-        return gm_v2_scale(B, dot_product / B_mag_sq);
+        return gm_vec2_scale(B, dot_product / B_mag_sq);
     }
 
-    GM_Vec3 gm_v3_projection(GM_Vec3 A, GM_Vec3 B) {
-        float dot_product = gm_v3_dot(A, B);
-        float B_mag_sq = gm_v3_dot(B, B);
+    GM_Vec3 gm_vec3_projection(GM_Vec3 A, GM_Vec3 B) {
+        float dot_product = gm_vec3_dot(A, B);
+        float B_mag_sq = gm_vec3_dot(B, B);
         if (B_mag_sq == 0) return (GM_Vec3){0,0,0};
 
-        return gm_v3_scale(B, dot_product / B_mag_sq);
+        return gm_vec3_scale(B, dot_product / B_mag_sq);
     }
 
-    GM_Vec2 gm_v2_spline_point(GM_Vec2* spline_points, u32 spline_points_count, float t);
+    GM_Vec2 gm_vec2_spline_point(GM_Vec2* spline_points, u32 spline_points_count, float t);
 #endif
 
 #if defined(GM_IMPL_MATRIX)
@@ -672,7 +691,7 @@
         float s = sinf(rad);
         float t = 1.0f - c;
 
-        GM_Vec3 norm_axis = gm_v3_normalize(axis);
+        GM_Vec3 norm_axis = gm_vec3_normalize(axis);
         float x = norm_axis.x;
         float y = norm_axis.y;
         float z = norm_axis.z;
@@ -721,9 +740,28 @@
         return ret;
     }
 
-    GM_API GM_Matrix4 gm_mat4_orthographic(float left, float right, float bottom, float top, float near_plane, float far_plane);
-    GM_API GM_Matrix4 gm_mat4_look_at(GM_Vec3 eye, GM_Vec3 center, GM_Vec3 up);
-    GM_API GM_Matrix4 gm_mat4_inverse(GM_Matrix4 m, bool* success) {
+    GM_Matrix4 gm_mat4_orthographic(float left, float right, float bottom, float top, float near_plane, float far_plane);
+
+    GM_Matrix4 gm_mat4_look_at(GM_Vec3 camera_position, GM_Vec3 target_position, GM_Vec3 world_up) {
+        GM_Vec3 forward = gm_vec3_normalize(gm_vec3_sub(target_position, camera_position));
+        GM_Vec3 right   = gm_vec3_normalize(gm_vec3_cross(forward, world_up));
+        GM_Vec3 up      = gm_vec3_cross(right, forward);
+
+        GM_Matrix4 orientation = {
+            .data = {
+                right.x,   up.x,   -forward.x,   0,
+                right.y,   up.y,   -forward.y,   0,
+                right.z,   up.z,   -forward.z,   0,
+                0,         0,       0,           1
+            }
+        };
+
+        GM_Matrix4 translation = gm_mat4_translate(gm_mat4_identity(), gm_vec3_scale(camera_position, -1));
+
+        return gm_mat4_mult(orientation, translation);
+    }
+
+    GM_Matrix4 gm_mat4_inverse(GM_Matrix4 m, bool* success) {
         if (success) {
             *success = false;
         }
@@ -765,8 +803,8 @@
         float radians = DEGREES_TO_RAD(theta);
         float half_angle = radians / 2.0f;
         ret.w = cosf(half_angle);
-        GM_Vec3 norm_axis = gm_v3_normalize(axis);
-        ret.v = gm_v3_scale(norm_axis, sinf(half_angle));
+        GM_Vec3 norm_axis = gm_vec3_normalize(axis);
+        ret.v = gm_vec3_scale(norm_axis, sinf(half_angle));
 
         return ret;
     }
@@ -774,19 +812,19 @@
     GM_Quaternion gm_quat_inverse(GM_Quaternion quat) {
         GM_Quaternion ret = {0};
 
-        float mag_sq = (quat.w * quat.w) + gm_v3_dot(quat.v, quat.v);
+        float mag_sq = (quat.w * quat.w) + gm_vec3_dot(quat.v, quat.v);
         if (mag_sq == 0.0f) return (GM_Quaternion){0,0,0,0};
 
         ret.w = quat.w / mag_sq;
-        ret.v = gm_v3_scale(quat.v, -1.0f / mag_sq);
+        ret.v = gm_vec3_scale(quat.v, -1.0f / mag_sq);
 
         return ret;
     }
 
     GM_Quaternion gm_quat_mult(GM_Quaternion q1, GM_Quaternion q2) {
         GM_Quaternion ret;
-        ret.w = q1.w * q2.w - gm_v3_dot(q1.v, q2.v);
-        ret.v = gm_v3_add(gm_v3_add(gm_v3_scale(q1.v, q2.w), gm_v3_scale(q2.v, q1.w)), gm_v3_cross(q1.v, q2.v));
+        ret.w = q1.w * q2.w - gm_vec3_dot(q1.v, q2.v);
+        ret.v = gm_vec3_add(gm_vec3_add(gm_vec3_scale(q1.v, q2.w), gm_vec3_scale(q2.v, q1.w)), gm_vec3_cross(q1.v, q2.v));
         return ret;
     }
 
