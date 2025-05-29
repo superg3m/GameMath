@@ -276,7 +276,7 @@
     GM_API GM_Matrix4 gm_mat4_translate(GM_Matrix4 mat, GM_Vec3 t);
     GM_API GM_Matrix4 gm_mat4_translate_xyz(GM_Matrix4 mat, float x, float y, float z);
     GM_API GM_Matrix4 gm_mat4_scale(GM_Matrix4 mat, GM_Vec3 s);
-    GM_API GM_Matrix4 gm_mat4_scale_xyz(float x, float y, float z);
+    GM_API GM_Matrix4 gm_mat4_scale_xyz(GM_Matrix4 mat, float x, float y, float z);
 
     GM_API GM_Matrix4 gm_mat4_rotate(GM_Matrix4 mat, float degrees, GM_Vec3 axis);
     GM_API GM_Matrix4 gm_mat4_rotate_xyz(GM_Matrix4 mat, float degrees, float x, float y, float z);
@@ -633,7 +633,7 @@
         return C;
     }
 
-    GM_API GM_Matrix4 gm_mat4_translate(GM_Matrix4 mat, GM_Vec3 t) {
+    GM_Matrix4 gm_mat4_translate(GM_Matrix4 mat, GM_Vec3 t) {
         GM_Matrix4 translate_matrix = {
             .data = {
                 1.0f, 0.0f, 0.0f, t.x,
@@ -646,11 +646,11 @@
         return gm_mat4_mult(translate_matrix, mat);
     }
 
-    GM_API GM_Matrix4 gm_mat4_translate_xyz(GM_Matrix4 mat, float x, float y, float z) {
+    GM_Matrix4 gm_mat4_translate_xyz(GM_Matrix4 mat, float x, float y, float z) {
         return gm_mat4_translate(mat, (GM_Vec3){.x=x, .y=y, .z=z});
     }
 
-    GM_API GM_Matrix4 gm_mat4_scale(GM_Matrix4 mat, GM_Vec3 s) {
+    GM_Matrix4 gm_mat4_scale(GM_Matrix4 mat, GM_Vec3 s) {
         GM_Matrix4 scale_matrix = {
             .data = {
                 s.x,  0.0f, 0.0f, 0.0f,
@@ -662,16 +662,8 @@
         return gm_mat4_mult(scale_matrix, mat);
     }
 
-    GM_API GM_Matrix4 gm_mat4_scale_xyz(float x, float y, float z) {
-        GM_Matrix4 scale_matrix = {
-            .data = {
-                x,    0.0f, 0.0f, 0.0f,
-                0.0f, y,    0.0f, 0.0f,
-                0.0f, 0.0f, z,    0.0f,
-                0.0f, 0.0f, 0.0f, 1.0f
-            }
-        };
-        return scale_matrix;
+    GM_Matrix4 gm_mat4_scale_xyz(GM_Matrix4 mat, float x, float y, float z) {
+        return gm_mat4_scale(mat, (GM_Vec3){.x=x, .y=y, .z=z});
     }
 
     GM_Matrix4 gm_mat4_rotate(GM_Matrix4 mat, float degrees, GM_Vec3 axis) {
