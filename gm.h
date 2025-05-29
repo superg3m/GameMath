@@ -758,7 +758,7 @@
 
         GM_Matrix4 translation = gm_mat4_translate(gm_mat4_identity(), gm_vec3_scale(camera_position, -1));
 
-        return gm_mat4_mult(orientation, translation);
+        return gm_mat4_mult(translation, orientation);
     }
 
     GM_Matrix4 gm_mat4_inverse(GM_Matrix4 m, bool* success) {
