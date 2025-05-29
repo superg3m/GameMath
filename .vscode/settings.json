@@ -5,6 +5,7 @@
         "math.h": "c",
         "stdbool.h": "c",
         "xstring": "c",
-        "xutility": "c"
+        "xutility": "c",
+        "xiosbase": "c"
     }
 }

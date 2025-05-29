@@ -742,23 +742,27 @@
 
     GM_Matrix4 gm_mat4_orthographic(float left, float right, float bottom, float top, float near_plane, float far_plane);
 
+    // IMPLEMENTATION FROM https://learn.microsoft.com/en-us/windows/win32/direct3d9/d3dxmatrixlookatlh
+    // I just made it row major instead of column major
     GM_Matrix4 gm_mat4_look_at(GM_Vec3 camera_position, GM_Vec3 target_position, GM_Vec3 world_up) {
-        GM_Vec3 forward = gm_vec3_normalize(gm_vec3_sub(target_position, camera_position));
-        GM_Vec3 right   = gm_vec3_normalize(gm_vec3_cross(forward, world_up));
-        GM_Vec3 up      = gm_vec3_cross(right, forward);
+        GM_Vec3 z_axis = gm_vec3_normalize(gm_vec3_sub(target_position, camera_position));
+        GM_Vec3 x_axis = gm_vec3_normalize(gm_vec3_cross(world_up, z_axis));
+        GM_Vec3 y_axis = gm_vec3_cross(y_axis, x_axis);
 
-        GM_Matrix4 orientation = {
+        float dot_x = -gm_vec3_dot(x_axis, camera_position);
+        float dot_y = -gm_vec3_dot(y_axis, camera_position);
+        float dot_z = -gm_vec3_dot(z_axis, camera_position);
+
+        GM_Matrix4 ret = {
             .data = {
-                right.x,   up.x,   -forward.x,   0,
-                right.y,   up.y,   -forward.y,   0,
-                right.z,   up.z,   -forward.z,   0,
-                0,         0,       0,           1
+                x_axis.x,  x_axis.y,  x_axis.z,   dot_x,
+                y_axis.x,  y_axis.y,  y_axis.z,   dot_y,
+                z_axis.x,  z_axis.y,  z_axis.z,   dot_z,
+                0,         0,         0,          1
             }
         };
 
-        GM_Matrix4 translation = gm_mat4_translate(gm_mat4_identity(), gm_vec3_scale(camera_position, -1));
-
-        return gm_mat4_mult(translation, orientation);
+        return ret;
     }
 
     GM_Matrix4 gm_mat4_inverse(GM_Matrix4 m, bool* success) {
