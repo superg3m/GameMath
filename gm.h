@@ -473,44 +473,47 @@
     }
 
     float gm_v2_magnitude(GM_Vec2 A) {
-        return sqrtf((A.x*A.x) + (A.y*A.y)); // Fixed typo: A.y*A.y
+        return sqrtf((A.x*A.x) + (A.y*A.y));
     }
 
     float gm_v3_magnitude(GM_Vec3 A) {
-        return sqrtf((A.x*A.x) + (A.y*A.y) + (A.z*A.z)); // Fixed typo: A.y*A.y
+        return sqrtf((A.x*A.x) + (A.y*A.y) + (A.z*A.z));
     }
 
     float gm_v4_magnitude(GM_Vec4 A) {
-        return sqrtf((A.x*A.x) + (A.y*A.y) + (A.z*A.z) + (A.w*A.w)); // Fixed typo: A.y*A.y
+        return sqrtf((A.x*A.x) + (A.y*A.y) + (A.z*A.z) + (A.w*A.w));
     }
 
     GM_Vec2 gm_v2_normalize(GM_Vec2 A) {
         GM_Vec2 ret;
         const float magnitude = gm_v2_magnitude(A);
-        if (magnitude == 0) return (GM_Vec2){0,0}; // Avoid division by zero
+        if (magnitude == 0) return (GM_Vec2){0,0};
         ret.x = A.x / magnitude;
         ret.y = A.y / magnitude;
+
         return ret;
     }
 
     GM_Vec3 gm_v3_normalize(GM_Vec3 A) {
         GM_Vec3 ret;
         const float magnitude = gm_v3_magnitude(A);
-        if (magnitude == 0) return (GM_Vec3){0,0,0}; // Avoid division by zero
+        if (magnitude == 0) return (GM_Vec3){0,0,0};
         ret.x = A.x / magnitude;
         ret.y = A.y / magnitude;
         ret.z = A.z / magnitude;
+
         return ret;
     }
 
     GM_Vec4 gm_v4_normalize(GM_Vec4 A) {
         GM_Vec4 ret;
         const float magnitude = gm_v4_magnitude(A);
-        if (magnitude == 0) return (GM_Vec4){0,0,0,0}; // Avoid division by zero
+        if (magnitude == 0) return (GM_Vec4){0,0,0,0};
         ret.x = A.x / magnitude;
         ret.y = A.y / magnitude;
         ret.z = A.z / magnitude;
         ret.w = A.w / magnitude;
+
         return ret;
     }
 
@@ -573,25 +576,20 @@
 
     GM_Vec2 gm_v2_projection(GM_Vec2 A, GM_Vec2 B) {
         float dot_product = gm_v2_dot(A, B);
-        float B_mag_sq = gm_v2_dot(B, B); // B's magnitude squared
+        float B_mag_sq = gm_v2_dot(B, B);
         if (B_mag_sq == 0) return (GM_Vec2){0,0};
         return gm_v2_scale(B, dot_product / B_mag_sq);
     }
 
     GM_Vec3 gm_v3_projection(GM_Vec3 A, GM_Vec3 B) {
         float dot_product = gm_v3_dot(A, B);
-        float B_mag_sq = gm_v3_dot(B, B); // B's magnitude squared
+        float B_mag_sq = gm_v3_dot(B, B);
         if (B_mag_sq == 0) return (GM_Vec3){0,0,0};
+
         return gm_v3_scale(B, dot_product / B_mag_sq);
     }
 
-    GM_Vec2 gm_v2_spline_point(GM_Vec2* spline_points, u32 spline_points_count, float t) {
-        // TODO: Implement spline point calculation (e.g., Catmull-Rom, Bezier)
-        (void)spline_points; // Silence unused warning
-        (void)spline_points_count; // Silence unused warning
-        (void)t; // Silence unused warning
-        return (GM_Vec2){0,0}; // Placeholder
-    }
+    GM_Vec2 gm_v2_spline_point(GM_Vec2* spline_points, u32 spline_points_count, float t);
 #endif
 
 #if defined(GM_IMPL_MATRIX)
@@ -607,29 +605,44 @@
         return ret;
     }
 
-    GM_API GM_Matrix4 gm_mat4_mult(GM_Matrix4 A, GM_Matrix4 B) {
+    GM_Matrix4 gm_mat4_mult(GM_Matrix4 A, GM_Matrix4 B) {
         GM_Matrix4 C = {0};
 
         for (int i = 0; i < 4; i++) {
-            for (int j = 0; j < 4; j++) {
-                C.data[j * 4 + i] = 0.0f;
-                for (int k = 0; k < 4; k++) {
-                    C.data[j * 4 + i] += A.data[k * 4 + i] * B.data[j * 4 + k];
-                }
-            }
+            C.v[i].x += A.v[i].x * B.data[0];
+            C.v[i].x += A.v[i].y * B.data[4];
+            C.v[i].x += A.v[i].z * B.data[8];
+            C.v[i].x += A.v[i].w * B.data[12];
+
+            C.v[i].y += A.v[i].x * B.data[1];
+            C.v[i].y += A.v[i].y * B.data[5];
+            C.v[i].y += A.v[i].z * B.data[9];
+            C.v[i].y += A.v[i].w * B.data[13];
+
+            C.v[i].z += A.v[i].x * B.data[2];
+            C.v[i].z += A.v[i].y * B.data[6];
+            C.v[i].z += A.v[i].z * B.data[10];
+            C.v[i].z += A.v[i].w * B.data[14];
+            
+            C.v[i].w += A.v[i].x * B.data[3];
+            C.v[i].w += A.v[i].y * B.data[7];
+            C.v[i].w += A.v[i].z * B.data[11];
+            C.v[i].w += A.v[i].w * B.data[15];
         }
+        
         return C;
     }
 
     GM_API GM_Matrix4 gm_mat4_translate(GM_Matrix4 mat, GM_Vec3 t) {
         GM_Matrix4 translate_matrix = {
             .data = {
-                1.0f, 0.0f, 0.0f, 0.0f,
-                0.0f, 1.0f, 0.0f, 0.0f,
-                0.0f, 0.0f, 1.0f, 0.0f,
-                t.x,  t.y,  t.z,  1.0f
+                1.0f, 0.0f, 0.0f, t.x,
+                0.0f, 1.0f, 0.0f, t.y,
+                0.0f, 0.0f, 1.0f, t.z,
+                0.0f, 0.0f, 0.0f, 1.0f
             }
         };
+
         return gm_mat4_mult(mat, translate_matrix);
     }
 
@@ -661,7 +674,7 @@
         return scale_matrix;
     }
 
-    GM_API GM_Matrix4 gm_mat4_rotate(GM_Matrix4 mat, float degrees, GM_Vec3 axis) {
+    GM_Matrix4 gm_mat4_rotate(GM_Matrix4 mat, float degrees, GM_Vec3 axis) {
         float rad = DEGREES_TO_RAD(degrees);
         float c = cosf(rad);
         float s = sinf(rad);
@@ -674,38 +687,45 @@
 
         GM_Matrix4 rot = {
             .data = {
-                t*x*x + c,      t*x*y + s*z,    t*x*z - s*y,    0.0f,
-                t*x*y - s*z,    t*y*y + c,      t*y*z + s*x,    0.0f,
-                t*x*z + s*y,    t*y*z - s*x,    t*z*z + c,      0.0f,
-                0.0f,           0.0f,           0.0f,           1.0f
+                t * x * x + c,     t * x * y - z * s, t * x * z + y * s, 0.0f,
+                t * x * y + z * s, t * y * y + c,     t * y * z - x * s, 0.0f,
+                t * x * z - y * s, t * y * z + x * s, t * z * z + c,     0.0f,
+                0.0f,              0.0f,              0.0f,              1.0f
             }
         };
 
         return gm_mat4_mult(mat, rot);
     }
 
+
     GM_API GM_Matrix4 gm_mat4_rotate_xyz(GM_Matrix4 mat, float degrees, float x1, float y1, float z1) {
         return gm_mat4_rotate(mat, degrees, (GM_Vec3){.x=x1, .y=y1, .z=z1});
     }
 
-    // Z is negative going away from the viewer (Right-handed coordinate system OpenGL)
-    // This is a standard COLUMN-MAJOR perspective projection matrix
     GM_API GM_Matrix4 gm_mat4_perspective(float fov_degrees, float aspect, float near_plane, float far_plane) {
         float fov_radians = DEGREES_TO_RAD(fov_degrees);
-        float tan_half_fov = tanf(fov_radians / 2.0f);
-        float p = 1.0f / tan_half_fov; // cot(fov/2)
 
-        const float A = (far_plane + near_plane) / (near_plane - far_plane);
-        const float B = (2.0f * far_plane * near_plane) / (near_plane - far_plane);
+        const float t = tanf(fov_radians / 2) * near_plane;
+        const float b = -t;
+        const float r = t * aspect;
+        const float l = -t * aspect;
+
+        const float p = (2.0f * near_plane);
+
+        const float A = p / (r - l);
+        const float B = p / (t - b);
+        const float C = -((far_plane + near_plane) / (far_plane - near_plane));
+        const float D = -((p * far_plane) / (far_plane - near_plane));
 
         GM_Matrix4 ret = {
             .data = {
-                p / aspect, 0.0f,       0.0f,    0.0f,
-                0.0f,       p,          0.0f,    0.0f,
-                0.0f,       0.0f,       A,       -1.0f, // Note: -1.0f if Z clips to [-1,1], 1.0f if Z clips to [0,1] for DX/Vulkan
-                0.0f,       0.0f,       B,       0.0f
+                A,  0,  0,  0,
+                0,  B,  0,  0,
+                0,  0,  C,  D,
+                0,  0, -1,  0
             }
         };
+
         return ret;
     }
 
@@ -716,16 +736,32 @@
             *success = false;
         }
         
-        return gm_mat4_identity(); // Placeholder
+        return gm_mat4_identity();
     }
 
     GM_API GM_Matrix4 gm_mat4_transpose(GM_Matrix4 m) {
         GM_Matrix4 ret = {0};
-        for (int i = 0; i < 4; i++) {
-            for (int j = 0; j < 4; j++) {
-                ret.data[j * 4 + i] = m.data[i * 4 + j];
-            }
-        }
+
+        ret.v[0].x = m.v[0].x;
+        ret.v[0].y = m.v[1].x;
+        ret.v[0].z = m.v[2].x;
+        ret.v[0].w = m.v[3].x;
+
+        ret.v[1].x = m.v[0].y;
+        ret.v[1].y = m.v[1].y;
+        ret.v[1].z = m.v[2].y;
+        ret.v[1].w = m.v[3].y;
+
+        ret.v[2].x = m.v[0].z;
+        ret.v[2].y = m.v[1].z;
+        ret.v[2].z = m.v[2].z;
+        ret.v[2].w = m.v[3].z;
+
+        ret.v[3].x = m.v[0].w;
+        ret.v[3].y = m.v[1].w;
+        ret.v[3].z = m.v[2].w;
+        ret.v[3].w = m.v[3].w;      
+
         return ret;
     }
 #endif

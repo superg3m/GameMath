@@ -3,6 +3,8 @@
         "*.mysql": "sql",
         "gm.h": "c",
         "math.h": "c",
-        "stdbool.h": "c"
+        "stdbool.h": "c",
+        "xstring": "c",
+        "xutility": "c"
     }
 }

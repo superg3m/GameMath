@@ -22,8 +22,8 @@ cc: CompilerConfig = CompilerConfig(
 
 pc: ProjectConfig = ProjectConfig(
     project_name = "GameMath",
-    project_debug_with_visual_studio = True,
-    project_executable_names = []
+    project_debug_with_visual_studio = False,
+    project_executable_names = ["test.exe"]
 )
 
 if IS_WINDOWS() and not C_BUILD_IS_DEPENDENCY():
@@ -48,6 +48,14 @@ procedures: Dict[str, ProcedureConfig] = {
         build_directory=f"./{build_postfix}",
         output_name="gm.lib",
         source_files=["../../*.c"]
+    ),
+    
+    "GameMathTest": ProcedureConfig(
+        build_directory=f"./test/{build_postfix}",
+        output_name="test.exe",
+        include_paths=["../../../"],
+        source_files=["../../*.c"],
+        additional_libs=[f"../../../{build_postfix}/gm.lib"]
     )
 }
 
