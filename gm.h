@@ -747,7 +747,7 @@
     GM_Matrix4 gm_mat4_look_at(GM_Vec3 camera_position, GM_Vec3 target_position, GM_Vec3 world_up) {
         GM_Vec3 z_axis = gm_vec3_normalize(gm_vec3_sub(target_position, camera_position));
         GM_Vec3 x_axis = gm_vec3_normalize(gm_vec3_cross(world_up, z_axis));
-        GM_Vec3 y_axis = gm_vec3_cross(y_axis, x_axis);
+        GM_Vec3 y_axis = gm_vec3_cross(z_axis, x_axis);
 
         float dot_x = -gm_vec3_dot(x_axis, camera_position);
         float dot_y = -gm_vec3_dot(y_axis, camera_position);
