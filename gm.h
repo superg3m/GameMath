@@ -643,7 +643,7 @@
             }
         };
 
-        return gm_mat4_mult(mat, translate_matrix);
+        return gm_mat4_mult(translate_matrix, mat);
     }
 
     GM_API GM_Matrix4 gm_mat4_translate_xyz(GM_Matrix4 mat, float x, float y, float z) {
@@ -659,7 +659,7 @@
                 0.0f, 0.0f, 0.0f, 1.0f 
             }
         };
-        return gm_mat4_mult(mat, scale_matrix);
+        return gm_mat4_mult(scale_matrix, mat);
     }
 
     GM_API GM_Matrix4 gm_mat4_scale_xyz(float x, float y, float z) {
@@ -694,7 +694,7 @@
             }
         };
 
-        return gm_mat4_mult(mat, rot);
+        return gm_mat4_mult(rot, mat);
     }
 
 
