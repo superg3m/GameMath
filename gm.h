@@ -1120,7 +1120,7 @@
 
     void gm_rigidbody2d_update(GM_RigidBody2D* rb, float dt) {
         rb->acceleration = gm_vec2_scale(rb->force, 1 / rb->mass);
-        rb->position = gm_vec2_scale(rb->velocity, dt);
-        rb->velocity = gm_vec2_scale(rb->acceleration, dt);
+        rb->position = gm_vec2_add(rb->position, gm_vec2_scale(rb->velocity, dt));
+        rb->velocity = gm_vec2_add(rb->velocity, gm_vec2_scale(rb->acceleration, dt));
     }
 #endif
