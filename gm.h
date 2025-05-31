@@ -35,6 +35,7 @@
     #undef DEGREES_TO_RAD
     #undef RAD_TO_DEGREES
     #undef EPSILON
+    #undef NEAR_ZERO
     #undef stringify
     #undef glue
     #undef KiloBytes
@@ -76,6 +77,7 @@
     #define DEGREES_TO_RAD(degrees) ((degrees)*(PI/180.0f))
     #define RAD_TO_DEGREES(rad) ((rad)*(180.0f/PI))
     #define EPSILON 0.0001f
+    #define NEAR_ZERO(x) (fabsf(x) <= EPSILON)
 
     #define stringify(entry) #entry
     #define glue(a, b) a##b
