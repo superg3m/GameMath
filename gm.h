@@ -1096,7 +1096,7 @@
     GM_RigidBody2D gm_rigidbody2d_create_xy(float x, float y, float mass) {
         GM_RigidBody2D ret;
         ret.position.x = x;
-        ret.position.y = x;
+        ret.position.y = y;
         ret.mass = mass;
 
         return ret;
