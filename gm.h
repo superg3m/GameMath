@@ -1086,8 +1086,8 @@
     GM_RigidBody2D gm_rigidbody2d_create(GM_Vec2 position, float mass) {
         GM_RigidBody2D ret;
         ret.position = position;
-        ret.velocity = {0};
-        ret.velocity = {};
+        ret.velocity = gm_vec2_create(0, 0);
+        ret.acceleration = gm_vec2_create(0, 0);
         ret.mass = mass;
 
         return ret;
@@ -1107,7 +1107,7 @@
     }
 
     void gm_rigidbody2d_apply_velocity_xy(GM_RigidBody2D* rb, float velocity_x, float velocity_y) {
-        rb->velocity = gm_vec2_add(rb->velocity, velogm_vec2_create(velocity_x, velocity_y));
+        rb->velocity = gm_vec2_add(rb->velocity, gm_vec2_create(velocity_x, velocity_y));
     }
 
     void gm_rigidbody2d_apply_force(GM_RigidBody2D* rb, GM_Vec2 force) {
@@ -1118,9 +1118,9 @@
         rb->force = gm_vec2_add(rb->force, gm_vec2_create(force_x, force_y));
     }
 
-    void gm_rigidbody2d_update(GM_RigidBody* rb, float dt) {
+    void gm_rigidbody2d_update(GM_RigidBody2D* rb, float dt) {
         rb->acceleration = gm_vec2_scale(rb->force, 1 / rb->mass);
         rb->position = gm_vec2_scale(rb->velocity, dt);
-        rb->velocitiy = gm_vec2_scale(rb->acceleration, dt);
+        rb->velocity = gm_vec2_scale(rb->acceleration, dt);
     }
 #endif
