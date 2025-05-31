@@ -15,6 +15,7 @@
     #define GM_IMPL_EASE_FUNCTIONS
     #define GM_IMPL_COLLISION
     #define GM_IMPL_SHAPES
+    #define GM_IMPL_PHYSICS
 #endif
 
 #define GM_INCLUDE_TYPES
@@ -26,6 +27,7 @@
 #define GM_INCLUDE_EASE_FUNCTIONS
 #define GM_INCLUDE_COLLISION
 #define GM_INCLUDE_SHAPES
+#define GM_INCLUDE_PHYSICS
 
 #if defined(GM_INCLUDE_TYPES)
     #undef NULLPTR
@@ -370,6 +372,24 @@
     GM_API bool gm_rectangle_check_aabb_collision(GM_Rectangle2D rect1, GM_Rectangle2D rect2);
     GM_API GM_Circle2D gm_circle2d_create(float x, float y, u32 radius);
     GM_API GM_Circle3D gm_circle3d_create(float x, float y, float z, u32 radius);
+#endif
+
+#if defined(GM_INCLUDE_PHYSICS)
+    typedef struct GM_RigidBody2D {
+        GM_Vec2 force;
+        GM_Vec2 position;
+        GM_Vec2 velocity;
+        GM_Vec2 acceleration;
+        float mass; // In kilograms (KG)
+    } GM_RigidBody2D;
+
+    GM_API GM_RigidBody2D gm_rigidbody2d_create(GM_Vec2 position, float mass);
+    GM_API GM_RigidBody2D gm_rigidbody2d_create_xy(float x, float y, float mass);
+
+    GM_API void gm_rigidbody2d_apply_force(GM_RigidBody2D* rb, GM_Vec2 force);
+    GM_API void gm_rigidbody2d_apply_force_xy(GM_RigidBody2D* rb, float force_x, float force_y);
+
+    GM_API void gm_rigidbody2d_update(GM_RigidBody2D* rb, float dt);
 #endif
 
 //
@@ -1056,5 +1076,38 @@
     GM_Circle3D gm_circle3d_create(float x, float y, float z, u32 radius) {
         GM_Circle3D ret = { .position.x = x, .position.y = y, .position.z = z, .radius = radius };
         return ret;
+    }
+#endif
+
+#if defined(GM_IMPL_PHYSICS)
+    GM_RigidBody2D gm_rigidbody2d_create(GM_Vec2 position, float mass) {
+        GM_RigidBody2D ret;
+        ret.position = position;
+        ret.mass = mass;
+
+        return ret;
+    }
+
+    GM_RigidBody2D gm_rigidbody2d_create_xy(float x, float y, float mass) {
+        GM_RigidBody2D ret;
+        ret.position.x = x;
+        ret.position.y = x;
+        ret.mass = mass;
+
+        return ret;
+    }
+
+    void gm_rigidbody2d_apply_force_xy(GM_RigidBody2D* rb, GM_Vec2 force) {
+        rb->force = gm_vec2_add(rb->force, force);
+    }
+
+    void gm_rigidbody2d_apply_force_xy(GM_RigidBody2D* rb, float force_x, float force_y) {
+        rb->force = gm_vec2_add(rb->force, gm_vec2_create(force_x, force_y));
+    }
+
+    void gm_rigidbody2d_update(GM_RigidBody* rb, float dt) {
+        rb->acceleration = gm_vec2_scale(rb->force, 1 / rb->mass);
+        rb->position = gm_vec2_scale(rb->velocity, dt);
+        rb->velocitiy = gm_vec2_scale(rb->acceleration, dt);
     }
 #endif
