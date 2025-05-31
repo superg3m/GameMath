@@ -386,6 +386,9 @@
     GM_API GM_RigidBody2D gm_rigidbody2d_create(GM_Vec2 position, float mass);
     GM_API GM_RigidBody2D gm_rigidbody2d_create_xy(float x, float y, float mass);
 
+    GM_API void gm_rigidbody2d_apply_velocity(GM_RigidBody2D* rb, GM_Vec2 velocity);
+    GM_API void gm_rigidbody2d_apply_velocity_xy(GM_RigidBody2D* rb, float velocity_x, float velocity_y);
+
     GM_API void gm_rigidbody2d_apply_force(GM_RigidBody2D* rb, GM_Vec2 force);
     GM_API void gm_rigidbody2d_apply_force_xy(GM_RigidBody2D* rb, float force_x, float force_y);
 
@@ -1083,6 +1086,8 @@
     GM_RigidBody2D gm_rigidbody2d_create(GM_Vec2 position, float mass) {
         GM_RigidBody2D ret;
         ret.position = position;
+        ret.velocity = {0};
+        ret.velocity = {};
         ret.mass = mass;
 
         return ret;
@@ -1097,7 +1102,15 @@
         return ret;
     }
 
-    void gm_rigidbody2d_apply_force_xy(GM_RigidBody2D* rb, GM_Vec2 force) {
+    void gm_rigidbody2d_apply_velocity(GM_RigidBody2D* rb, GM_Vec2 velocity) {
+        rb->velocity = gm_vec2_add(rb->velocity, velocity);
+    }
+
+    void gm_rigidbody2d_apply_velocity_xy(GM_RigidBody2D* rb, float velocity_x, float velocity_y) {
+        rb->velocity = gm_vec2_add(rb->velocity, velogm_vec2_create(velocity_x, velocity_y));
+    }
+
+    void gm_rigidbody2d_apply_force(GM_RigidBody2D* rb, GM_Vec2 force) {
         rb->force = gm_vec2_add(rb->force, force);
     }
 
