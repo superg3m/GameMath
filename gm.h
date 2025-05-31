@@ -11,7 +11,7 @@
     #define GM_IMPL_VECTOR
     #define GM_IMPL_MATRIX
     #define GM_IMPL_QUATERNION
-    #define GM_IMPL_INTERPOLATION
+    #define GM_IMPL_UTILITY
     #define GM_IMPL_EASE_FUNCTIONS
     #define GM_IMPL_COLLISION
     #define GM_IMPL_SHAPES
@@ -23,7 +23,7 @@
 #define GM_INCLUDE_VECTOR
 #define GM_INCLUDE_MATRIX
 #define GM_INCLUDE_QUATERNION
-#define GM_INCLUDE_INTERPOLATION
+#define GM_INCLUDE_UTILITY
 #define GM_INCLUDE_EASE_FUNCTIONS
 #define GM_INCLUDE_COLLISION
 #define GM_INCLUDE_SHAPES
@@ -287,7 +287,7 @@
     GM_API GM_Quaternion gm_slerp(GM_Quaternion a, GM_Quaternion b, float t);
 #endif
 
-#if defined(GM_INCLUDE_INTERPOLATION)
+#if defined(GM_INCLUDE_UTILITY)
     GM_API float gm_lerp(float a, float b, float t);
     GM_API float gm_inverse_lerp(float a, float b, float value);
     GM_API GM_Vec3 gm_barycentric(GM_Vec3 a, GM_Vec3 b, GM_Vec3 c, float u, float v);
@@ -297,6 +297,8 @@
 
     GM_API float gm_smoothstep(float edge0, float edge1, float x);
     GM_API float gm_smootherstep(float edge0, float edge1, float x);
+
+    GM_API bool gm_near_equal(float a, float b);
 #endif
 
 #if defined(GM_INCLUDE_EASE_FUNCTIONS)
@@ -848,7 +850,7 @@
     GM_Quaternion gm_slerp(GM_Quaternion a, GM_Quaternion b, float t);
 #endif
 
-#if defined(GM_IMPL_INTERPOLATION)
+#if defined(GM_IMPL_UTILITY)
     float gm_lerp(float a, float b, float t) {
         return a + ((b - a) * t);
     }
@@ -877,6 +879,10 @@
     GM_Vec3 gm_barycentric(GM_Vec3 a, GM_Vec3 b, GM_Vec3 c, float u, float v);
     float gm_smoothstep(float edge0, float edge1, float x);
     float gm_smootherstep(float edge0, float edge1, float x);
+
+    bool gm_near_equal(float a, float b) {
+        return fabsf(a - b) < EPSILON;
+    }
 #endif
 
 #if defined(GM_IMPL_EASE_FUNCTIONS)
