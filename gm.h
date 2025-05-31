@@ -47,9 +47,6 @@
     #undef SET_BIT
     #undef UNSET_BIT
     #undef ArrayCount
-    #undef PLATFORM_WINDOWS
-    #undef PLATFORM_APPLE
-    #undef PLATFORM_LINUX
     #undef OS_DELIMITER
     #undef CRASH
     #undef UNUSED_FUNCTION
@@ -101,29 +98,6 @@
     #define UNSET_BIT(number, bit_to_unset) number &= (~(1 << bit_to_unset));
 
     #define ArrayCount(array) (sizeof(array) / sizeof(array[0]))
-
-    #define PLATFORM_MAX_PATH 256
-
-    #if defined(_WIN32)
-        #define NOMINMAX
-        #define WIN32_LEAN_AND_MEAN
-        #include <windows.h>
-        #define PLATFORM_WINDOWS
-        #define OS_DELIMITER '\\'
-        #define CRASH __debugbreak()
-    #elif defined(__APPLE__)
-        #include <dlfcn.h>
-        #define PLATFORM_APPLE
-        #define OS_DELIMITER '/'
-        #define CRASH __builtin_trap()
-    #elif defined(__linux__) || defined(__unix__) || defined(__POSIX__)
-        #include <dlfcn.h>
-        #define PLATFORM_LINUX
-        #define OS_DELIMITER '/'
-        #define CRASH __builtin_trap()
-    #else
-        #error "Unknown Platform???"
-    #endif
 
     #if defined(__clang__)
         #define UNUSED_FUNCTION __attribute__((used))
