@@ -1274,5 +1274,11 @@
         obj->rb.acceleration = gm_vec2_scale(obj->rb.force, 1 / obj->rb.mass);
         obj->rb.position = gm_vec2_add(obj->rb.position, gm_vec2_scale(obj->rb.velocity, dt));
         obj->rb.velocity = gm_vec2_add(obj->rb.velocity, gm_vec2_scale(obj->rb.acceleration, dt));
+
+        if (obj->collider.type == GM_COLLIDER_CIRCLE) {
+            obj->collider.circle.position = obj->rb.position;
+        } else if (obj->collider.type == GM_COLLIDER_AABB) {
+            obj->collider.aabb.position = obj->rb.position;
+        }
     }
 #endif
