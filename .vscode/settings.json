@@ -6,6 +6,14 @@
         "stdbool.h": "c",
         "xstring": "c",
         "xutility": "c",
-        "xiosbase": "c"
+        "xiosbase": "c",
+        "xmemory": "c",
+        "cmath": "c",
+        "compare": "c",
+        "memory": "c",
+        "tuple": "c",
+        "type_traits": "c",
+        "utility": "c",
+        "xtr1common": "c"
     }
 }
