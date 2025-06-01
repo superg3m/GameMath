@@ -1204,8 +1204,8 @@
                             object_b->rb.position = gm_vec2_add(object_b->rb.position, gm_vec2_scale(collision_info.normal, -collision_info.depth / 2.0f));
                             object_b->collider.circle.position = object_b->rb.position;
                         } else {
-                            object_a->rb.velocity = gm_vec2_add(object_a->rb.velocity, gm_vec2_scale(collision_info.normal, collision_info.depth / 2.0f));
-                            object_b->rb.velocity = gm_vec2_add(object_b->rb.velocity, gm_vec2_scale(collision_info.normal, -collision_info.depth / 2.0f));
+                            gm_physics2d_add_velocity(object_a, gm_vec2_scale(collision_info.normal, collision_info.depth / 2.0f));
+                            gm_physics2d_add_velocity(object_b, gm_vec2_scale(collision_info.normal, -collision_info.depth / 2.0f));
                         }
                     }
                 }
