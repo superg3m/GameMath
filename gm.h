@@ -357,19 +357,19 @@
 
     typedef struct GM_Circle2D {
         GM_Vec2 position;
-        u32 radius;
+        float radius;
     } GM_Circle2D;
 
     typedef struct GM_Circle3D {
         GM_Vec3 position;
-        u32 radius;
+        float radius;
     } GM_Circle3D;
 
     GM_API GM_Rectangle2D gm_rectangle2d_create(float x, float y, u32 width, u32 height);
     GM_API GM_Rectangle3D gm_rectangle3d_create(float x, float y, float z, u32 length, u32 width, u32 height);
     GM_API bool gm_rectangle_check_aabb_collision(GM_Rectangle2D rect1, GM_Rectangle2D rect2);
-    GM_API GM_Circle2D gm_circle2d_create(float x, float y, u32 radius);
-    GM_API GM_Circle3D gm_circle3d_create(float x, float y, float z, u32 radius);
+    GM_API GM_Circle2D gm_circle2d_create(float x, float y, float radius);
+    GM_API GM_Circle3D gm_circle3d_create(float x, float y, float z, float radius);
 #endif
 
 #if defined(GM_INCLUDE_COLLISION)
@@ -1102,7 +1102,7 @@
     bool gm_collision2d_circles(GM_Circle2D c1, GM_Circle2D c2, GM_CollisionInfo2D* collision_info) {
         float distance = gm_vec2_distance(c1.position, c2.position);
 
-        float total_radius = (float)c1.radius + (float)c2.radius;
+        float total_radius = c1.radius + c2.radius;
         if (distance >= total_radius) {
             return false;
         }
@@ -1175,12 +1175,12 @@
         return false;
     }
 
-    GM_Circle2D gm_circle2d_create(float x, float y, u32 radius) {
+    GM_Circle2D gm_circle2d_create(float x, float y, float radius) {
         GM_Circle2D ret = { .position.x = x, .position.y = y, .radius = radius };
         return ret;
     }
 
-    GM_Circle3D gm_circle3d_create(float x, float y, float z, u32 radius) {
+    GM_Circle3D gm_circle3d_create(float x, float y, float z, float radius) {
         GM_Circle3D ret = { .position.x = x, .position.y = y, .position.z = z, .radius = radius };
         return ret;
     }
