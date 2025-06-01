@@ -1103,14 +1103,13 @@
 
     bool gm_collision2d_circles(GM_Circle2D c1, GM_Circle2D c2, GM_CollisionInfo2D* collision_info) {
         float distance = gm_vec2_distance(c1.position, c2.position);
-
         float total_radius = c1.radius + c2.radius;
         if (distance >= total_radius) {
             return false;
         }
 
         if (collision_info) {
-            collision_info->normal = gm_vec2_sub(c2.position, c1.position);
+            collision_info->normal = gm_vec2_normalize(gm_vec2_sub(c2.position, c1.position));
             collision_info->depth = total_radius - distance;
         }
 
