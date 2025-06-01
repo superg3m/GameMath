@@ -446,7 +446,7 @@
     GM_API void gm_physics2d_add_force(GM_PhysicsObject2D* object, GM_Vec2 force);
     GM_API void gm_physics2d_add_force_xy(GM_PhysicsObject2D* object, float force_x, float force_y);
 
-    GM_API void gm_physics2d_simulate(GM_PhysicsObject2D* objects, int rb_count, float dt);
+    GM_API void gm_physics2d_simulate(GM_PhysicsObject2D* objects, int object_count, float dt);
 #endif
 
 //
