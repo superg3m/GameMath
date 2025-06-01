@@ -1199,6 +1199,7 @@
                     GM_CollisionInfo2D collision_info = {0};
                     if (gm_collision2d_circles(object_a->collider.circle, object_b->collider.circle, &collision_info)) {
                         object_a->rb.position = gm_vec2_add(object_a->rb.position, gm_vec2_scale(collision_info.normal, collision_info.depth));
+                        object_a->collider.circle.position = object_a->rb.position;
                     }
                 }
             }
