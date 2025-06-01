@@ -438,6 +438,7 @@
     GM_API GM_RigidBody2D gm_physics2d_rb_create_xy(float x, float y, float mass);
 
     GM_API GM_PhysicsObject2D gm_physics2d_object_create(GM_Vec2 position, float mass, GM_Collider2D collider);
+    GM_API GM_PhysicsObject2D gm_physics2d_object_create_xy(float x, float y, float mass, GM_Collider2D collider);
 
     GM_API void gm_physics2d_add_velocity(GM_PhysicsObject2D* object, GM_Vec2 velocity);
     GM_API void gm_physics2d_add_velocity_xy(GM_PhysicsObject2D* object, float velocity_x, float velocity_y);
@@ -1152,6 +1153,7 @@
             a.max.z >= b.min.z
         );
     }
+    */
 #endif
 
 #if defined(GM_IMPL_SHAPES)
@@ -1182,8 +1184,6 @@
         GM_Circle3D ret = { .position.x = x, .position.y = y, .position.z = z, .radius = radius };
         return ret;
     }
-
-    */
 #endif
 
 #if defined(GM_IMPL_PHYSICS)
@@ -1239,7 +1239,20 @@
         return ret;
     }
 
-    GM_PhysicsObject2D gm_physics2d_object_create_xy(float x, float y, float mass, GM_Collider2D collider);
+    GM_PhysicsObject2D gm_physics2d_object_create_xy(float x, float y, float mass, GM_Collider2D collider) {
+        GM_PhysicsObject2D ret = {0};
+        ret.rb = gm_physics2d_rb_create_xy(x, y, mass);
+        ret.collider = collider;
+        if (collider.type == GM_COLLIDER_CIRCLE) {
+            ret.collider.circle.position.x = x;
+            ret.collider.circle.position.y = y;
+        } else if (collider.type == GM_COLLIDER_AABB) {
+            ret.collider.aabb.position.x = x;
+            ret.collider.aabb.position.y = y;
+        }
+
+        return ret;
+    }
 
     void gm_physics2d_rb_apply_velocity(GM_PhysicsObject2D* obj, GM_Vec2 velocity) {
         obj->rb.velocity = gm_vec2_add(obj->rb.velocity, velocity);
