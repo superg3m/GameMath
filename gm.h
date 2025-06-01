@@ -434,6 +434,8 @@
         GM_Collider2D collider;
     } GM_PhysicsObject2D;
 
+    GM_API void gm_physics2d_resolve_collisions(GM_PhysicsObject2D* objects, int object_count);
+
     GM_API GM_RigidBody2D gm_physics2d_rb_create(GM_Vec2 position, float mass);
     GM_API GM_RigidBody2D gm_physics2d_rb_create_xy(float x, float y, float mass);
 
@@ -446,7 +448,7 @@
     GM_API void gm_physics2d_add_force(GM_PhysicsObject2D* object, GM_Vec2 force);
     GM_API void gm_physics2d_add_force_xy(GM_PhysicsObject2D* object, float force_x, float force_y);
 
-    GM_API void gm_physics2d_simulate(GM_PhysicsObject2D* objects, int object_count, float dt);
+    GM_API void gm_physics2d_update(GM_PhysicsObject2D* obj, float dt);
 #endif
 
 //
@@ -1187,9 +1189,7 @@
 #endif
 
 #if defined(GM_IMPL_PHYSICS)
-    internal GM_Vec2 gravity_vector = {0.0f, 9.81f};
-
-    internal void gm_physics2d_resolve_collisions(GM_PhysicsObject2D* objects, int object_count) {
+    void gm_physics2d_resolve_collisions(GM_PhysicsObject2D* objects, int object_count) {
         for (int i = 0; i < object_count - 1; i++) {
             GM_PhysicsObject2D* object_a = &objects[i];
             for (int j = i + 1; j < object_count; j++) {
@@ -1254,19 +1254,19 @@
         return ret;
     }
 
-    void gm_physics2d_rb_apply_velocity(GM_PhysicsObject2D* obj, GM_Vec2 velocity) {
+    void gm_physics2d_add_velocity(GM_PhysicsObject2D* obj, GM_Vec2 velocity) {
         obj->rb.velocity = gm_vec2_add(obj->rb.velocity, velocity);
     }
 
-    void gm_physics2d_apply_velocity_xy(GM_PhysicsObject2D* obj, float velocity_x, float velocity_y) {
+    void gm_physics2d_add_velocity_xy(GM_PhysicsObject2D* obj, float velocity_x, float velocity_y) {
         obj->rb.velocity = gm_vec2_add(obj->rb.velocity, gm_vec2_create(velocity_x, velocity_y));
     }
 
-    void gm_physics2d_apply_force(GM_PhysicsObject2D* obj, GM_Vec2 force) {
+    void gm_physics2d_add_force(GM_PhysicsObject2D* obj, GM_Vec2 force) {
         obj->rb.force = gm_vec2_add(obj->rb.force, force);
     }
 
-    void gm_physics2d_apply_force_xy(GM_PhysicsObject2D* obj, float force_x, float force_y) {
+    void gm_physics2d_add_force_xy(GM_PhysicsObject2D* obj, float force_x, float force_y) {
         obj->rb.force = gm_vec2_add(obj->rb.force, gm_vec2_create(force_x, force_y));
     }
 
@@ -1274,16 +1274,5 @@
         obj->rb.acceleration = gm_vec2_scale(obj->rb.force, 1 / obj->rb.mass);
         obj->rb.position = gm_vec2_add(obj->rb.position, gm_vec2_scale(obj->rb.velocity, dt));
         obj->rb.velocity = gm_vec2_add(obj->rb.velocity, gm_vec2_scale(obj->rb.acceleration, dt));
-    }
-
-    void gm_physics2d_simulate(GM_PhysicsObject2D* objects, int object_count, float dt) {
-        for (int i = 0; i < object_count; i++) {
-            GM_PhysicsObject2D* obj = &objects[i];
-            gm_physics2d_apply_force(obj, gm_vec2_scale(gravity_vector, obj->rb.mass));
-
-            gm_physics2d_resolve_collisions(objects, object_count);
-
-            gm_physics2d_update(obj, dt);
-        }
     }
 #endif
