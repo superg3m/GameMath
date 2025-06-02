@@ -405,8 +405,8 @@
 #endif
 
 #if defined(GM_INCLUDE_EULER)
-    GM_Vec2 gm_euler_to_vec2(float yaw, float pitch);
-    GM_Vec3 gm_euler_to_vec3(float yaw, float pitch);
+    GM_API GM_Vec2 gm_euler_to_vec2(float yaw, float pitch);
+    GM_API GM_Vec3 gm_euler_to_vec3(float yaw, float pitch);
 #endif
 
 #if defined(GM_INCLUDE_COLLISION)
