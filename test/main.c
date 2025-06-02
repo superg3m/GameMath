@@ -1,12 +1,18 @@
 #include <gm.h>
 
-int mat_equal(GM_Matrix4* A, GM_Matrix4* B) {
-    for (int i = 0; i < 16; i++) {
-        if (fabsf(A->data[i] - B->data[i]) > 1e-5f) {
-            return 0;
-        }
+void test_intersection() {
+    GM_Vec2 p0 = {0, 0};
+    GM_Vec2 p1 = {10, 10};
+    GM_Rectangle2D aabb = gm_rectangle2d_create(2, 2, 3, 3);
+    GM_Vec2 inPoint, outPoint;
+
+    if (gm_intersection2d_line_aabb(p0, p1, aabb, &inPoint, &outPoint)) {
+        printf("Intersection occurred!\n");
+        printf("Entry point: (%f, %f)\n", inPoint.x, inPoint.y);
+        printf("Exit point:  (%f, %f)\n", outPoint.x, outPoint.y);
+    } else {
+        printf("No intersection.\n");
     }
-    return 1;
 }
 
 int main() {
@@ -39,7 +45,7 @@ int main() {
 
     GM_Matrix4 result = gm_mat4_mult(A, B);
 
-    if (mat_equal(&expected, &result)) {
+    if (gm_mat4_equal(&expected, &result)) {
         printf("Test Passed\n");
     } else {
         printf("Test Failed\n");
@@ -57,11 +63,13 @@ int main() {
 
 
 
-    if (mat_equal(&expected2, &result)) {
+    if (gm_mat4_equal(&expected2, &result)) {
         printf("Test Passed\n");
     } else {
         printf("Test Failed\n");
     }
+
+    test_intersection();
 
     return 0;
 }

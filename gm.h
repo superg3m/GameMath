@@ -11,10 +11,11 @@
     #define GM_IMPL_VECTOR
     #define GM_IMPL_EULER
     #define GM_IMPL_MATRIX
+    #define GM_IMPL_SHAPES
+    #define GM_IMPL_INTERSECTION
     #define GM_IMPL_QUATERNION
     #define GM_IMPL_UTILITY
     #define GM_IMPL_EASE_FUNCTIONS
-    #define GM_IMPL_SHAPES
     #define GM_IMPL_COLLISION
     #define GM_IMPL_PHYSICS
 #endif
@@ -24,10 +25,11 @@
 #define GM_INCLUDE_VECTOR
 #define GM_INCLUDE_EULER
 #define GM_INCLUDE_MATRIX
+#define GM_INCLUDE_SHAPES
+#define GM_INCLUDE_INTERSECTION
 #define GM_INCLUDE_QUATERNION
 #define GM_INCLUDE_UTILITY
 #define GM_INCLUDE_EASE_FUNCTIONS
-#define GM_INCLUDE_SHAPES
 #define GM_INCLUDE_COLLISION
 #define GM_INCLUDE_PHYSICS
 
@@ -294,6 +296,7 @@
         };
     } GM_Matrix4;
 
+
     GM_API GM_Matrix4 gm_mat4_identity();
     GM_API GM_Matrix4 gm_mat4_translate(GM_Matrix4 mat, GM_Vec3 t);
     GM_API GM_Matrix4 gm_mat4_translate_xyz(GM_Matrix4 mat, float x, float y, float z);
@@ -310,6 +313,45 @@
     GM_API GM_Matrix4 gm_mat4_mult(GM_Matrix4 A, GM_Matrix4 B);
     GM_API GM_Matrix4 gm_mat4_inverse(GM_Matrix4 m, bool* success);
     GM_API GM_Matrix4 gm_mat4_transpose(GM_Matrix4 m);
+
+    GM_API bool gm_mat4_equal(GM_Matrix4* A, GM_Matrix4* B);
+#endif
+
+#if defined(GM_INCLUDE_SHAPES)
+    typedef struct GM_Rectangle2D {
+        GM_Vec2 position;
+        u32 width;
+        u32 height;
+    } GM_Rectangle2D;
+
+    typedef struct GM_Rectangle3D {
+        GM_Vec3 position;
+        u32 length;
+        u32 width;
+        u32 height;
+    } GM_Rectangle3D;
+
+    typedef struct GM_Circle2D {
+        GM_Vec2 position;
+        float radius;
+    } GM_Circle2D;
+
+    typedef struct GM_Circle3D {
+        GM_Vec3 position;
+        float radius;
+    } GM_Circle3D;
+
+    GM_API GM_Rectangle2D gm_rectangle2d_create(float x, float y, u32 width, u32 height);
+    GM_API GM_Rectangle3D gm_rectangle3d_create(float x, float y, float z, u32 length, u32 width, u32 height);
+    GM_API bool gm_rectangle_check_aabb_collision(GM_Rectangle2D rect1, GM_Rectangle2D rect2);
+    GM_API GM_Circle2D gm_circle2d_create(float x, float y, float radius);
+    GM_API GM_Circle3D gm_circle3d_create(float x, float y, float z, float radius);
+#endif
+
+#if defined(GM_INCLUDE_INTERSECTION)
+    // Found at: https://imois.in/posts/line-intersections-with-cross-products/
+    GM_API bool gm_intersection2d_line_line(GM_Vec2 a, GM_Vec2 b, GM_Vec2 c, GM_Vec2 d, GM_Vec2* intersection);
+    GM_API bool gm_intersection2d_line_aabb(GM_Vec2 p0, GM_Vec2 p1, GM_Rectangle2D aabb, GM_Vec2* inPoint, GM_Vec2* outPoint);
 #endif
 
 #if defined(GM_INCLUDE_QUATERNION)
@@ -371,37 +413,6 @@
     GM_API float gm_ease_in_bounce(float t);
     GM_API float gm_ease_out_bounce(float t);
     GM_API float gm_ease_in_out_bounce(float t);
-#endif
-
-#if defined(GM_INCLUDE_SHAPES)
-    typedef struct GM_Rectangle2D {
-        GM_Vec2 position;
-        u32 width;
-        u32 height;
-    } GM_Rectangle2D;
-
-    typedef struct GM_Rectangle3D {
-        GM_Vec3 position;
-        u32 length;
-        u32 width;
-        u32 height;
-    } GM_Rectangle3D;
-
-    typedef struct GM_Circle2D {
-        GM_Vec2 position;
-        float radius;
-    } GM_Circle2D;
-
-    typedef struct GM_Circle3D {
-        GM_Vec3 position;
-        float radius;
-    } GM_Circle3D;
-
-    GM_API GM_Rectangle2D gm_rectangle2d_create(float x, float y, u32 width, u32 height);
-    GM_API GM_Rectangle3D gm_rectangle3d_create(float x, float y, float z, u32 length, u32 width, u32 height);
-    GM_API bool gm_rectangle_check_aabb_collision(GM_Rectangle2D rect1, GM_Rectangle2D rect2);
-    GM_API GM_Circle2D gm_circle2d_create(float x, float y, float radius);
-    GM_API GM_Circle3D gm_circle3d_create(float x, float y, float z, float radius);
 #endif
 
 #if defined(GM_INCLUDE_EULER)
@@ -917,6 +928,120 @@
 
         return ret;
     }
+
+    
+    bool gm_mat4_equal(GM_Matrix4* A, GM_Matrix4* B) {
+        for (int i = 0; i < 16; i++) {
+            if (!NEAR_ZERO(A->data[i] - B->data[i])) {
+                return false;
+            }
+        }
+
+        return true;
+    }
+#endif
+
+#if defined(GM_IMPL_SHAPES)
+    GM_Rectangle2D gm_rectangle2d_create(float x, float y, u32 width, u32 height) {
+        GM_Rectangle2D ret = { .position.x = x, .position.y = y, .width = width, .height = height };
+        return ret;
+    }
+
+    GM_Rectangle3D gm_rectangle3d_create(float x, float y, float z, u32 length, u32 width, u32 height) {
+        GM_Rectangle3D ret = { .position.x = x, .position.y = y, .position.z = z, .length = length, .width = width, .height = height };
+        return ret;
+    }
+
+    bool gm_rectangle_check_aabb_collision(GM_Rectangle2D rect1, GM_Rectangle2D rect2) {
+        if (rect1.position.x < rect2.position.x + rect2.width && rect1.position.x + rect1.width > rect2.position.x &&
+            rect1.position.y < rect2.position.y + rect2.height && rect1.position.y + rect1.height > rect2.position.y) {
+            return true;
+        }
+        return false;
+    }
+
+    GM_Circle2D gm_circle2d_create(float x, float y, float radius) {
+        GM_Circle2D ret = { .position.x = x, .position.y = y, .radius = radius };
+        return ret;
+    }
+
+    GM_Circle3D gm_circle3d_create(float x, float y, float z, float radius) {
+        GM_Circle3D ret = { .position.x = x, .position.y = y, .position.z = z, .radius = radius };
+        return ret;
+    }
+#endif
+
+#if defined(GM_IMPL_INTERSECTION)
+    // Found at: https://imois.in/posts/line-intersections-with-cross-products/
+    bool gm_intersection2d_line_line(GM_Vec2 a, GM_Vec2 b, GM_Vec2 c, GM_Vec2 d, GM_Vec2* intersection) {
+        GM_Vec3 line1 = gm_vec3_cross(GM_Vec3Lit(a.x, a.y, 1), GM_Vec3Lit(b.x, b.y, 1));
+        GM_Vec3 line2 = gm_vec3_cross(GM_Vec3Lit(c.x, c.y, 1), GM_Vec3Lit(d.x, d.y, 1));
+        GM_Vec3 solution = gm_vec3_cross(line1, line2);
+
+        if (solution.z == 0) {
+            return false;
+        } else {
+            GM_Vec2 temp = GM_Vec2Lit(solution.x / solution.z, solution.y / solution.z);
+
+            if (intersection) {
+                *intersection = temp;
+            }
+
+            return (
+                (temp.x < a.x) != (temp.x < b.x) && 
+                (temp.y < a.y) != (temp.y < b.y) && 
+                (temp.x < c.x) != (temp.x < d.x) && 
+                (temp.y < c.y) != (temp.y < d.y)
+            );
+        }
+    }
+
+
+    bool gm_intersection2d_line_aabb(GM_Vec2 p0, GM_Vec2 p1, GM_Rectangle2D aabb, GM_Vec2* inPoint, GM_Vec2* outPoint) {
+        float t0 = 0.0f;
+        float t1 = 1.0f;
+        float dx = p1.x - p0.x;
+        float dy = p1.y - p0.y;
+
+        #define CLIP(p, q)                   \
+        do {                                 \
+            if ((p) == 0.0f && (q) < 0.0f) { \
+                return false;                \
+            }                                \
+            if ((p) < 0.0f) {                \
+                float r = (q) / (p);         \
+                if (r > t1) return false;    \
+                if (r > t0) t0 = r;          \
+            } else if ((p) > 0.0f) {         \
+                float r = (q) / (p);         \
+                if (r < t0) return false;    \
+                if (r < t1) t1 = r;          \
+            }                                \
+        } while (0)                          \
+
+        CLIP(-dx, p0.x - aabb.position.x); // Left
+        CLIP( dx, (aabb.position.x + aabb.width) - p0.x); // Right
+        CLIP(-dy, p0.y - aabb.position.y); // Bottom
+        CLIP( dy, (aabb.position.y + aabb.height) - p0.y); // Top
+
+        #undef CLIP
+
+        if (t1 < t0) {
+            return false;
+        }
+
+        if (inPoint) {
+            inPoint->x = p0.x + t0 * dx;
+            inPoint->y = p0.y + t0 * dy;
+        }
+
+        if (outPoint) {
+            outPoint->x = p0.x + t1 * dx;
+            outPoint->y = p0.y + t1 * dy;
+        }
+
+        return true;
+    }
 #endif
 
 #if defined(GM_IMPL_QUATERNION)
@@ -1151,36 +1276,6 @@
         return t < 0.5f
             ? (1.0f - gm_ease_out_bounce(1.0f - 2.0f * t)) / 2.0f
             : (1.0f + gm_ease_out_bounce(2.0f * t - 1.0f)) / 2.0f;
-    }
-#endif
-
-#if defined(GM_IMPL_SHAPES)
-    GM_Rectangle2D gm_rectangle2d_create(float x, float y, u32 width, u32 height) {
-        GM_Rectangle2D ret = { .position.x = x, .position.y = y, .width = width, .height = height };
-        return ret;
-    }
-
-    GM_Rectangle3D gm_rectangle3d_create(float x, float y, float z, u32 length, u32 width, u32 height) {
-        GM_Rectangle3D ret = { .position.x = x, .position.y = y, .position.z = z, .length = length, .width = width, .height = height };
-        return ret;
-    }
-
-    bool gm_rectangle_check_aabb_collision(GM_Rectangle2D rect1, GM_Rectangle2D rect2) {
-        if (rect1.position.x < rect2.position.x + rect2.width && rect1.position.x + rect1.width > rect2.position.x &&
-            rect1.position.y < rect2.position.y + rect2.height && rect1.position.y + rect1.height > rect2.position.y) {
-            return true;
-        }
-        return false;
-    }
-
-    GM_Circle2D gm_circle2d_create(float x, float y, float radius) {
-        GM_Circle2D ret = { .position.x = x, .position.y = y, .radius = radius };
-        return ret;
-    }
-
-    GM_Circle3D gm_circle3d_create(float x, float y, float z, float radius) {
-        GM_Circle3D ret = { .position.x = x, .position.y = y, .position.z = z, .radius = radius };
-        return ret;
     }
 #endif
 
