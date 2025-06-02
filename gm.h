@@ -9,24 +9,26 @@
 #if defined(GM_IMPL)
     #define GM_IMPL_COLOR
     #define GM_IMPL_VECTOR
+    #define GM_IMPL_EULER
     #define GM_IMPL_MATRIX
     #define GM_IMPL_QUATERNION
     #define GM_IMPL_UTILITY
     #define GM_IMPL_EASE_FUNCTIONS
-    #define GM_IMPL_COLLISION
     #define GM_IMPL_SHAPES
+    #define GM_IMPL_COLLISION
     #define GM_IMPL_PHYSICS
 #endif
 
 #define GM_INCLUDE_TYPES
 #define GM_INCLUDE_COLOR
 #define GM_INCLUDE_VECTOR
+#define GM_INCLUDE_EULER
 #define GM_INCLUDE_MATRIX
 #define GM_INCLUDE_QUATERNION
 #define GM_INCLUDE_UTILITY
 #define GM_INCLUDE_EASE_FUNCTIONS
-#define GM_INCLUDE_COLLISION
 #define GM_INCLUDE_SHAPES
+#define GM_INCLUDE_COLLISION
 #define GM_INCLUDE_PHYSICS
 
 #if defined(GM_INCLUDE_TYPES)
@@ -402,8 +404,12 @@
     GM_API GM_Circle3D gm_circle3d_create(float x, float y, float z, float radius);
 #endif
 
-#if defined(GM_INCLUDE_COLLISION)
+#if defined(GM_INCLUDE_EULER)
+    GM_Vec2 gm_euler_to_vec2(float yaw, float pitch);
+    GM_Vec3 gm_euler_to_vec3(float yaw, float pitch);
+#endif
 
+#if defined(GM_INCLUDE_COLLISION)
     typedef struct GM_CollisionInfo2D {
         GM_Vec2 normal;
         float depth;
@@ -704,6 +710,26 @@
     }
 
     GM_Vec2 gm_vec2_spline_point(GM_Vec2* spline_points, u32 spline_points_count, float t);
+#endif
+
+
+#if defined(GM_IMPL_EULER)
+    GM_Vec2 gm_euler_to_vec2(float yaw, float pitch) {
+        GM_Vec2 ret = GM_Vec2Lit(0, 0);
+        ret.x = cosf(yaw) * cosf(pitch);
+        ret.y = sinf(pitch);
+
+        return ret;
+    }
+
+    GM_Vec3 gm_euler_to_vec3(float yaw, float pitch) {
+        GM_Vec3 ret = GM_Vec3Lit(0, 0, 0);
+        ret.x = cosf(yaw) * cosf(pitch);
+        ret.y = sinf(pitch);
+        ret.z = sinf(yaw) * cosf(pitch);
+
+        return ret;
+    }
 #endif
 
 #if defined(GM_IMPL_MATRIX)
@@ -1128,6 +1154,36 @@
     }
 #endif
 
+#if defined(GM_IMPL_SHAPES)
+    GM_Rectangle2D gm_rectangle2d_create(float x, float y, u32 width, u32 height) {
+        GM_Rectangle2D ret = { .position.x = x, .position.y = y, .width = width, .height = height };
+        return ret;
+    }
+
+    GM_Rectangle3D gm_rectangle3d_create(float x, float y, float z, u32 length, u32 width, u32 height) {
+        GM_Rectangle3D ret = { .position.x = x, .position.y = y, .position.z = z, .length = length, .width = width, .height = height };
+        return ret;
+    }
+
+    bool gm_rectangle_check_aabb_collision(GM_Rectangle2D rect1, GM_Rectangle2D rect2) {
+        if (rect1.position.x < rect2.position.x + rect2.width && rect1.position.x + rect1.width > rect2.position.x &&
+            rect1.position.y < rect2.position.y + rect2.height && rect1.position.y + rect1.height > rect2.position.y) {
+            return true;
+        }
+        return false;
+    }
+
+    GM_Circle2D gm_circle2d_create(float x, float y, float radius) {
+        GM_Circle2D ret = { .position.x = x, .position.y = y, .radius = radius };
+        return ret;
+    }
+
+    GM_Circle3D gm_circle3d_create(float x, float y, float z, float radius) {
+        GM_Circle3D ret = { .position.x = x, .position.y = y, .position.z = z, .radius = radius };
+        return ret;
+    }
+#endif
+
 #if defined(GM_IMPL_COLLISION)
     // SAT collision
 
@@ -1185,36 +1241,6 @@
         );
     }
     */
-#endif
-
-#if defined(GM_IMPL_SHAPES)
-    GM_Rectangle2D gm_rectangle2d_create(float x, float y, u32 width, u32 height) {
-        GM_Rectangle2D ret = { .position.x = x, .position.y = y, .width = width, .height = height };
-        return ret;
-    }
-
-    GM_Rectangle3D gm_rectangle3d_create(float x, float y, float z, u32 length, u32 width, u32 height) {
-        GM_Rectangle3D ret = { .position.x = x, .position.y = y, .position.z = z, .length = length, .width = width, .height = height };
-        return ret;
-    }
-
-    bool gm_rectangle_check_aabb_collision(GM_Rectangle2D rect1, GM_Rectangle2D rect2) {
-        if (rect1.position.x < rect2.position.x + rect2.width && rect1.position.x + rect1.width > rect2.position.x &&
-            rect1.position.y < rect2.position.y + rect2.height && rect1.position.y + rect1.height > rect2.position.y) {
-            return true;
-        }
-        return false;
-    }
-
-    GM_Circle2D gm_circle2d_create(float x, float y, float radius) {
-        GM_Circle2D ret = { .position.x = x, .position.y = y, .radius = radius };
-        return ret;
-    }
-
-    GM_Circle3D gm_circle3d_create(float x, float y, float z, float radius) {
-        GM_Circle3D ret = { .position.x = x, .position.y = y, .position.z = z, .radius = radius };
-        return ret;
-    }
 #endif
 
 #if defined(GM_IMPL_PHYSICS)
@@ -1318,40 +1344,5 @@
         } else if (obj->collider.type == GM_COLLIDER_AABB) {
             obj->collider.aabb.position = obj->rb.position;
         }
-    }
-#endif
-
-#if defined(GM_IMPL_EULER)
-    GM_Vec2 gm_euler_to_vec2(float yaw, float pitch) {
-        GM_Vec2 ret = {0};
-
-    }
-
-    GM_Vec2 gm_euler_to_vec3(float yaw, float pitch, float roll) {
-        GM_Rectangle2D ret = { .position.x = x, .position.y = y, .width = width, .height = height };
-        return ret;
-    }
-
-    GM_Rectangle3D gm_rectangle3d_create(float x, float y, float z, u32 length, u32 width, u32 height) {
-        GM_Rectangle3D ret = { .position.x = x, .position.y = y, .position.z = z, .length = length, .width = width, .height = height };
-        return ret;
-    }
-
-    bool gm_rectangle_check_aabb_collision(GM_Rectangle2D rect1, GM_Rectangle2D rect2) {
-        if (rect1.position.x < rect2.position.x + rect2.width && rect1.position.x + rect1.width > rect2.position.x &&
-            rect1.position.y < rect2.position.y + rect2.height && rect1.position.y + rect1.height > rect2.position.y) {
-            return true;
-        }
-        return false;
-    }
-
-    GM_Circle2D gm_circle2d_create(float x, float y, float radius) {
-        GM_Circle2D ret = { .position.x = x, .position.y = y, .radius = radius };
-        return ret;
-    }
-
-    GM_Circle3D gm_circle3d_create(float x, float y, float z, float radius) {
-        GM_Circle3D ret = { .position.x = x, .position.y = y, .position.z = z, .radius = radius };
-        return ret;
     }
 #endif
