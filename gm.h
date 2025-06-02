@@ -1447,7 +1447,7 @@
         GM_Vec2 AB =  gm_vec2_normalize(gm_vec2_sub(position_a, position_b));
         float distance = gm_vec2_distance(position_a, position_b);
 
-        GM_Vec2 gravity_force = gm_vec2_scale(AB, (G * ((mass_a * mass_b) / (distance * distance))));
+        GM_Vec2 gravity_force = gm_vec2_scale(AB, (float)(G * ((mass_a * mass_b) / (distance * distance))));
 
         return gravity_force;
     }
