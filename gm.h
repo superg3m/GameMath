@@ -497,6 +497,16 @@
 
     GM_API void gm_physics2d_update(GM_PhysicsObject2D* obj, float dt);
 
+    /**
+     * @brief The gravity force vector points towards position_a or mass b
+     * 
+     * @param G 
+     * @param position_a 
+     * @param mass_a 
+     * @param position_b 
+     * @param mass_b 
+     * @return GM_API 
+     */
     GM_API GM_Vec2 gm_physics2d_gravity_force(const double G, GM_Vec2 position_a, float mass_a, GM_Vec2 position_b, float mass_b);
 #endif
 
