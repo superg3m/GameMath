@@ -496,6 +496,8 @@
     GM_API void gm_physics2d_add_force_xy(GM_PhysicsObject2D* object, float force_x, float force_y);
 
     GM_API void gm_physics2d_update(GM_PhysicsObject2D* obj, float dt);
+
+    GM_API GM_Vec2 gm_physics2d_gravity_force(const double G, GM_Vec2 position_a, float mass_a, GM_Vec2 position_b, float mass_b);
 #endif
 
 //
@@ -1439,5 +1441,14 @@
         } else if (obj->collider.type == GM_COLLIDER_AABB) {
             obj->collider.aabb.position = obj->rb.position;
         }
+    }
+
+    GM_Vec2 gm_physics2d_gravity_force(const double G, GM_Vec2 position_a, float mass_a, GM_Vec2 position_b, float mass_b) {
+        GM_Vec2 AB =  gm_vec2_normalize(gm_vec2_sub(position_a, position_b));
+        float distance = gm_vec2_distance(position_a, position_b);
+
+        GM_Vec2 gravity_force = gm_vec2_scale(AB, (G * ((mass_a * mass_b) / (distance * distance))));
+
+        return gravity_force;
     }
 #endif
