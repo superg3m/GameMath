@@ -1444,10 +1444,14 @@
     }
 
     GM_Vec2 gm_physics2d_gravity_force(const double G, GM_Vec2 position_a, float mass_a, GM_Vec2 position_b, float mass_b) {
-        GM_Vec2 AB =  gm_vec2_normalize(gm_vec2_sub(position_a, position_b));
+        GM_Vec2 AB = gm_vec2_normalize(gm_vec2_sub(position_b, position_a));
         float distance = gm_vec2_distance(position_a, position_b);
+ 
+        if (NEAR_ZERO(distance)) {
+            distance = EPSILON;
+        }
 
-        GM_Vec2 gravity_force = gm_vec2_scale(AB, (float)(G * ((mass_a * mass_b) / (distance * distance))));
+        GM_Vec2 gravity_force = gm_vec2_scale(AB, (float)(-G * ((mass_a * mass_b) / (distance * distance))));
 
         return gravity_force;
     }
