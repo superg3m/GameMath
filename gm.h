@@ -716,17 +716,17 @@
 #if defined(GM_IMPL_EULER)
     GM_Vec2 gm_euler_to_vec2(float yaw, float pitch) {
         GM_Vec2 ret = GM_Vec2Lit(0, 0);
-        ret.x = cosf(yaw) * cosf(pitch);
-        ret.y = sinf(pitch);
+        ret.x = cosf(DEGREES_TO_RAD(yaw)) * cosf(DEGREES_TO_RAD(pitch));
+        ret.y = sinf(DEGREES_TO_RAD(pitch));
 
         return ret;
     }
 
     GM_Vec3 gm_euler_to_vec3(float yaw, float pitch) {
         GM_Vec3 ret = GM_Vec3Lit(0, 0, 0);
-        ret.x = cosf(yaw) * cosf(pitch);
-        ret.y = sinf(pitch);
-        ret.z = sinf(yaw) * cosf(pitch);
+        ret.x = cosf(DEGREES_TO_RAD(yaw)) * cosf(DEGREES_TO_RAD(pitch));
+        ret.y = sinf(DEGREES_TO_RAD(pitch));
+        ret.z = sinf(DEGREES_TO_RAD(yaw)) * cosf(DEGREES_TO_RAD(pitch));
 
         return ret;
     }
