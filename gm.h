@@ -117,38 +117,47 @@
 #endif
 
 #if defined(GM_INCLUDE_COLOR)
-    typedef struct GM_RGB {
-        union {
-            union {
-                struct {
-                    u8 r;
-                    u8 g;
-                    u8 b;
-                };
-                u8 c[3];
-            } rgb;
-        };
-    } GM_RGB;
-
-    // NOTE: Union for hex in RGBA is potentially problematic due to endianness.
-    // It's safer to use explicit conversion functions (like gm_rgba_to_u32).
     typedef struct GM_RGBA {
         union {
             struct {
-                u8 r;
-                u8 g;
-                u8 b;
-                u8 a;
+                union {
+                    u8 r;
+                    u8 g;
+                    u8 b;
+                    u8 a;
+
+                    u8 c[4];
+                    u32 hex;
+                };
+            } rgba;
+
+            struct {
+                union {
+                    u8 a;
+                    u8 r;
+                    u8 g;
+                    u8 b;
+
+                    u8 c[4];
+                    u32 hex;
+                } argb;
             };
-            u8 c[4];
-            u32 hex_rgba; // Explicitly name for rgba order for hex
         };
     } GM_RGBA;
+
+    #ifdef __cplusplus
+        #define GM_RGBALit(r, g, b, a) (GM_RGBA{r, g, b, a})
+        #define GM_ARGBLit(r, g, b, a) (GM_RGBA{a, r, g, b})
+    #else
+        #define GM_RGBALit(r, g, b, a) ((GM_RGBA){r, g, b, a})
+        #define GM_ARGBLit(r, g, b, a) ((GM_RGBA){a, r, g, b})
+    #endif
 
     GM_API u32 gm_rgba_to_u32(GM_RGBA color);
     GM_API GM_RGBA gm_rgba_from_u32(u32 color);
     GM_API GM_RGBA gm_rgba_alpha_blend(GM_RGBA front_color, GM_RGBA back_color);
     GM_API GM_RGBA gm_rgba_u32_alpha_blend(u32 front_color_u32, u32 back_color_u32);
+
     /**
      * @brief value from 0.0 to 1.0
      *
@@ -158,16 +167,27 @@
      */
     GM_API GM_RGBA gm_rgba_multiply(GM_RGBA color, float value);
 
-    #define GM_COLOR_BLACK ((GM_RGBA){0, 0, 0, 255})
-    #define GM_COLOR_RED ((GM_RGBA){255, 0, 0, 255})
-    #define GM_COLOR_BLUE ((GM_RGBA){0, 0, 255, 255})
-    #define GM_COLOR_GREEN ((GM_RGBA){0, 255, 0, 255})
-    #define GM_COLOR_WHITE ((GM_RGBA){255, 255, 255, 255})
-    #define GM_COLOR_PINK ((GM_RGBA){255, 105, 180, 255})
-    #define GM_COLOR_LIME ((GM_RGBA){0, 255, 128, 255})
-    #define GM_COLOR_CYAN ((GM_RGBA){0, 255, 255, 255})
-    #define GM_COLOR_PURPLE ((GM_RGBA){128, 0, 128, 255})
-    #define GM_COLOR_YELLOW ((GM_RGBA){255, 255, 0, 255})
+    #define GM_RGBA_BLACK GM_RGBALit(0, 0, 0, 255)
+    #define GM_RGBA_RED GM_RGBALit(255, 0, 0, 255)
+    #define GM_RGBA_BLUE GM_RGBALit(0, 0, 255, 255)
+    #define GM_RGBA_GREEN GM_RGBALit(0, 255, 0, 255)
+    #define GM_RGBA_WHITE GM_RGBALit(255, 255, 255, 255)
+    #define GM_RGBA_PINK GM_RGBALit(255, 105, 180, 255)
+    #define GM_RGBA_LIME GM_RGBALit(0, 255, 128, 255)
+    #define GM_RGBA_CYAN GM_RGBALit(0, 255, 255, 255)
+    #define GM_RGBA_PURPLE GM_RGBALit(128, 0, 128, 255)
+    #define GM_RGBA_YELLOW GM_RGBALit(255, 255, 0, 255)
+
+    #define GM_ARGB_BLACK GM_ARGBLit(0, 0, 0, 255)
+    #define GM_ARGB_RED GM_ARGBLit(255, 0, 0, 255)
+    #define GM_ARGB_BLUE GM_ARGBLit(0, 0, 255, 255)
+    #define GM_ARGB_GREEN GM_ARGBLit(0, 255, 0, 255)
+    #define GM_ARGB_WHITE GM_ARGBLit(255, 255, 255, 255)
+    #define GM_ARGB_PINK GM_ARGBLit(255, 105, 180, 255)
+    #define GM_ARGB_LIME GM_ARGBLit(0, 255, 128, 255)
+    #define GM_ARGB_CYAN GM_ARGBLit(0, 255, 255, 255)
+    #define GM_ARGB_PURPLE GM_ARGBLit(128, 0, 128, 255)
+    #define GM_ARGB_YELLOW GM_ARGBLit(255, 255, 0, 255)
 #endif
 
 #if defined(GM_INCLUDE_VECTOR)
@@ -205,6 +225,16 @@
             float v[4];
         };
     } GM_Vec4;
+
+    #ifdef __cplusplus
+        #define GM_Vec2Lit(x, y) GM_Vec2{x, y}
+        #define GM_Vec3Lit(x, y, z) GM_Vec3{x, y, z}
+        #define GM_Vec4Lit(x, y, z) GM_Vec4{x, y, z, w}
+    #else
+        #define GM_Vec2Lit(x, y) (GM_Vec2){x, y}
+        #define GM_Vec3Lit(x, y, z) (GM_Vec3){x, y, z}
+        #define GM_Vec4Lit(x, y, z, w) (GM_Vec4){x, y, z, w}
+    #endif
 
     GM_API GM_Vec2 gm_vec2_create(float x, float y);
     GM_API GM_Vec3 gm_vec3_create(float x, float y, float z);
@@ -458,20 +488,20 @@
 #if defined(GM_IMPL_COLOR)
     GM_RGBA gm_rgba_from_u32(u32 color) {
         GM_RGBA ret = {0};
-        ret.r = (u8)((color >> 24) & 0xFF);
-        ret.g = (u8)((color >> 16) & 0xFF);
-        ret.b = (u8)((color >> 8) & 0xFF);
-        ret.a = (u8)((color >> 0) & 0xFF);
+        ret.rgba.r = (u8)((color >> 24) & 0xFF);
+        ret.rgba.g = (u8)((color >> 16) & 0xFF);
+        ret.rgba.b = (u8)((color >> 8) & 0xFF);
+        ret.rgba.a = (u8)((color >> 0) & 0xFF);
 
         return ret;
     }
 
     GM_RGBA gm_rgba_multiply(GM_RGBA color, float value) {
         GM_RGBA ret = {0};
-        ret.r = (u8)CLAMP(color.r * value, 0, 255);
-        ret.g = (u8)CLAMP(color.g * value, 0, 255);
-        ret.b = (u8)CLAMP(color.b * value, 0, 255);
-        ret.a = (u8)CLAMP(color.a * value, 0, 255);
+        ret.rgba.r = (u8)CLAMP(color.rgba.r * value, 0, 255);
+        ret.rgba.g = (u8)CLAMP(color.rgba.g * value, 0, 255);
+        ret.rgba.b = (u8)CLAMP(color.rgba.b * value, 0, 255);
+        ret.rgba.a = (u8)CLAMP(color.rgba.a * value, 0, 255);
 
         return ret;
     }
@@ -489,13 +519,13 @@
     GM_RGBA gm_rgba_alpha_blend(GM_RGBA front_color, GM_RGBA back_color) {
         GM_RGBA ret = {0};
 
-        float normalized_front_alpha = (float)front_color.a / 255.0f; // Alpha of the front color
-        float normalized_back_alpha = (float)back_color.a / 255.0f;  // Alpha of the back color
+        float normalized_front_alpha = (float)front_color.rgba.a / 255.0f; // Alpha of the front color
+        float normalized_back_alpha = (float)back_color.rgba.a / 255.0f;  // Alpha of the back color
 
-        ret.a = (u8)CLAMP((front_color.a + back_color.a * (1.0f - normalized_front_alpha)), 0, 255);
-        ret.r = (u8)CLAMP((front_color.r * normalized_front_alpha + back_color.r * normalized_back_alpha * (1.0f - normalized_front_alpha)), 0, 255);
-        ret.g = (u8)CLAMP((front_color.g * normalized_front_alpha + back_color.g * normalized_back_alpha * (1.0f - normalized_front_alpha)), 0, 255);
-        ret.b = (u8)CLAMP((front_color.b * normalized_front_alpha + back_color.b * normalized_back_alpha * (1.0f - normalized_front_alpha)), 0, 255);
+        ret.rgba.a = (u8)CLAMP((front_color.rgba.a + back_color.rgba.a * (1.0f - normalized_front_alpha)), 0, 255);
+        ret.rgba.r = (u8)CLAMP((front_color.rgba.r * normalized_front_alpha + back_color.rgba.r * normalized_back_alpha * (1.0f - normalized_front_alpha)), 0, 255);
+        ret.rgba.g = (u8)CLAMP((front_color.rgba.g * normalized_front_alpha + back_color.rgba.g * normalized_back_alpha * (1.0f - normalized_front_alpha)), 0, 255);
+        ret.rgba.b = (u8)CLAMP((front_color.rgba.b * normalized_front_alpha + back_color.rgba.b * normalized_back_alpha * (1.0f - normalized_front_alpha)), 0, 255);
 
         return ret;
     }
@@ -1288,5 +1318,40 @@
         } else if (obj->collider.type == GM_COLLIDER_AABB) {
             obj->collider.aabb.position = obj->rb.position;
         }
+    }
+#endif
+
+#if defined(GM_IMPL_EULER)
+    GM_Vec2 gm_euler_to_vec2(float yaw, float pitch) {
+        GM_Vec2 ret = {0};
+
+    }
+
+    GM_Vec2 gm_euler_to_vec3(float yaw, float pitch, float roll) {
+        GM_Rectangle2D ret = { .position.x = x, .position.y = y, .width = width, .height = height };
+        return ret;
+    }
+
+    GM_Rectangle3D gm_rectangle3d_create(float x, float y, float z, u32 length, u32 width, u32 height) {
+        GM_Rectangle3D ret = { .position.x = x, .position.y = y, .position.z = z, .length = length, .width = width, .height = height };
+        return ret;
+    }
+
+    bool gm_rectangle_check_aabb_collision(GM_Rectangle2D rect1, GM_Rectangle2D rect2) {
+        if (rect1.position.x < rect2.position.x + rect2.width && rect1.position.x + rect1.width > rect2.position.x &&
+            rect1.position.y < rect2.position.y + rect2.height && rect1.position.y + rect1.height > rect2.position.y) {
+            return true;
+        }
+        return false;
+    }
+
+    GM_Circle2D gm_circle2d_create(float x, float y, float radius) {
+        GM_Circle2D ret = { .position.x = x, .position.y = y, .radius = radius };
+        return ret;
+    }
+
+    GM_Circle3D gm_circle3d_create(float x, float y, float z, float radius) {
+        GM_Circle3D ret = { .position.x = x, .position.y = y, .position.z = z, .radius = radius };
+        return ret;
     }
 #endif

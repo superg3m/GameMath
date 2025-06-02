@@ -55,6 +55,8 @@ int main() {
         }
     };
 
+
+
     if (mat_equal(&expected2, &result)) {
         printf("Test Passed\n");
     } else {
