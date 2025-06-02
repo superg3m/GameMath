@@ -1246,8 +1246,8 @@
     GM_RigidBody2D gm_physics2d_rb_create(GM_Vec2 position, float mass) {
         GM_RigidBody2D ret;
         ret.position = position;
-        ret.velocity = gm_vec2_create(0, 0);
-        ret.acceleration = gm_vec2_create(0, 0);
+        ret.velocity = GM_Vec2Lit(0, 0);
+        ret.acceleration = GM_Vec2Lit(0, 0);
         ret.mass = mass;
 
         return ret;
@@ -1257,8 +1257,8 @@
         GM_RigidBody2D ret;
         ret.position.x = x;
         ret.position.y = y;
-        ret.velocity = gm_vec2_create(0, 0);
-        ret.acceleration = gm_vec2_create(0, 0);
+        ret.velocity = GM_Vec2Lit(0, 0);
+        ret.acceleration = GM_Vec2Lit(0, 0);
         ret.mass = mass;
 
         return ret;
@@ -1297,7 +1297,7 @@
     }
 
     void gm_physics2d_add_velocity_xy(GM_PhysicsObject2D* obj, float velocity_x, float velocity_y) {
-        obj->rb.velocity = gm_vec2_add(obj->rb.velocity, gm_vec2_create(velocity_x, velocity_y));
+        obj->rb.velocity = gm_vec2_add(obj->rb.velocity, GM_Vec2Lit(velocity_x, velocity_y));
     }
 
     void gm_physics2d_add_force(GM_PhysicsObject2D* obj, GM_Vec2 force) {
@@ -1305,7 +1305,7 @@
     }
 
     void gm_physics2d_add_force_xy(GM_PhysicsObject2D* obj, float force_x, float force_y) {
-        obj->rb.force = gm_vec2_add(obj->rb.force, gm_vec2_create(force_x, force_y));
+        obj->rb.force = gm_vec2_add(obj->rb.force, GM_Vec2Lit(force_x, force_y));
     }
 
     void gm_physics2d_update(GM_PhysicsObject2D* obj, float dt) {
