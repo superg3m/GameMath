@@ -1414,7 +1414,7 @@
                 if (object_a->collider.type == GM_COLLIDER_CIRCLE && object_b->collider.type == GM_COLLIDER_CIRCLE) {
                     GM_CollisionInfo2D collision_info = {0};
                     if (gm_collision2d_circles(object_a->collider.circle, object_b->collider.circle, &collision_info)) {
-                        if (collision_info.depth / object_a->collider.circle.radius >= 0.75) {
+                        if (collision_info.depth / object_a->collider.circle.radius >= 0.70) {
                             object_a->rb.position = gm_vec2_add(object_a->rb.position, gm_vec2_scale(collision_info.normal, collision_info.depth / 2.0f));
                             object_a->collider.circle.position = object_a->rb.position;
 
