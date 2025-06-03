@@ -498,9 +498,10 @@
     GM_API void gm_physics2d_update(GM_PhysicsObject2D* obj, float dt);
 
     /**
-     * @brief The gravity force vector points towards position_a or mass b
+     * @brief The gravity force vector points towards position_a or mass_a
      * 
      * @param G 
+     * @param position_a
      * @param position_a 
      * @param mass_a 
      * @param position_b 
@@ -1453,15 +1454,16 @@
         }
     }
 
-    GM_Vec2 gm_physics2d_gravity_force(const double G, GM_Vec2 position_a, float mass_a, GM_Vec2 position_b, float mass_b) {
+    GM_Vec2 gm_physics2d_gravity_force(const double G,  float min_distance, GM_Vec2 position_a, float mass_a, GM_Vec2 position_b, float mass_b) {
         GM_Vec2 AB = gm_vec2_normalize(gm_vec2_sub(position_b, position_a));
         float distance = gm_vec2_distance(position_a, position_b);
- 
-        if (NEAR_ZERO(distance)) {
-            distance = EPSILON;
+
+        if (distance < min_distance) {
+            distance = min_distance;
         }
 
-        GM_Vec2 gravity_force = gm_vec2_scale(AB, (float)(-G * ((mass_a * mass_b) / (distance * distance))));
+        float force_magnitude = (float)(G * ((mass_a * mass_b) / (distance * distance)));
+        GM_Vec2 gravity_force = gm_vec2_scale(AB, force_magnitude);
 
         return gravity_force;
     }
