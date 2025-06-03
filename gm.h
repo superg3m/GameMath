@@ -508,7 +508,7 @@
      * @param mass_b 
      * @return GM_API 
      */
-    GM_API GM_Vec2 gm_physics2d_gravity_force(const double G, GM_Vec2 position_a, float mass_a, GM_Vec2 position_b, float mass_b);
+    GM_API GM_Vec2 gm_physics2d_gravity_force(const double G, float min_distance, GM_Vec2 position_a, float mass_a, GM_Vec2 position_b, float mass_b);
 #endif
 
 //
@@ -1454,7 +1454,7 @@
         }
     }
 
-    GM_Vec2 gm_physics2d_gravity_force(const double G,  float min_distance, GM_Vec2 position_a, float mass_a, GM_Vec2 position_b, float mass_b) {
+    GM_Vec2 gm_physics2d_gravity_force(const double G, float min_distance, GM_Vec2 position_a, float mass_a, GM_Vec2 position_b, float mass_b) {
         GM_Vec2 AB = gm_vec2_normalize(gm_vec2_sub(position_b, position_a));
         float distance = gm_vec2_distance(position_a, position_b);
 
