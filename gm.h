@@ -255,6 +255,12 @@
     GM_API GM_Vec2 gm_vec2_scale(GM_Vec2 v, float scale);
     GM_API GM_Vec3 gm_vec3_scale(GM_Vec3 v, float scale);
     GM_API GM_Vec4 gm_vec4_scale(GM_Vec4 v, float scale);
+    GM_API GM_Vec2 gm_vec2_scale_non_uniform(GM_Vec2 v, GM_Vec2 s);
+    GM_API GM_Vec3 gm_vec3_scale_non_uniform(GM_Vec3 v, GM_Vec3 s);
+    GM_API GM_Vec4 gm_vec4_scale_non_uniform(GM_Vec4 v, GM_Vec4 s);
+    GM_API GM_Vec2 gm_vec2_scale_xyz(GM_Vec2 v, float scale_x, float scale_y);
+    GM_API GM_Vec3 gm_vec3_scale_xyz(GM_Vec3 v, float scale_x, float scale_y, float sacle_z);
+    GM_API GM_Vec4 gm_vec4_scale_xyz(GM_Vec4 v, float scale_x, float scale_y, float sacle_z, float scale_w);
 
     GM_API GM_Vec2 gm_vec2_lerp(GM_Vec2 A, GM_Vec2 B, float t);
     GM_API GM_Vec3 gm_vec3_lerp(GM_Vec3 A, GM_Vec3 B, float t);
@@ -315,6 +321,7 @@
     GM_API GM_Matrix4 gm_mat4_transpose(GM_Matrix4 m);
 
     GM_API bool gm_mat4_equal(GM_Matrix4* A, GM_Matrix4* B);
+    GM_API GM_Matrix4 gm_mat4_transform(GM_Vec3 scale, float theta, GM_Vec3 rotation_axis, GM_Vec3 translation);
 #endif
 
 #if defined(GM_INCLUDE_SHAPES)
@@ -696,13 +703,43 @@
         return ret;
     }
 
+    GM_Vec2 gm_vec2_scale_non_uniform(GM_Vec2 v, GM_Vec2 s) {
+        GM_Vec2 ret = { .x = v.x * s.x, .y = v.y * s.y };
+        return ret;
+    }
+
+    GM_Vec2 gm_vec2_scale_xyz(GM_Vec2 v, float scale_x, float scale_y) {
+        GM_Vec2 ret = { .x = v.x * scale_x, .y = v.y * scale_y };
+        return ret;
+    }
+
     GM_Vec3 gm_vec3_scale(GM_Vec3 v, float scale) {
         GM_Vec3 ret = { .x = v.x * scale, .y = v.y * scale, .z = v.z * scale };
         return ret;
     }
 
+    GM_Vec3 gm_vec3_scale_non_uniform(GM_Vec3 v, GM_Vec3 s) {
+        GM_Vec3 ret = { .x = v.x * s.x, .y = v.y * s.y, .z = v.z * s.z };
+        return ret;
+    }
+
+    GM_Vec3 gm_vec3_scale_xyz(GM_Vec3 v, float scale_x, float scale_y, float sacle_z) {
+        GM_Vec3 ret = { .x = v.x * scale_x, .y = v.y * scale_y, .z = v.z * sacle_z };
+        return ret;
+    }
+
     GM_Vec4 gm_vec4_scale(GM_Vec4 v, float scale) {
         GM_Vec4 ret = { .x = v.x * scale, .y = v.y * scale, .z = v.z * scale, .w = v.w * scale };
+        return ret;
+    }
+
+    GM_Vec4 gm_vec4_scale_non_uniform(GM_Vec4 v, GM_Vec4 s) {
+        GM_Vec4 ret = { .x = v.x * s.x, .y = v.y * s.y, .z = v.z * s.z, .w = v.w * s.w };
+        return ret;
+    }
+
+    GM_Vec4 gm_vec4_scale_xyz(GM_Vec4 v, float scale_x, float scale_y, float sacle_z, float scale_w) {
+        GM_Vec4 ret = { .x = v.x * scale_x, .y = v.y * scale_y, .z = v.z * sacle_z, .w = v.w * scale_w };
         return ret;
     }
 
@@ -951,6 +988,22 @@
         }
 
         return true;
+    }
+
+    GM_Matrix4 gm_mat4_transform(GM_Vec3 scale, float theta, GM_Vec3 rotation_axis, GM_Vec3 translation) {
+        GM_Matrix4 scale_matrix = gm_mat4_scale(gm_mat4_identity(), scale);
+        GM_Matrix4 rotation_matrix = gm_mat4_rotate(gm_mat4_identity(), theta, rotation_axis);
+        GM_Matrix4 translation_matrix = gm_mat4_translate(gm_mat4_identity(), translation);
+
+        return gm_mat4_mult(translation_matrix, gm_mat4_mult(rotation_matrix, scale_matrix));
+    }
+
+    GM_Matrix4 gm_mat4_inverse_transform(GM_Vec3 scale, float theta, GM_Vec3 rotation_axis, GM_Vec3 translation) {
+        GM_Matrix4 inverse_scale_matrix = gm_mat4_scale(gm_mat4_identity(), gm_vec3_scale_xyz(scale, 1 / scale.x, 1 / scale.y, 1 / scale.z));
+        GM_Matrix4 inverse_rotation_matrix = gm_mat4_transpose(gm_mat4_rotate(gm_mat4_identity(), theta, rotation_axis));
+        GM_Matrix4 inverse_translation_matrix = gm_mat4_translate(gm_mat4_identity(), gm_vec3_scale(translation, -1));
+
+        return gm_mat4_mult(inverse_scale_matrix, gm_mat4_mult(inverse_rotation_matrix, inverse_translation_matrix));
     }
 #endif
 
