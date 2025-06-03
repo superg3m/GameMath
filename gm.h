@@ -1462,7 +1462,7 @@
             distance = min_distance;
         }
 
-        float force_magnitude = (float)(G * ((mass_a * mass_b) / (distance * distance)));
+        float force_magnitude = (float)(-G * ((mass_a * mass_b) / (distance * distance)));
         GM_Vec2 gravity_force = gm_vec2_scale(AB, force_magnitude);
 
         return gravity_force;
