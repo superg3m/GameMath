@@ -386,6 +386,7 @@
     // Found at: https://imois.in/posts/line-intersections-with-cross-products/
     GM_API bool gm_intersection2d_line_line(GM_Vec2 a, GM_Vec2 b, GM_Vec2 c, GM_Vec2 d, GM_Vec2* intersection);
     GM_API bool gm_intersection2d_line_aabb(GM_Vec2 p0, GM_Vec2 p1, GM_RectangleReference2D aabb, GM_Vec2* inPoint, GM_Vec2* outPoint);
+    GM_API bool gm_intersection3d_line_aabb(GM_Vec3 p0, GM_Vec3 p1, GM_RectangleReference3D aabb, GM_Vec3* inPoint, GM_Vec3* outPoint);
 #endif
 
 #if defined(GM_INCLUDE_QUATERNION)
