@@ -955,20 +955,18 @@
         GM_Vec3 right   = gm_vec3_normalize(gm_vec3_cross(world_up, forward));
         GM_Vec3 up      = gm_vec3_cross(forward, right);
 
-        float dot_right   = -gm_vec3_dot(right, position);
-        float dot_up      = -gm_vec3_dot(up, position);
-        float dot_forward = -gm_vec3_dot(forward, position);
-
-        GM_Matrix4 ret = {
+        GM_Matrix4 rotation = {
             .data = {
-                right.x,   right.y,   right.z,   dot_right,
-                up.x,      up.y,      up.z,      dot_up,
-                forward.x, forward.y, forward.z, dot_forward,
+                right.x,   right.y,   right.z,   0,
+                up.x,      up.y,      up.z,      0,
+                forward.x, forward.y, forward.z, 0,
                 0.0f,      0.0f,      0.0f,      1.0f
             }
         };
+        
+        GM_Matrix4 translation = gm_mat4_translate_xyz(gm_mat4_identity(), -position.x, -position.y, -position.z);
 
-        return ret;
+        return gm_mat4_mult(rotation, translation);
     }
 
     GM_Matrix4 gm_mat4_inverse(GM_Matrix4 m, bool* success) {
