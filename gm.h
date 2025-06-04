@@ -331,6 +331,12 @@
         u32 height;
     } GM_Rectangle2D;
 
+    typedef struct GM_RectangleReference2D {
+        GM_Vec2* position;
+        u32 width;
+        u32 height;
+    } GM_RectangleReference2D;
+
     typedef struct GM_Rectangle3D {
         GM_Vec3 position;
         u32 length;
@@ -338,27 +344,48 @@
         u32 height;
     } GM_Rectangle3D;
 
+    typedef struct GM_RectangleReference3D {
+        GM_Vec3* position;
+        u32 length;
+        u32 width;
+        u32 height;
+    } GM_RectangleReference3D;
+
     typedef struct GM_Circle2D {
         GM_Vec2 position;
         float radius;
     } GM_Circle2D;
+
+    typedef struct GM_CircleReference2D {
+        GM_Vec2* position;
+        float radius;
+    } GM_CircleReference2D;
 
     typedef struct GM_Circle3D {
         GM_Vec3 position;
         float radius;
     } GM_Circle3D;
 
+    typedef struct GM_CircleReference3D {
+        GM_Vec3* position;
+        float radius;
+    } GM_CircleReference3D;
+
     GM_API GM_Rectangle2D gm_rectangle2d_create(float x, float y, u32 width, u32 height);
+    GM_API GM_RectangleReference2D gm_rectangle_reference2d_create(GM_Vec2* position, u32 width, u32 height);
     GM_API GM_Rectangle3D gm_rectangle3d_create(float x, float y, float z, u32 length, u32 width, u32 height);
-    GM_API bool gm_rectangle_check_aabb_collision(GM_Rectangle2D rect1, GM_Rectangle2D rect2);
+    GM_API GM_RectangleReference3D gm_rectangle_reference3d_create(GM_Vec3* position, u32 length, u32 width, u32 height);
+    GM_API bool gm_rectangle_check_aabb_collision(GM_RectangleReference2D rect1, GM_RectangleReference2D rect2);
     GM_API GM_Circle2D gm_circle2d_create(float x, float y, float radius);
+    GM_API GM_CircleReference2D gm_circle_reference2d_create(GM_Vec2* position, float radius);
     GM_API GM_Circle3D gm_circle3d_create(float x, float y, float z, float radius);
+    GM_API GM_CircleReference3D gm_circle_reference3d_create(GM_Vec3* position, float radius);
 #endif
 
 #if defined(GM_INCLUDE_INTERSECTION)
     // Found at: https://imois.in/posts/line-intersections-with-cross-products/
     GM_API bool gm_intersection2d_line_line(GM_Vec2 a, GM_Vec2 b, GM_Vec2 c, GM_Vec2 d, GM_Vec2* intersection);
-    GM_API bool gm_intersection2d_line_aabb(GM_Vec2 p0, GM_Vec2 p1, GM_Rectangle2D aabb, GM_Vec2* inPoint, GM_Vec2* outPoint);
+    GM_API bool gm_intersection2d_line_aabb(GM_Vec2 p0, GM_Vec2 p1, GM_RectangleReference2D aabb, GM_Vec2* inPoint, GM_Vec2* outPoint);
 #endif
 
 #if defined(GM_INCLUDE_QUATERNION)
@@ -442,8 +469,8 @@
     typedef struct GM_Collider2D {
         GM_Collider2DType type;
         union {
-            GM_Rectangle2D aabb;
-            GM_Circle2D circle;
+            GM_RectangleReference2D aabb;
+            GM_CircleReference2D circle;
         };
 
         u64 collision_mask; // Checking other layers to see if should actually collide or ignore based on their layer_mask
@@ -454,13 +481,13 @@
         // collision_function_leave(GM_Collider2D* other, GM_Collider2D* other);
     } GM_Collider2D;
 
-    GM_API bool gm_collision2d_circles(GM_Circle2D c1, GM_Circle2D c2, GM_CollisionInfo2D* collision_info);
+    GM_API bool gm_collision2d_circles(GM_CircleReference2D c1, GM_CircleReference2D c2, GM_CollisionInfo2D* collision_info);
 
     // Date: May 28, 2025
     // TODO(Jovanni): SAT collision
 
-    GM_API GM_Collider2D gm_collider2d_circle_create(GM_Circle2D circle);
-    GM_API GM_Collider2D gm_collider2d_aabb_create(GM_Rectangle2D aabb);
+    GM_API GM_Collider2D gm_collider2d_circle_create(GM_CircleReference2D circle);
+    GM_API GM_Collider2D gm_collider2d_aabb_create(GM_RectangleReference2D aabb);
 
     // 0 - 63
     GM_API GM_Collider2D gm_collider2d_set_layer_bit(u8 layer_bit);
@@ -476,7 +503,7 @@
 
 #if defined(GM_INCLUDE_PHYSICS)
     typedef struct GM_RigidBody2D {
-        GM_Vec2 position;
+        GM_Vec2* position; // reference to the position
         GM_Vec2 velocity;
         GM_Vec2 acceleration;
         GM_Vec2 force;
@@ -490,11 +517,9 @@
 
     GM_API void gm_physics2d_resolve_collisions(GM_PhysicsObject2D* objects, int object_count);
 
-    GM_API GM_RigidBody2D gm_physics2d_rb_create(GM_Vec2 position, float mass);
-    GM_API GM_RigidBody2D gm_physics2d_rb_create_xy(float x, float y, float mass);
+    GM_API GM_RigidBody2D gm_physics2d_rb_create(GM_Vec2* position, float mass);
 
-    GM_API GM_PhysicsObject2D gm_physics2d_object_create(GM_Vec2 position, float mass, GM_Collider2D collider);
-    GM_API GM_PhysicsObject2D gm_physics2d_object_create_xy(float x, float y, float mass, GM_Collider2D collider);
+    GM_API GM_PhysicsObject2D gm_physics2d_object_create(GM_Vec2* position, float mass, GM_Collider2D collider);
 
     GM_API void gm_physics2d_apply_velocity(GM_PhysicsObject2D* object, GM_Vec2 velocity);
     GM_API void gm_physics2d_apply_velocity_xy(GM_PhysicsObject2D* object, float velocity_x, float velocity_y);
@@ -1013,14 +1038,24 @@
         return ret;
     }
 
+    GM_RectangleReference2D gm_rectangle_reference2d_create(GM_Vec2* position, u32 width, u32 height) {
+        GM_RectangleReference2D ret = { .position = position, .width = width, .height = height };
+        return ret;
+    }
+
     GM_Rectangle3D gm_rectangle3d_create(float x, float y, float z, u32 length, u32 width, u32 height) {
         GM_Rectangle3D ret = { .position.x = x, .position.y = y, .position.z = z, .length = length, .width = width, .height = height };
         return ret;
     }
 
-    bool gm_rectangle_check_aabb_collision(GM_Rectangle2D rect1, GM_Rectangle2D rect2) {
-        if (rect1.position.x < rect2.position.x + rect2.width && rect1.position.x + rect1.width > rect2.position.x &&
-            rect1.position.y < rect2.position.y + rect2.height && rect1.position.y + rect1.height > rect2.position.y) {
+    GM_RectangleReference3D gm_rectangle_reference3d_create(GM_Vec3* position, u32 length, u32 width, u32 height) {
+        GM_RectangleReference3D ret = { .position = position, .length = length, .width = width, .height = height };
+        return ret;
+    }
+
+    bool gm_rectangle_check_aabb_collision(GM_RectangleReference2D rect1, GM_RectangleReference2D rect2) {
+        if (rect1.position->x < rect2.position->x + rect2.width && rect1.position->x + rect1.width > rect2.position->x &&
+            rect1.position->y < rect2.position->y + rect2.height && rect1.position->y + rect1.height > rect2.position->y) {
             return true;
         }
         return false;
@@ -1031,8 +1066,18 @@
         return ret;
     }
 
+    GM_CircleReference2D gm_circle_reference2d_create(GM_Vec2* position, float radius) {
+        GM_CircleReference2D ret = { .position = position, .radius = radius };
+        return ret;
+    }
+
     GM_Circle3D gm_circle3d_create(float x, float y, float z, float radius) {
         GM_Circle3D ret = { .position.x = x, .position.y = y, .position.z = z, .radius = radius };
+        return ret;
+    }
+
+    GM_CircleReference3D gm_circle_reference3d_create(GM_Vec3* position, float radius) {
+        GM_CircleReference3D ret = { .position = position, .radius = radius };
         return ret;
     }
 #endif
@@ -1063,7 +1108,7 @@
     }
 
 
-    bool gm_intersection2d_line_aabb(GM_Vec2 p0, GM_Vec2 p1, GM_Rectangle2D aabb, GM_Vec2* inPoint, GM_Vec2* outPoint) {
+    bool gm_intersection2d_line_aabb(GM_Vec2 p0, GM_Vec2 p1, GM_RectangleReference2D aabb, GM_Vec2* inPoint, GM_Vec2* outPoint) {
         float t0 = 0.0f;
         float t1 = 1.0f;
         float dx = p1.x - p0.x;
@@ -1085,10 +1130,10 @@
             }                                \
         } while (0)                          \
 
-        CLIP(-dx, p0.x - aabb.position.x); // Left
-        CLIP( dx, (aabb.position.x + aabb.width) - p0.x); // Right
-        CLIP(-dy, p0.y - aabb.position.y); // Bottom
-        CLIP( dy, (aabb.position.y + aabb.height) - p0.y); // Top
+        CLIP(-dx, p0.x - aabb.position->x); // Left
+        CLIP( dx, (aabb.position->x + aabb.width) - p0.x); // Right
+        CLIP(-dy, p0.y - aabb.position->y); // Bottom
+        CLIP( dy, (aabb.position->y + aabb.height) - p0.y); // Top
 
         #undef CLIP
 
@@ -1348,22 +1393,22 @@
 #if defined(GM_IMPL_COLLISION)
     // SAT collision
 
-    bool gm_collision2d_circles(GM_Circle2D c1, GM_Circle2D c2, GM_CollisionInfo2D* collision_info) {
-        float distance = gm_vec2_distance(c1.position, c2.position);
+    bool gm_collision2d_circles(GM_CircleReference2D c1, GM_CircleReference2D c2, GM_CollisionInfo2D* collision_info) {
+        float distance = gm_vec2_distance(*c1.position, *c2.position);
         float total_radius = c1.radius + c2.radius;
         if (distance >= total_radius) {
             return false;
         }
 
         if (collision_info) {
-            collision_info->normal = gm_vec2_normalize(gm_vec2_sub(c1.position, c2.position));
+            collision_info->normal = gm_vec2_normalize(gm_vec2_sub(*c1.position, *c2.position));
             collision_info->depth = total_radius - distance;
         }
 
         return true;
     }
 
-    GM_Collider2D gm_collider2d_circle_create(GM_Circle2D circle) {
+    GM_Collider2D gm_collider2d_circle_create(GM_CircleReference2D circle) {
         GM_Collider2D ret = {0};
         ret.type = GM_COLLIDER_CIRCLE;
         ret.circle = circle;
@@ -1371,7 +1416,7 @@
         return ret;
     }
 
-    GM_Collider2D gm_collider2d_aabb_create(GM_Rectangle2D aabb) {
+    GM_Collider2D gm_collider2d_aabb_create(GM_RectangleReference2D aabb) {
         GM_Collider2D ret = {0};
         ret.type = GM_COLLIDER_AABB;
         ret.aabb = aabb;
@@ -1415,11 +1460,8 @@
                     GM_CollisionInfo2D collision_info = {0};
                     if (gm_collision2d_circles(object_a->collider.circle, object_b->collider.circle, &collision_info)) {
                         if (collision_info.depth / object_a->collider.circle.radius >= 0.70) {
-                            object_a->rb.position = gm_vec2_add(object_a->rb.position, gm_vec2_scale(collision_info.normal, collision_info.depth / 2.0f));
-                            object_a->collider.circle.position = object_a->rb.position;
-
-                            object_b->rb.position = gm_vec2_add(object_b->rb.position, gm_vec2_scale(collision_info.normal, -collision_info.depth / 2.0f));
-                            object_b->collider.circle.position = object_b->rb.position;
+                            *object_a->rb.position = gm_vec2_add(*object_a->rb.position, gm_vec2_scale(collision_info.normal, collision_info.depth / 2.0f));
+                            *object_b->rb.position = gm_vec2_add(*object_b->rb.position, gm_vec2_scale(collision_info.normal, -collision_info.depth / 2.0f));
                         } else {
                             gm_physics2d_apply_velocity(object_a, gm_vec2_scale(collision_info.normal, collision_info.depth / 2.0f));
                             gm_physics2d_apply_velocity(object_b, gm_vec2_scale(collision_info.normal, -collision_info.depth / 2.0f));
@@ -1430,7 +1472,7 @@
         }
     }
 
-    GM_RigidBody2D gm_physics2d_rb_create(GM_Vec2 position, float mass) {
+    GM_RigidBody2D gm_physics2d_rb_create(GM_Vec2* position, float mass) {
         GM_RigidBody2D ret;
         ret.position = position;
         ret.velocity = GM_Vec2Lit(0, 0);
@@ -1440,18 +1482,7 @@
         return ret;
     }
 
-    GM_RigidBody2D gm_physics2d_rb_create_xy(float x, float y, float mass) {
-        GM_RigidBody2D ret;
-        ret.position.x = x;
-        ret.position.y = y;
-        ret.velocity = GM_Vec2Lit(0, 0);
-        ret.acceleration = GM_Vec2Lit(0, 0);
-        ret.mass = mass;
-
-        return ret;
-    }
-
-    GM_PhysicsObject2D gm_physics2d_object_create(GM_Vec2 position, float mass, GM_Collider2D collider) {
+    GM_PhysicsObject2D gm_physics2d_object_create(GM_Vec2* position, float mass, GM_Collider2D collider) {
         GM_PhysicsObject2D ret = {0};
         ret.rb = gm_physics2d_rb_create(position, mass);
         ret.collider = collider;
@@ -1459,21 +1490,6 @@
             ret.collider.circle.position = position;
         } else if (collider.type == GM_COLLIDER_AABB) {
             ret.collider.aabb.position = position;
-        }
-
-        return ret;
-    }
-
-    GM_PhysicsObject2D gm_physics2d_object_create_xy(float x, float y, float mass, GM_Collider2D collider) {
-        GM_PhysicsObject2D ret = {0};
-        ret.rb = gm_physics2d_rb_create_xy(x, y, mass);
-        ret.collider = collider;
-        if (collider.type == GM_COLLIDER_CIRCLE) {
-            ret.collider.circle.position.x = x;
-            ret.collider.circle.position.y = y;
-        } else if (collider.type == GM_COLLIDER_AABB) {
-            ret.collider.aabb.position.x = x;
-            ret.collider.aabb.position.y = y;
         }
 
         return ret;
@@ -1497,7 +1513,7 @@
 
     void gm_physics2d_update(GM_PhysicsObject2D* obj, float dt) {
         obj->rb.acceleration = gm_vec2_scale(obj->rb.force, 1 / obj->rb.mass);
-        obj->rb.position = gm_vec2_add(obj->rb.position, gm_vec2_scale(obj->rb.velocity, dt));
+        *obj->rb.position = gm_vec2_add(*obj->rb.position, gm_vec2_scale(obj->rb.velocity, dt));
         obj->rb.velocity = gm_vec2_add(obj->rb.velocity, gm_vec2_scale(obj->rb.acceleration, dt));
 
         if (obj->collider.type == GM_COLLIDER_CIRCLE) {
