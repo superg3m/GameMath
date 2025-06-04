@@ -949,14 +949,15 @@
 
     GM_Matrix4 gm_mat4_orthographic(float left, float right, float bottom, float top, float near_plane, float far_plane);
 
-    GM_Matrix4 gm_mat4_look_at(GM_Vec3 camera_position, GM_Vec3 target_position, GM_Vec3 world_up) {
-        GM_Vec3 forward = gm_vec3_normalize(gm_vec3_sub(camera_position, target_position));
-        GM_Vec3 right   = gm_vec3_normalize(gm_vec3_cross(world_up, forward));
-        GM_Vec3 up      = gm_vec3_cross(forward, right);
+    // Found at: https://www.khronos.org/opengl/wiki/GluLookAt_code
+    GM_Matrix4 gm_mat4_look_at(GM_Vec3 position, GM_Vec3 target, GM_Vec3 world_up) {
+        GM_Vec3 forward = gm_vec3_normalize(gm_vec3_sub(position, target));
+        GM_Vec3 right   = gm_vec3_normalize(gm_vec3_cross(forward, world_up));
+        GM_Vec3 up      = gm_vec3_cross(right, forward);
 
-        float dot_right   = -gm_vec3_dot(right, camera_position);
-        float dot_up      = -gm_vec3_dot(up, camera_position);
-        float dot_forward = -gm_vec3_dot(forward, camera_position);
+        float dot_right   = -gm_vec3_dot(right, position);
+        float dot_up      = -gm_vec3_dot(up, position);
+        float dot_forward = -gm_vec3_dot(forward, position);
 
         GM_Matrix4 ret = {
             .data = {
