@@ -150,11 +150,11 @@
     } GM_RGBA;
 
     #ifdef __cplusplus
-        #define GM_RGBALit(r, g, b, a) (GM_RGBA{r, g, b, a})
-        #define GM_ARGBLit(r, g, b, a) (GM_RGBA{a, r, g, b})
+        #define GM_RGBALit(r, g, b, a) (GM_RGBA{{r, g, b, a}})
+        #define GM_ARGBLit(r, g, b, a) (GM_RGBA{{a, r, g, b}})
     #else
-        #define GM_RGBALit(r, g, b, a) ((GM_RGBA){r, g, b, a})
-        #define GM_ARGBLit(r, g, b, a) ((GM_RGBA){a, r, g, b})
+        #define GM_RGBALit(r, g, b, a) ((GM_RGBA){{r, g, b, a}})
+        #define GM_ARGBLit(r, g, b, a) ((GM_RGBA){{a, r, g, b}})
     #endif
 
     GM_API u32 gm_rgba_to_u32(GM_RGBA color);
