@@ -971,16 +971,18 @@
         return gm_mat4_mult(rotation, translation);
     }
 
-    GM_Matrix4 gm_mat4_look_direction(GM_Vec3 position, GM_Vec3 direction) {
-        GM_Vec3 world_up = GM_Vec3Lit(0, 1, 0);
-        GM_Vec3 z = gm_vec3_normalize(direction);
-        GM_Vec3 x = gm_vec3_normalize(gm_vec3_cross(world_up, z));
-        GM_Vec3 y = gm_vec3_cross(z, x);
+    GM_Matrix4 gm_mat4_look_direction(GM_Vec3 position, GM_Vec3 forward) {
+        GM_Vec3 up = GM_Vec3Lit(0, 1, 0);
+
+        GM_Vec3 z = gm_vec3_normalize(forward);               // Forward
+        GM_Vec3 x = gm_vec3_normalize(gm_vec3_cross(up, z));  // Right
+        GM_Vec3 y = gm_vec3_cross(z, x);                      // Up
 
         GM_Matrix4 rot = gm_mat4_identity();
-        rot.v[0].x = x.x; rot.v[1].x = x.y; rot.v[2].x = x.z;
-        rot.v[0].y = y.x; rot.v[1].y = y.y; rot.v[2].y = y.z;
-        rot.v[0].z = z.x; rot.v[1].z = z.y; rot.v[2].z = z.z;
+
+        rot.v[0].x = x.x; rot.v[0].y = x.y; rot.v[0].z = x.z;
+        rot.v[1].x = y.x; rot.v[1].y = y.y; rot.v[1].z = y.z;
+        rot.v[2].x = z.x; rot.v[2].y = z.y; rot.v[2].z = z.z;
 
         rot.v[0].w = position.x;
         rot.v[1].w = position.y;
