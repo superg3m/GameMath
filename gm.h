@@ -315,6 +315,7 @@
     GM_API GM_Matrix4 gm_mat4_perspective(float fov_degrees, float aspect, float near_plane, float far_plane);
     GM_API GM_Matrix4 gm_mat4_orthographic(float left, float right, float bottom, float top, float near_plane, float far_plane);
     GM_API GM_Matrix4 gm_mat4_look_at(GM_Vec3 camera_position, GM_Vec3 target_position, GM_Vec3 world_up);
+    GM_API GM_Matrix4 gm_mat4_look_direction(GM_Vec3 position, GM_Vec3 direction);
 
     GM_API GM_Matrix4 gm_mat4_mult(GM_Matrix4 A, GM_Matrix4 B);
     GM_API GM_Matrix4 gm_mat4_inverse(GM_Matrix4 m, bool* success);
@@ -968,6 +969,24 @@
         GM_Matrix4 translation = gm_mat4_translate_xyz(gm_mat4_identity(), -position.x, -position.y, -position.z);
 
         return gm_mat4_mult(rotation, translation);
+    }
+
+    GM_Matrix4 gm_mat4_look_direction(GM_Vec3 position, GM_Vec3 direction) {
+        GM_Vec3 world_up = GM_Vec3Lit(0, 1, 0);
+        GM_Vec3 z = gm_vec3_normalize(direction);
+        GM_Vec3 x = gm_vec3_normalize(gm_vec3_cross(world_up, z));
+        GM_Vec3 y = gm_vec3_cross(z, x);
+
+        GM_Matrix4 rot = gm_mat4_identity();
+        rot.v[0].x = x.x; rot.v[1].x = x.y; rot.v[2].x = x.z;
+        rot.v[0].y = y.x; rot.v[1].y = y.y; rot.v[2].y = y.z;
+        rot.v[0].z = z.x; rot.v[1].z = z.y; rot.v[2].z = z.z;
+
+        rot.v[0].w = position.x;
+        rot.v[1].w = position.y;
+        rot.v[2].w = position.z;
+
+        return rot;
     }
 
     GM_Matrix4 gm_mat4_inverse(GM_Matrix4 m, bool* success) {
