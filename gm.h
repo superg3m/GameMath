@@ -951,7 +951,7 @@
 
     // Found at: https://www.khronos.org/opengl/wiki/GluLookAt_code
     GM_Matrix4 gm_mat4_look_at(GM_Vec3 position, GM_Vec3 target, GM_Vec3 world_up) {
-        GM_Vec3 forward = gm_vec3_normalize(gm_vec3_sub(position, target));
+        GM_Vec3 forward = gm_vec3_normalize(gm_vec3_sub(target, position));
         GM_Vec3 right   = gm_vec3_normalize(gm_vec3_cross(forward, world_up));
         GM_Vec3 up      = gm_vec3_cross(right, forward);
 
