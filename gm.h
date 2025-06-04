@@ -1129,10 +1129,16 @@
             }                                \
         } while (0)                          \
 
-        CLIP(-dx, p0.x - aabb.position->x); // Left
-        CLIP( dx, (aabb.position->x + aabb.width) - p0.x); // Right
-        CLIP(-dy, p0.y - aabb.position->y); // Bottom
-        CLIP( dy, (aabb.position->y + aabb.height) - p0.y); // Top
+        GM_Vec2 aabb_min = GM_Vec2Lit(aabb.position->x, aabb.position->y);
+        GM_Vec2 aabb_max = GM_Vec2Lit(aabb.position->x + aabb.width, aabb.position->y + aabb.height);
+
+        // X-axis
+        CLIP(-dx, p0.x - aabb_min.x); // Left
+        CLIP( dx, aabb_max.x - p0.x); // Right
+
+        // Y-axis
+        CLIP(-dy, p0.y - aabb_min.y); // Bottom
+        CLIP( dy, aabb_max.y - p0.y); // Top
 
         #undef CLIP
 
@@ -1148,6 +1154,66 @@
         if (outPoint) {
             outPoint->x = p0.x + t1 * dx;
             outPoint->y = p0.y + t1 * dy;
+        }
+
+        return true;
+    }
+
+    bool gm_intersection3d_line_aabb(GM_Vec3 p0, GM_Vec3 p1, GM_RectangleReference3D aabb, GM_Vec3* inPoint, GM_Vec3* outPoint) {
+        float t0 = 0.0f;
+        float t1 = 1.0f;
+
+        float dx = p1.x - p0.x;
+        float dy = p1.y - p0.y;
+        float dz = p1.z - p0.z;
+
+        #define CLIP(p, q)                   \
+        do {                                 \
+            if ((p) == 0.0f && (q) < 0.0f) { \
+                return false;                \
+            }                                \
+            if ((p) < 0.0f) {                \
+                float r = (q) / (p);         \
+                if (r > t1) return false;    \
+                if (r > t0) t0 = r;          \
+            } else if ((p) > 0.0f) {         \
+                float r = (q) / (p);         \
+                if (r < t0) return false;    \
+                if (r < t1) t1 = r;          \
+            }                                \
+        } while (0)
+
+        GM_Vec3 aabb_min = GM_Vec3Lit(aabb.position->x, aabb.position->y, aabb.position->z);
+        GM_Vec3 aabb_max = GM_Vec3Lit(aabb.position->x + aabb.width, aabb.position->y + aabb.height, aabb.position->z + aabb.length);
+
+        // X-axis
+        CLIP(-dx, p0.x - aabb_min.x); // Left
+        CLIP( dx, aabb_max.x - p0.x); // Right
+
+        // Y-axis
+        CLIP(-dy, p0.y - aabb_min.y); // Bottom
+        CLIP( dy, aabb_max.y - p0.y); // Top
+
+        // Z-axis
+        CLIP(-dz, p0.z - aabb_min.z); // Near
+        CLIP( dz, aabb_max.z - p0.z); // Far
+
+        #undef CLIP
+
+        if (t1 < t0) {
+            return false;
+        }
+
+        if (inPoint) {
+            inPoint->x = p0.x + t0 * dx;
+            inPoint->y = p0.y + t0 * dy;
+            inPoint->z = p0.z + t0 * dz;
+        }
+
+        if (outPoint) {
+            outPoint->x = p0.x + t1 * dx;
+            outPoint->y = p0.y + t1 * dy;
+            outPoint->z = p0.z + t1 * dz;
         }
 
         return true;
