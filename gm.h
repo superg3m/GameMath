@@ -133,28 +133,16 @@
                     u8 c[4];
                     u32 hex;
                 };
-            } rgba;
-
-            struct {
-                union {
-                    u8 a;
-                    u8 r;
-                    u8 g;
-                    u8 b;
-
-                    u8 c[4];
-                    u32 hex;
-                } argb;
             };
         };
     } GM_RGBA;
 
     #ifdef __cplusplus
-        #define GM_RGBALit(r, g, b, a) (GM_RGBA{{r, g, b, a}})
-        #define GM_ARGBLit(r, g, b, a) (GM_RGBA{{a, r, g, b}})
+        #define GM_RGBALit(r, g, b, a) (GM_RGBA{r, g, b, a})
+        #define GM_ARGBLit(r, g, b, a) (GM_RGBA{a, r, g, b})
     #else
-        #define GM_RGBALit(r, g, b, a) ((GM_RGBA){{r, g, b, a}})
-        #define GM_ARGBLit(r, g, b, a) ((GM_RGBA){{a, r, g, b}})
+        #define GM_RGBALit(r, g, b, a) ((GM_RGBA){r, g, b, a})
+        #define GM_ARGBLit(r, g, b, a) ((GM_RGBA){a, r, g, b})
     #endif
 
     GM_API u32 gm_rgba_to_u32(GM_RGBA color);
@@ -326,60 +314,60 @@
 
 #if defined(GM_INCLUDE_SHAPES)
     typedef struct GM_Rectangle2D {
-        GM_Vec2 position;
-        u32 width;
-        u32 height;
+        GM_Vec2 center;   // Center in 3D space (x, y, z)
+        float width;  // along the X-axis
+        float height; // along the Y-axis
     } GM_Rectangle2D;
 
     typedef struct GM_RectangleReference2D {
-        GM_Vec2* position;
-        u32 width;
-        u32 height;
+        GM_Vec2* center;   // Center in 3D space (x, y, z)
+        float width;  // along the X-axis
+        float height; // along the Y-axis
     } GM_RectangleReference2D;
 
     typedef struct GM_Rectangle3D {
-        GM_Vec3 position;
-        u32 length;
-        u32 width;
-        u32 height;
+        GM_Vec3 center;       // Center in 3D space (x, y, z)
+        float width;  // along the X-axis
+        float height; // along the Y-axis
+        float length; // along the Z-axis
     } GM_Rectangle3D;
 
     typedef struct GM_RectangleReference3D {
-        GM_Vec3* position;
-        u32 length;
-        u32 width;
-        u32 height;
+        GM_Vec3* center;   // Center in 3D space (x, y, z)
+        float width;  // along the X-axis
+        float height; // along the Y-axis
+        float length; // along the Z-axis
     } GM_RectangleReference3D;
 
     typedef struct GM_Circle2D {
-        GM_Vec2 position;
+        GM_Vec2 center;
         float radius;
     } GM_Circle2D;
 
     typedef struct GM_CircleReference2D {
-        GM_Vec2* position;
+        GM_Vec2* center;
         float radius;
     } GM_CircleReference2D;
 
     typedef struct GM_Circle3D {
-        GM_Vec3 position;
+        GM_Vec3 center;
         float radius;
     } GM_Circle3D;
 
     typedef struct GM_CircleReference3D {
-        GM_Vec3* position;
+        GM_Vec3* center;
         float radius;
     } GM_CircleReference3D;
 
-    GM_API GM_Rectangle2D gm_rectangle2d_create(float x, float y, u32 width, u32 height);
-    GM_API GM_RectangleReference2D gm_rectangle_reference2d_create(GM_Vec2* position, u32 width, u32 height);
-    GM_API GM_Rectangle3D gm_rectangle3d_create(float x, float y, float z, u32 length, u32 width, u32 height);
-    GM_API GM_RectangleReference3D gm_rectangle_reference3d_create(GM_Vec3* position, u32 length, u32 width, u32 height);
+    GM_API GM_Rectangle2D gm_rectangle2d_create(float x, float y, float width, float height);
+    GM_API GM_RectangleReference2D gm_rectangle_reference2d_create(GM_Vec2* center, float width, float height);
+    GM_API GM_Rectangle3D gm_rectangle3d_create(float x, float y, float z, float width, float height, float length);
+    GM_API GM_RectangleReference3D gm_rectangle_reference3d_create(GM_Vec3* center, float width, float height, float length);
     GM_API bool gm_rectangle_check_aabb_collision(GM_RectangleReference2D rect1, GM_RectangleReference2D rect2);
     GM_API GM_Circle2D gm_circle2d_create(float x, float y, float radius);
-    GM_API GM_CircleReference2D gm_circle_reference2d_create(GM_Vec2* position, float radius);
+    GM_API GM_CircleReference2D gm_circle_reference2d_create(GM_Vec2* center, float radius);
     GM_API GM_Circle3D gm_circle3d_create(float x, float y, float z, float radius);
-    GM_API GM_CircleReference3D gm_circle_reference3d_create(GM_Vec3* position, float radius);
+    GM_API GM_CircleReference3D gm_circle_reference3d_create(GM_Vec3* center, float radius);
 #endif
 
 #if defined(GM_INCLUDE_INTERSECTION)
@@ -551,20 +539,20 @@
 #if defined(GM_IMPL_COLOR)
     GM_RGBA gm_rgba_from_u32(u32 color) {
         GM_RGBA ret = {0};
-        ret.rgba.r = (u8)((color >> 24) & 0xFF);
-        ret.rgba.g = (u8)((color >> 16) & 0xFF);
-        ret.rgba.b = (u8)((color >> 8) & 0xFF);
-        ret.rgba.a = (u8)((color >> 0) & 0xFF);
+        ret.r = (u8)((color >> 24) & 0xFF);
+        ret.g = (u8)((color >> 16) & 0xFF);
+        ret.b = (u8)((color >> 8) & 0xFF);
+        ret.a = (u8)((color >> 0) & 0xFF);
 
         return ret;
     }
 
     GM_RGBA gm_rgba_multiply(GM_RGBA color, float value) {
         GM_RGBA ret = {0};
-        ret.rgba.r = (u8)CLAMP(color.rgba.r * value, 0, 255);
-        ret.rgba.g = (u8)CLAMP(color.rgba.g * value, 0, 255);
-        ret.rgba.b = (u8)CLAMP(color.rgba.b * value, 0, 255);
-        ret.rgba.a = (u8)CLAMP(color.rgba.a * value, 0, 255);
+        ret.r = (u8)CLAMP(color.r * value, 0, 255);
+        ret.g = (u8)CLAMP(color.g * value, 0, 255);
+        ret.b = (u8)CLAMP(color.b * value, 0, 255);
+        ret.a = (u8)CLAMP(color.a * value, 0, 255);
 
         return ret;
     }
@@ -582,13 +570,13 @@
     GM_RGBA gm_rgba_alpha_blend(GM_RGBA front_color, GM_RGBA back_color) {
         GM_RGBA ret = {0};
 
-        float normalized_front_alpha = (float)front_color.rgba.a / 255.0f; // Alpha of the front color
-        float normalized_back_alpha = (float)back_color.rgba.a / 255.0f;  // Alpha of the back color
+        float normalized_front_alpha = (float)front_color.a / 255.0f; // Alpha of the front color
+        float normalized_back_alpha = (float)back_color.a / 255.0f;  // Alpha of the back color
 
-        ret.rgba.a = (u8)CLAMP((front_color.rgba.a + back_color.rgba.a * (1.0f - normalized_front_alpha)), 0, 255);
-        ret.rgba.r = (u8)CLAMP((front_color.rgba.r * normalized_front_alpha + back_color.rgba.r * normalized_back_alpha * (1.0f - normalized_front_alpha)), 0, 255);
-        ret.rgba.g = (u8)CLAMP((front_color.rgba.g * normalized_front_alpha + back_color.rgba.g * normalized_back_alpha * (1.0f - normalized_front_alpha)), 0, 255);
-        ret.rgba.b = (u8)CLAMP((front_color.rgba.b * normalized_front_alpha + back_color.rgba.b * normalized_back_alpha * (1.0f - normalized_front_alpha)), 0, 255);
+        ret.a = (u8)CLAMP((front_color.a + back_color.a * (1.0f - normalized_front_alpha)), 0, 255);
+        ret.r = (u8)CLAMP((front_color.r * normalized_front_alpha + back_color.r * normalized_back_alpha * (1.0f - normalized_front_alpha)), 0, 255);
+        ret.g = (u8)CLAMP((front_color.g * normalized_front_alpha + back_color.g * normalized_back_alpha * (1.0f - normalized_front_alpha)), 0, 255);
+        ret.b = (u8)CLAMP((front_color.b * normalized_front_alpha + back_color.b * normalized_back_alpha * (1.0f - normalized_front_alpha)), 0, 255);
 
         return ret;
     }
@@ -1033,26 +1021,83 @@
 #endif
 
 #if defined(GM_IMPL_SHAPES)
-    GM_Rectangle2D gm_rectangle2d_create(float x, float y, u32 width, u32 height) {
-        GM_Rectangle2D ret = { .position.x = x, .position.y = y, .width = width, .height = height };
+    GM_Rectangle2D gm_rectangle2d_create(float x, float y, float width, float height) {
+        GM_Rectangle2D ret;
+        ret.center.x = x;
+        ret.center.y = y;
+        ret.width = width;
+        ret.height = height;
+
         return ret;
     }
 
-    GM_RectangleReference2D gm_rectangle_reference2d_create(GM_Vec2* position, u32 width, u32 height) {
-        GM_RectangleReference2D ret = { .position = position, .width = width, .height = height };
+    GM_RectangleReference2D gm_rectangle_reference2d_create(GM_Vec2* center, float width, float height) {
+        GM_RectangleReference2D ret;
+        ret.center = center;
+        ret.width = width;
+        ret.height = height;
+
         return ret;
     }
 
-    GM_Rectangle3D gm_rectangle3d_create(float x, float y, float z, u32 length, u32 width, u32 height) {
-        GM_Rectangle3D ret = { .position.x = x, .position.y = y, .position.z = z, .length = length, .width = width, .height = height };
+    GM_Rectangle3D gm_rectangle3d_create(float x, float y, float z, float width, float height, float length) {
+        GM_Rectangle3D ret;
+        ret.center.x = x;
+        ret.center.y = y;
+        ret.center.z = z;
+        ret.width = width;
+        ret.height = height;
+        ret.length = length;
+
         return ret;
     }
 
-    GM_RectangleReference3D gm_rectangle_reference3d_create(GM_Vec3* position, u32 length, u32 width, u32 height) {
-        GM_RectangleReference3D ret = { .position = position, .length = length, .width = width, .height = height };
+    GM_RectangleReference3D gm_rectangle_reference3d_create(GM_Vec3* center, float width, float height, float length) {
+        GM_RectangleReference3D ret;
+        ret.center = center;
+        ret.width = width;
+        ret.height = height;
+        ret.length = length;
+
         return ret;
     }
 
+    GM_Circle2D gm_circle2d_create(float x, float y, float radius) {
+        GM_Circle2D ret;
+        ret.center.x = x;
+        ret.center.y = y;
+        ret.radius = radius;
+
+        return ret;
+    }
+
+    GM_CircleReference2D gm_circle_reference2d_create(GM_Vec2* center, float radius) {
+        GM_CircleReference2D ret;
+        ret.center = center;
+        ret.radius = radius;
+
+        return ret;
+    }
+
+    GM_Circle3D gm_circle3d_create(float x, float y, float z, float radius) {
+        GM_Circle3D ret;
+        ret.center.x = x;
+        ret.center.y = y;
+        ret.center.z = z;
+        ret.radius = radius;
+
+        return ret;
+    }
+
+    GM_CircleReference3D gm_circle_reference3d_create(GM_Vec3* center, float radius) {
+        GM_CircleReference3D ret;
+        ret.center = center;
+        ret.radius = radius;
+
+        return ret;
+    }
+
+    /*
     bool gm_rectangle_check_aabb_collision(GM_RectangleReference2D rect1, GM_RectangleReference2D rect2) {
         if (rect1.position->x < rect2.position->x + rect2.width && rect1.position->x + rect1.width > rect2.position->x &&
             rect1.position->y < rect2.position->y + rect2.height && rect1.position->y + rect1.height > rect2.position->y) {
@@ -1060,26 +1105,8 @@
         }
         return false;
     }
+    */
 
-    GM_Circle2D gm_circle2d_create(float x, float y, float radius) {
-        GM_Circle2D ret = { .position.x = x, .position.y = y, .radius = radius };
-        return ret;
-    }
-
-    GM_CircleReference2D gm_circle_reference2d_create(GM_Vec2* position, float radius) {
-        GM_CircleReference2D ret = { .position = position, .radius = radius };
-        return ret;
-    }
-
-    GM_Circle3D gm_circle3d_create(float x, float y, float z, float radius) {
-        GM_Circle3D ret = { .position.x = x, .position.y = y, .position.z = z, .radius = radius };
-        return ret;
-    }
-
-    GM_CircleReference3D gm_circle_reference3d_create(GM_Vec3* position, float radius) {
-        GM_CircleReference3D ret = { .position = position, .radius = radius };
-        return ret;
-    }
 #endif
 
 #if defined(GM_IMPL_INTERSECTION)
@@ -1130,8 +1157,11 @@
             }                                \
         } while (0)                          \
 
-        GM_Vec2 aabb_min = GM_Vec2Lit(aabb.position->x, aabb.position->y);
-        GM_Vec2 aabb_max = GM_Vec2Lit(aabb.position->x + aabb.width, aabb.position->y + aabb.height);
+        float half_width  = (aabb.width  / 2.0f);
+        float half_height = (aabb.height / 2.0f);
+
+        GM_Vec2 aabb_min = GM_Vec2Lit(aabb.center->x - half_width, aabb.center->y - half_height);
+        GM_Vec2 aabb_max = GM_Vec2Lit(aabb.center->x + half_width, aabb.center->y + half_height);
 
         // X-axis
         CLIP(-dx, p0.x - aabb_min.x); // Left
@@ -1182,10 +1212,14 @@
                 if (r < t0) return false;    \
                 if (r < t1) t1 = r;          \
             }                                \
-        } while (0)
+        } while (0)                          \
 
-        GM_Vec3 aabb_min = GM_Vec3Lit(aabb.position->x, aabb.position->y, aabb.position->z);
-        GM_Vec3 aabb_max = GM_Vec3Lit(aabb.position->x + aabb.width, aabb.position->y + aabb.height, aabb.position->z + aabb.length);
+        float half_width  = (aabb.width  / 2.0f);
+        float half_height = (aabb.height / 2.0f);
+        float half_length = (aabb.length / 2.0f);
+
+        GM_Vec3 aabb_min = GM_Vec3Lit(aabb.center->x - half_width, aabb.center->y - half_height, aabb.center->z - half_length);
+        GM_Vec3 aabb_max = GM_Vec3Lit(aabb.center->x + half_width, aabb.center->y + half_height, aabb.center->z + half_length);
 
         // X-axis
         CLIP(-dx, p0.x - aabb_min.x); // Left
@@ -1276,13 +1310,17 @@
     }
 
     float gm_inverse_lerp(float a, float b, float value) {
-        if (fabsf(a - b) < 0.00001f) return 0.0f; // Avoid division by zero
+        if (NEAR_ZERO(a - b)) {
+            return 0.0f; // Avoid division by zero
+        }
+
         return (value - a) / (b - a);
     }
 
     float gm_remap(float x, float s_min, float s_max, float e_min, float e_max) {
         x = CLAMP(x, s_min, s_max);
         float s_ratio = (x - s_min) / (s_max - s_min);
+        
         return e_min + (s_ratio * (e_max - e_min));
     }
 
@@ -1460,14 +1498,14 @@
     // SAT collision
 
     bool gm_collision2d_circles(GM_CircleReference2D c1, GM_CircleReference2D c2, GM_CollisionInfo2D* collision_info) {
-        float distance = gm_vec2_distance(*c1.position, *c2.position);
+        float distance = gm_vec2_distance(*c1.center, *c2.center);
         float total_radius = c1.radius + c2.radius;
         if (distance >= total_radius) {
             return false;
         }
 
         if (collision_info) {
-            collision_info->normal = gm_vec2_normalize(gm_vec2_sub(*c1.position, *c2.position));
+            collision_info->normal = gm_vec2_normalize(gm_vec2_sub(*c1.center, *c2.center));
             collision_info->depth = total_radius - distance;
         }
 
@@ -1553,9 +1591,9 @@
         ret.rb = gm_physics2d_rb_create(position, mass);
         ret.collider = collider;
         if (collider.type == GM_COLLIDER_CIRCLE) {
-            ret.collider.circle.position = position;
+            ret.collider.circle.center = position;
         } else if (collider.type == GM_COLLIDER_AABB) {
-            ret.collider.aabb.position = position;
+            ret.collider.aabb.center = position;
         }
 
         return ret;
@@ -1583,9 +1621,9 @@
         obj->rb.velocity = gm_vec2_add(obj->rb.velocity, gm_vec2_scale(obj->rb.acceleration, dt));
 
         if (obj->collider.type == GM_COLLIDER_CIRCLE) {
-            obj->collider.circle.position = obj->rb.position;
+            obj->collider.circle.center = obj->rb.position;
         } else if (obj->collider.type == GM_COLLIDER_AABB) {
-            obj->collider.aabb.position = obj->rb.position;
+            obj->collider.aabb.center = obj->rb.position;
         }
     }
 

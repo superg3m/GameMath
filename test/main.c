@@ -3,7 +3,7 @@
 void test_intersection() {
     GM_Vec2 p0 = {0, 0};
     GM_Vec2 p1 = {10, 10};
-    GM_Vec2 aabb_position = GM_Vec2Lit(2, 2);
+    GM_Vec2 aabb_position = GM_Vec2Lit(1.5f, 3.6f);
     GM_RectangleReference2D aabb = gm_rectangle_reference2d_create(&aabb_position, 3, 3);
     GM_Vec2 inPoint, outPoint;
 
