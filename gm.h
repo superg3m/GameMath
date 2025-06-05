@@ -301,6 +301,18 @@
     GM_API GM_Matrix4 gm_mat4_rotate_xyz(GM_Matrix4 mat, float degrees, float x, float y, float z);
 
     GM_API GM_Matrix4 gm_mat4_perspective(float fov_degrees, float aspect, float near_plane, float far_plane);
+
+    /**
+     * @brief ensure that left, right, top, and bottom account for aspect ratio by multiply it
+     * 
+     * @param left 
+     * @param right 
+     * @param bottom 
+     * @param top 
+     * @param near_plane 
+     * @param far_plane 
+     * @return GM_API 
+     */
     GM_API GM_Matrix4 gm_mat4_orthographic(float left, float right, float bottom, float top, float near_plane, float far_plane);
     GM_API GM_Matrix4 gm_mat4_look_at(GM_Vec3 camera_position, GM_Vec3 target_position, GM_Vec3 world_up);
 
@@ -936,7 +948,26 @@
         return ret;
     }
 
-    GM_Matrix4 gm_mat4_orthographic(float left, float right, float bottom, float top, float near_plane, float far_plane);
+    // Found at: https://www.scratchapixel.com/lessons/3d-basic-rendering/perspective-and-orthographic-projection-matrix/orthographic-projection-matrix.html
+    GM_Matrix4 gm_mat4_orthographic(float left, float right, float bottom, float top, float near_plane, float far_plane) {
+        const float A = 2 / (right - left);
+        const float B = 2 / (top - bottom);
+        const float C = -2 / (far_plane - near_plane);
+        const float D = -((right + left) / (right - left));
+        const float E = -((top + bottom) / (top - bottom));
+        const float F = -((far_plane + near_plane) / (far_plane - near_plane));
+
+        GM_Matrix4 ret = {
+            .data = {
+                A,  0,  0,  0,
+                0,  B,  0,  0,
+                0,  0,  C,  0,
+                D,  E,  F,  1
+            }
+        };
+
+        return ret;
+    }
 
     // Found at: https://www.khronos.org/opengl/wiki/GluLookAt_code
     GM_Matrix4 gm_mat4_look_at(GM_Vec3 position, GM_Vec3 target, GM_Vec3 world_up) {

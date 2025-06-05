@@ -15,6 +15,7 @@
         "type_traits": "c",
         "utility": "c",
         "xtr1common": "c",
-        "xlocale": "c"
+        "xlocale": "c",
+        "ios": "c"
     }
 }
