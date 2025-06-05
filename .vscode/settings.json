@@ -16,6 +16,7 @@
         "utility": "c",
         "xtr1common": "c",
         "xlocale": "c",
-        "ios": "c"
+        "ios": "c",
+        "limits": "c"
     }
 }

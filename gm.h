@@ -122,31 +122,27 @@
 
 #if defined(GM_INCLUDE_COLOR)
     typedef struct GM_RGBA {
-        union {
+       union {
             struct {
-                union {
-                    u8 r;
-                    u8 g;
-                    u8 b;
-                    u8 a;
-
-                    u8 c[4];
-                    u32 hex;
-                };
+                u8 r;
+                u8 g;
+                u8 b;
+                u8 a;
             };
+
+            u8 c[4];
+            u32 hex;
         };
     } GM_RGBA;
 
     #ifdef __cplusplus
         #define GM_RGBALit(r, g, b, a) (GM_RGBA{r, g, b, a})
-        #define GM_ARGBLit(r, g, b, a) (GM_RGBA{a, r, g, b})
     #else
         #define GM_RGBALit(r, g, b, a) ((GM_RGBA){r, g, b, a})
-        #define GM_ARGBLit(r, g, b, a) ((GM_RGBA){a, r, g, b})
     #endif
 
-    GM_API u32 gm_rgba_to_u32(GM_RGBA color);
     GM_API GM_RGBA gm_rgba_from_u32(u32 color);
+    GM_API GM_RGBA gm_argb_from_u32(u32 color);
     GM_API GM_RGBA gm_rgba_alpha_blend(GM_RGBA front_color, GM_RGBA back_color);
     GM_API GM_RGBA gm_rgba_u32_alpha_blend(u32 front_color_u32, u32 back_color_u32);
 
@@ -169,17 +165,6 @@
     #define GM_RGBA_CYAN GM_RGBALit(0, 255, 255, 255)
     #define GM_RGBA_PURPLE GM_RGBALit(128, 0, 128, 255)
     #define GM_RGBA_YELLOW GM_RGBALit(255, 255, 0, 255)
-
-    #define GM_ARGB_BLACK GM_ARGBLit(0, 0, 0, 255)
-    #define GM_ARGB_RED GM_ARGBLit(255, 0, 0, 255)
-    #define GM_ARGB_BLUE GM_ARGBLit(0, 0, 255, 255)
-    #define GM_ARGB_GREEN GM_ARGBLit(0, 255, 0, 255)
-    #define GM_ARGB_WHITE GM_ARGBLit(255, 255, 255, 255)
-    #define GM_ARGB_PINK GM_ARGBLit(255, 105, 180, 255)
-    #define GM_ARGB_LIME GM_ARGBLit(0, 255, 128, 255)
-    #define GM_ARGB_CYAN GM_ARGBLit(0, 255, 255, 255)
-    #define GM_ARGB_PURPLE GM_ARGBLit(128, 0, 128, 255)
-    #define GM_ARGB_YELLOW GM_ARGBLit(255, 255, 0, 255)
 #endif
 
 #if defined(GM_INCLUDE_VECTOR)
@@ -266,8 +251,13 @@
     GM_API float gm_vec4_distance(GM_Vec4 A, GM_Vec4 B);
 
     GM_API float gm_vec2_magnitude(GM_Vec2 A);
+    GM_API float gm_vec2_magnitude_squared(GM_Vec2 A);
+
     GM_API float gm_vec3_magnitude(GM_Vec3 A);
+    GM_API float gm_vec3_magnitude_squared(GM_Vec3 A);
+
     GM_API float gm_vec4_magnitude(GM_Vec4 A);
+    GM_API float gm_vec4_magnitude_squared(GM_Vec4 A);
 
     GM_API float gm_vec2_dot(GM_Vec2 A, GM_Vec2 B);
     GM_API float gm_vec3_dot(GM_Vec3 A, GM_Vec3 B);
@@ -289,7 +279,6 @@
             GM_Vec4 v[4];
         };
     } GM_Matrix4;
-
 
     GM_API GM_Matrix4 gm_mat4_identity();
     GM_API GM_Matrix4 gm_mat4_translate(GM_Matrix4 mat, GM_Vec3 t);
@@ -320,8 +309,9 @@
     GM_API GM_Matrix4 gm_mat4_inverse(GM_Matrix4 m, bool* success);
     GM_API GM_Matrix4 gm_mat4_transpose(GM_Matrix4 m);
 
-    GM_API bool gm_mat4_equal(GM_Matrix4* A, GM_Matrix4* B);
+    GM_API bool gm_mat4_equal(GM_Matrix4 A, GM_Matrix4 B);
     GM_API GM_Matrix4 gm_mat4_transform(GM_Vec3 scale, float theta, GM_Vec3 rotation_axis, GM_Vec3 translation);
+    GM_API GM_Matrix4 gm_mat4_inverse_transform(GM_Vec3 scale, float theta, GM_Vec3 rotation_axis, GM_Vec3 translation);
 #endif
 
 #if defined(GM_INCLUDE_SHAPES)
@@ -395,11 +385,28 @@
         GM_Vec3 v;
     } GM_Quaternion;
 
-    GM_API GM_Quaternion gm_quat_create(GM_Vec3 axis, float theta);
+    #ifdef __cplusplus
+        #define GM_QuaternionLit(w, x, y, z) (GM_Quaternion{w, x, y, z})
+    #else
+        #define GM_QuaternionLit(w, x, y, z) ((GM_Quaternion){w, x, y, z})
+    #endif
+
+    GM_API GM_Quaternion gm_quat_create(float theta, GM_Vec3 axis);
     GM_API GM_Quaternion gm_quat_inverse(GM_Quaternion quat);
     GM_API GM_Quaternion gm_quat_mult(GM_Quaternion q1, GM_Quaternion q2);
+    GM_API GM_Quaternion gm_quat_from_euler(GM_Vec3 euler_angles_degrees);
+    GM_API GM_Matrix4 gm_quat_to_mat4(GM_Quaternion q);
     GM_API GM_Vec3 gm_quat_vector_mult(GM_Quaternion quat, GM_Vec3 vec);
-    GM_API GM_Quaternion gm_slerp(GM_Quaternion a, GM_Quaternion b, float t);
+    GM_API void gm_quat_to_axis_angle(GM_Quaternion quat, float* theta, GM_Vec3* vec);
+    GM_API GM_Quaternion gm_quat_sub(GM_Quaternion a, GM_Quaternion b);
+    GM_API GM_Quaternion gm_quat_add(GM_Quaternion a, GM_Quaternion b);
+    GM_API GM_Quaternion gm_quat_scale(GM_Quaternion a, float scale);
+   GM_API  GM_Quaternion gm_quat_add_scalar(GM_Quaternion a, float scalar);
+   GM_API  GM_Quaternion gm_quat_sub_scalar(GM_Quaternion a, float scalar);
+    GM_API GM_Quaternion gm_quat_power(GM_Quaternion q1, float t);
+    GM_API GM_Quaternion gm_quat_normalize(GM_Quaternion q);
+    GM_API float gm_quat_dot(GM_Quaternion q, GM_Quaternion r);
+    GM_API GM_Quaternion gm_quat_slerp(GM_Quaternion q, GM_Quaternion r, float t);
 #endif
 
 #if defined(GM_INCLUDE_UTILITY)
@@ -551,6 +558,16 @@
 #if defined(GM_IMPL_COLOR)
     GM_RGBA gm_rgba_from_u32(u32 color) {
         GM_RGBA ret = {0};
+        ret.r = (u8)((color >> 0) & 0xFF);
+        ret.g = (u8)((color >> 8) & 0xFF);
+        ret.b = (u8)((color >> 16) & 0xFF);
+        ret.a = (u8)((color >> 24) & 0xFF);
+
+        return ret;
+    }
+
+    GM_RGBA gm_argb_from_u32(u32 color) {
+        GM_RGBA ret = {0};
         ret.r = (u8)((color >> 24) & 0xFF);
         ret.g = (u8)((color >> 16) & 0xFF);
         ret.b = (u8)((color >> 8) & 0xFF);
@@ -626,12 +643,24 @@
         return sqrtf((A.x*A.x) + (A.y*A.y));
     }
 
+    float gm_vec2_magnitude_squared(GM_Vec2 A) {
+        return (A.x*A.x) + (A.y*A.y);
+    }
+
     float gm_vec3_magnitude(GM_Vec3 A) {
         return sqrtf((A.x*A.x) + (A.y*A.y) + (A.z*A.z));
     }
 
+    float gm_vec3_magnitude_squared(GM_Vec3 A) {
+        return (A.x*A.x) + (A.y*A.y) + (A.z*A.z);
+    }
+
     float gm_vec4_magnitude(GM_Vec4 A) {
         return sqrtf((A.x*A.x) + (A.y*A.y) + (A.z*A.z) + (A.w*A.w));
+    }
+
+    float gm_vec4_magnitude_squared(GM_Vec4 A) {
+        return (A.x*A.x) + (A.y*A.y) + (A.z*A.z) + (A.w*A.w);
     }
 
     GM_Vec2 gm_vec2_normalize(GM_Vec2 A) {
@@ -895,8 +924,8 @@
 
     GM_Matrix4 gm_mat4_rotate(GM_Matrix4 mat, float degrees, GM_Vec3 axis) {
         float rad = DEGREES_TO_RAD(degrees);
-        float c = cosf(rad);
-        float s = sinf(rad);
+        float c = fabsf(cosf(rad));
+        float s = fabsf(sinf(rad));
         float t = 1.0f - c;
 
         GM_Vec3 norm_axis = gm_vec3_normalize(axis);
@@ -989,14 +1018,72 @@
         return gm_mat4_mult(rotation, translation);
     }
 
+    #define M_ELEM(mat, row, col) (mat.data[((row) * 4) + (col)])
+
+    float gm_mat3_determinant_helper(float a, float b, float c, float d, float e, float f, float g, float h, float i) {
+        return a * (e * i - f * h) -
+               b * (d * i - f * g) +
+               c * (d * h - e * g);
+    }
+
+
     GM_Matrix4 gm_mat4_inverse(GM_Matrix4 m, bool* success) {
         if (success) {
             *success = false;
         }
-        
-        return gm_mat4_identity();
+
+        float m00 = M_ELEM(m, 0, 0), m01 = M_ELEM(m, 0, 1), m02 = M_ELEM(m, 0, 2), m03 = M_ELEM(m, 0, 3);
+        float m10 = M_ELEM(m, 1, 0), m11 = M_ELEM(m, 1, 1), m12 = M_ELEM(m, 1, 2), m13 = M_ELEM(m, 1, 3);
+        float m20 = M_ELEM(m, 2, 0), m21 = M_ELEM(m, 2, 1), m22 = M_ELEM(m, 2, 2), m23 = M_ELEM(m, 2, 3);
+        float m30 = M_ELEM(m, 3, 0), m31 = M_ELEM(m, 3, 1), m32 = M_ELEM(m, 3, 2), m33 = M_ELEM(m, 3, 3);
+
+        float c00 = gm_mat3_determinant_helper(m11, m12, m13, m21, m22, m23, m31, m32, m33);
+        float c01 = gm_mat3_determinant_helper(m10, m12, m13, m20, m22, m23, m30, m32, m33);
+        float c02 = gm_mat3_determinant_helper(m10, m11, m13, m20, m21, m23, m30, m31, m33);
+        float c03 = gm_mat3_determinant_helper(m10, m11, m12, m20, m21, m22, m30, m31, m32);
+
+        float det = m00 * c00 - m01 * c01 + m02 * c02 - m03 * c03;
+        if (NEAR_ZERO(det)) {
+            return gm_mat4_identity();
+        }
+
+        float invDet = 1.0f / det;
+
+        GM_Matrix4 inv;
+
+        // Row 0
+        M_ELEM(inv, 0, 0) = invDet * c00;
+        M_ELEM(inv, 0, 1) = invDet * (-gm_mat3_determinant_helper(m01, m02, m03, m21, m22, m23, m31, m32, m33));
+        M_ELEM(inv, 0, 2) = invDet * gm_mat3_determinant_helper(m01, m02, m03, m11, m12, m13, m31, m32, m33);
+        M_ELEM(inv, 0, 3) = invDet * (-gm_mat3_determinant_helper(m01, m02, m03, m11, m12, m13, m21, m22, m23));
+
+        // Row 1
+        M_ELEM(inv, 1, 0) = invDet * (-c01);
+        M_ELEM(inv, 1, 1) = invDet * gm_mat3_determinant_helper(m00, m02, m03, m20, m22, m23, m30, m32, m33);
+        M_ELEM(inv, 1, 2) = invDet * (-gm_mat3_determinant_helper(m00, m02, m03, m10, m12, m13, m30, m32, m33));
+        M_ELEM(inv, 1, 3) = invDet * gm_mat3_determinant_helper(m00, m02, m03, m10, m12, m13, m20, m22, m23);
+
+        // Row 2
+        M_ELEM(inv, 2, 0) = invDet * c02;
+        M_ELEM(inv, 2, 1) = invDet * (-gm_mat3_determinant_helper(m00, m01, m03, m20, m21, m23, m30, m31, m33));
+        M_ELEM(inv, 2, 2) = invDet * gm_mat3_determinant_helper(m00, m01, m03, m10, m11, m13, m30, m31, m33);
+        M_ELEM(inv, 2, 3) = invDet * (-gm_mat3_determinant_helper(m00, m01, m03, m10, m11, m13, m20, m21, m23));
+
+        // Row 3
+        M_ELEM(inv, 3, 0) = invDet * (-c03);
+        M_ELEM(inv, 3, 1) = invDet * gm_mat3_determinant_helper(m00, m01, m02, m20, m21, m22, m30, m31, m32);
+        M_ELEM(inv, 3, 2) = invDet * (-gm_mat3_determinant_helper(m00, m01, m02, m10, m11, m12, m30, m31, m32));
+        M_ELEM(inv, 3, 3) = invDet * gm_mat3_determinant_helper(m00, m01, m02, m10, m11, m12, m20, m21, m22);
+
+        if (success) {
+            *success = true;
+        }
+        return inv;
     }
 
+    #undef M_ELEM // Cleanup the macro
+
+    
     GM_API GM_Matrix4 gm_mat4_transpose(GM_Matrix4 m) {
         GM_Matrix4 ret = {0};
 
@@ -1024,9 +1111,9 @@
     }
 
     
-    bool gm_mat4_equal(GM_Matrix4* A, GM_Matrix4* B) {
+    bool gm_mat4_equal(GM_Matrix4 A, GM_Matrix4 B) {
         for (int i = 0; i < 16; i++) {
-            if (!NEAR_ZERO(A->data[i] - B->data[i])) {
+            if (!NEAR_ZERO(A.data[i] - B.data[i])) {
                 return false;
             }
         }
@@ -1287,23 +1374,30 @@
 #endif
 
 #if defined(GM_IMPL_QUATERNION)
-    GM_Quaternion gm_quat_create(GM_Vec3 axis, float theta) {
+    GM_Quaternion gm_quat_create(float theta, GM_Vec3 axis) {
         GM_Quaternion ret = {0};
 
         float radians = DEGREES_TO_RAD(theta);
-        float half_angle = radians / 2.0f;
-        ret.w = cosf(half_angle);
+        ret.w = cosf(radians / 2.0f);
+
+        if (NEAR_ZERO(ret.w)) {
+            ret.w = 0.0f;
+        }
+
         GM_Vec3 norm_axis = gm_vec3_normalize(axis);
-        ret.v = gm_vec3_scale(norm_axis, sinf(half_angle));
+        ret.v = gm_vec3_scale(norm_axis, sinf(radians / 2.0f));
 
         return ret;
     }
+
 
     GM_Quaternion gm_quat_inverse(GM_Quaternion quat) {
         GM_Quaternion ret = {0};
 
         float mag_sq = (quat.w * quat.w) + gm_vec3_dot(quat.v, quat.v);
-        if (mag_sq == 0.0f) return (GM_Quaternion){0,0,0,0};
+        if (mag_sq == 0.0f) { 
+            return (GM_Quaternion){0,0,0,0};
+        }
 
         ret.w = quat.w / mag_sq;
         ret.v = gm_vec3_scale(quat.v, -1.0f / mag_sq);
@@ -1318,21 +1412,201 @@
         return ret;
     }
 
+    GM_Quaternion gm_quat_from_euler(GM_Vec3 euler_angles_degrees) {
+        float roll_rad_half = DEGREES_TO_RAD(euler_angles_degrees.x) * 0.5f;
+        float pitch_rad_half = DEGREES_TO_RAD(euler_angles_degrees.y) * 0.5f;
+        float yaw_rad_half = DEGREES_TO_RAD(euler_angles_degrees.z) * 0.5f;
+
+        float cx = cosf(roll_rad_half);
+        float sx = sinf(roll_rad_half);
+        float cy = cosf(pitch_rad_half);
+        float sy = sinf(pitch_rad_half);
+        float cz = cosf(yaw_rad_half);
+        float sz = sinf(yaw_rad_half);
+
+        GM_Quaternion q;
+
+        q.w = cx * cy * cz + sx * sy * sz;
+        q.v.x = sx * cy * cz - cx * sy * sz;
+        q.v.y = cx * sy * cz + sx * cy * sz;
+        q.v.z = cx * cy * sz - sx * sy * cz;
+
+        return q;
+    }
+
+    GM_Matrix4 gm_quat_to_mat4(GM_Quaternion q) {
+        GM_Matrix4 result = gm_mat4_identity();
+
+        float x2 = q.v.x * q.v.x;
+        float y2 = q.v.y * q.v.y;
+        float z2 = q.v.z * q.v.z;
+
+        float xy = q.v.x * q.v.y;
+        float xz = q.v.x * q.v.z;
+        float yz = q.v.y * q.v.z;
+        float xw = q.v.x * q.w;
+        float yw = q.v.y * q.w;
+        float zw = q.v.z * q.w;
+
+        result.data[0] = 1.0f - 2.0f * (y2 + z2);  // m00
+        result.data[1] = 2.0f * (xy - zw);         // m01
+        result.data[2] = 2.0f * (xz + yw);         // m02
+        result.data[3] = 0.0f;                     // m03
+
+        result.data[4] = 2.0f * (xy + zw);         // m10
+        result.data[5] = 1.0f - 2.0f * (x2 + z2);  // m11
+        result.data[6] = 2.0f * (yz - xw);         // m12
+        result.data[7] = 0.0f;                     // m13
+
+        result.data[8] = 2.0f * (xz - yw);         // m20
+        result.data[9] = 2.0f * (yz + xw);         // m21
+        result.data[10] = 1.0f - 2.0f * (x2 + y2); // m22
+        result.data[11] = 0.0f;                    // m23
+
+        result.data[12] = 0.0f;                    // m30
+        result.data[13] = 0.0f;                    // m31
+        result.data[14] = 0.0f;                    // m32
+        result.data[15] = 1.0f;                    // m33
+
+        return result;
+    }
+
     // Rotate a vector with this quaternion (q * p * q_inverse)
     GM_Vec3 gm_quat_vector_mult(GM_Quaternion quat, GM_Vec3 vec) {
         GM_Quaternion p;
         p.w = 0.0f;
         p.v = vec;
 
-        // Efficient vector rotation:
-        // Quat * Vec * Quat_Inverse
-        // vprime = q * v * q_inv
-        // Where v is a pure quaternion (0, vec.x, vec.y, vec.z)
         GM_Quaternion temp = gm_quat_mult(quat, p);
         return gm_quat_mult(temp, gm_quat_inverse(quat)).v;
     }
 
-    GM_Quaternion gm_slerp(GM_Quaternion a, GM_Quaternion b, float t);
+    void gm_quat_to_axis_angle(GM_Quaternion quat, float* theta, GM_Vec3* vec) {
+        if (NEAR_ZERO(gm_vec3_magnitude_squared(quat.v)))
+            if (vec) {
+                *vec = GM_Vec3Lit(1, 0, 0);
+            }
+        else {
+            if (vec) {
+                *vec = gm_vec3_normalize(quat.v);
+            }
+        }
+
+        if (theta) {
+            *theta = acosf(quat.w) * 2.0f;
+            *theta = RAD_TO_DEGREES(*theta);
+        }
+    }
+
+    GM_Quaternion gm_quat_scale(GM_Quaternion q, float scale) {
+        GM_Quaternion ret;
+
+        ret.w   = q.w   * scale;
+        ret.v.x = q.v.x * scale;
+        ret.v.y = q.v.y * scale;
+        ret.v.z = q.v.z * scale;
+
+        return ret;
+    }
+
+    GM_Quaternion gm_quat_add_scalar(GM_Quaternion a, float scalar) {
+        GM_Quaternion ret;
+
+        ret.w   = a.w   + scalar;
+        ret.v.x = a.v.x + scalar;
+        ret.v.y = a.v.y + scalar;
+        ret.v.z = a.v.z + scalar;
+
+        return ret;
+    }
+
+    GM_Quaternion gm_quat_sub_scalar(GM_Quaternion a, float scalar) {
+        GM_Quaternion ret;
+
+        ret.w   = a.w   - scalar;
+        ret.v.x = a.v.x - scalar;
+        ret.v.y = a.v.y - scalar;
+        ret.v.z = a.v.z - scalar;
+
+        return ret;
+    }
+
+    GM_Quaternion gm_quat_add(GM_Quaternion a, GM_Quaternion b) {
+        GM_Quaternion ret;
+
+        ret.w   = a.w   + b.w;
+        ret.v.x = a.v.x + b.v.x;
+        ret.v.y = a.v.y + b.v.y;
+        ret.v.z = a.v.z + b.v.z;
+
+        return ret;
+    }
+
+    GM_Quaternion gm_quat_sub(GM_Quaternion a, GM_Quaternion b) {
+        GM_Quaternion ret;
+
+        ret.w   = a.w   - b.w;
+        ret.v.x = a.v.x - b.v.x;
+        ret.v.y = a.v.y - b.v.y;
+        ret.v.z = a.v.z - b.v.z;
+
+        return ret;
+    }
+
+    GM_Quaternion gm_quat_power(GM_Quaternion q1, float t) {
+        float a;
+        GM_Vec3 n;
+
+        gm_quat_to_axis_angle(q1, &a, &n);
+        return gm_quat_create(a * t, n);
+    }
+
+    GM_Quaternion gm_quat_normalize(GM_Quaternion q) {
+        GM_Vec4 temp = gm_vec4_normalize(GM_Vec4Lit(q.w, q.v.x, q.v.y, q.v.z));
+        
+        GM_Quaternion ret;
+        ret.w = temp.x;
+        ret.v.x = temp.y;
+        ret.v.y = temp.z;
+        ret.v.z = temp.w;
+
+        return ret;
+    }
+
+    float gm_quat_dot(GM_Quaternion a, GM_Quaternion b) {
+        float dot = a.w   * b.w   +
+                    a.v.x * b.v.x +
+                    a.v.y * b.v.y +
+                    a.v.z * b.v.z;
+
+        return dot;
+    }
+
+    GM_Quaternion gm_quat_slerp(GM_Quaternion q, GM_Quaternion r, float t) {
+        q = gm_quat_normalize(q);
+        r = gm_quat_normalize(r);
+        float dot = gm_quat_dot(q, r);
+
+        if (dot < 0.0f) {
+            r = gm_quat_scale(r, -1.0f);
+            dot = -dot;
+        }
+
+        if (dot > 0.9995f) {
+            GM_Quaternion lerp = gm_quat_add(q, gm_quat_scale(gm_quat_sub(r, q), t));
+            return gm_quat_normalize(lerp);
+        }
+
+        float theta_0 = acosf(dot);
+        float theta = theta_0 * t;
+
+        GM_Quaternion q3 = gm_quat_sub(r, gm_quat_scale(q, dot));
+        q3 = gm_quat_normalize(q3);
+
+        GM_Quaternion term1 = gm_quat_scale(q, cosf(theta));
+        GM_Quaternion term2 = gm_quat_scale(q3, sinf(theta));
+        return gm_quat_add(term1, term2);
+    }
 #endif
 
 #if defined(GM_IMPL_UTILITY)
