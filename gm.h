@@ -525,6 +525,10 @@
         GM_Collider2D collider;
     } GM_PhysicsObject2D;
 
+    // Date: June 06, 2025
+    // TODO(Jovanni): Probalby want a physiscs world2d
+    // also probably don't want to have PhysicsObject2D it should just be there seperate components
+
     GM_API void gm_physics2d_resolve_collisions(GM_PhysicsObject2D* objects, int object_count);
 
     GM_API GM_RigidBody2D gm_physics2d_rb_create(GM_Vec2* position, float mass);
