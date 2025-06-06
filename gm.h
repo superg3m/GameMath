@@ -1630,14 +1630,14 @@
         GM_Vec3 direction = gm_vec3_normalize(gm_vec3_sub(target, position));
         GM_Vec3 forward = {0, 0, 1};
 
-        if (NEAR_ZERO(gm_vec3_length_squared(gm_vec3_sub(direction, forward)))) {
+        if (NEAR_ZERO(gm_vec3_magnitude_squared(gm_vec3_sub(direction, forward)))) {
             return GM_QuaternionLit(1, 0, 0, 0);
         }
 
         GM_Vec3 axis = gm_vec3_cross(forward, direction);
         float angle = acosf(gm_vec3_dot(forward, direction));
 
-        if (NEAR_ZERO(gm_vec3_length_squared(axis))) {
+        if (NEAR_ZERO(gm_vec3_magnitude_squared(axis))) {
             axis = gm_vec3_normalize(up);
         } else {
             axis = gm_vec3_normalize(axis);
