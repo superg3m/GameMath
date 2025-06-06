@@ -1500,18 +1500,21 @@
     }
 
     void gm_quat_to_axis_angle(GM_Quaternion quat, float* theta, GM_Vec3* vec) {
-        if (gm_vec3_magnitude_squared(quat.v) < EPSILON) {
-            if (vec) {
+        quat = gm_quat_normalize(quat);
+        float sin_half_theta = gm_vec3_magnitude(quat.v);
+
+        if (vec) {
+            if (sin_half_theta < EPSILON) {
                 *vec = GM_Vec3Lit(1, 0, 0);
-            }
-        } else {
-            if (vec) {
-                *vec = gm_vec3_normalize(quat.v);
+            } else {
+                *vec = gm_vec3_scale(quat.v, 1.0f / sin_half_theta);
             }
         }
 
         if (theta) {
-            *theta = acosf(quat.w) * 2.0f;
+            // Clamp w to [-1, 1] to avoid NaNs due to precision issues
+            float w = CLAMP(quat.w, -1.0f, 1.0f);
+            *theta = 2.0f * acosf(w);
             *theta = RAD_TO_DEGREES(*theta);
         }
     }
