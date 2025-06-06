@@ -1500,7 +1500,7 @@
     }
 
     void gm_quat_to_axis_angle(GM_Quaternion quat, float* theta, GM_Vec3* vec) {
-        if (NEAR_ZERO(gm_vec3_magnitude_squared(quat.v))) {
+        if (gm_vec3_magnitude_squared(quat.v) < EPSILON) {
             if (vec) {
                 *vec = GM_Vec3Lit(1, 0, 0);
             }
