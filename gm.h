@@ -395,6 +395,7 @@
     GM_API GM_Quaternion gm_quat_inverse(GM_Quaternion quat);
     GM_API GM_Quaternion gm_quat_mult(GM_Quaternion q1, GM_Quaternion q2);
     GM_API GM_Quaternion gm_quat_from_euler(GM_Vec3 euler_angles_degrees);
+    GM_API GM_Quaternion gm_quat_from_angle_axis(float angle, GM_Vec3 axis);
     GM_API GM_Matrix4 gm_quat_to_mat4(GM_Quaternion q);
     GM_API GM_Vec3 gm_quat_vector_mult(GM_Quaternion quat, GM_Vec3 vec);
     GM_API void gm_quat_to_axis_angle(GM_Quaternion quat, float* theta, GM_Vec3* vec);
@@ -407,6 +408,7 @@
     GM_API GM_Quaternion gm_quat_normalize(GM_Quaternion q);
     GM_API float gm_quat_dot(GM_Quaternion q, GM_Quaternion r);
     GM_API GM_Quaternion gm_quat_slerp(GM_Quaternion q, GM_Quaternion r, float t);
+    GM_API GM_Quaternion gm_quat_look_at(GM_Vec3 position, GM_Vec3 target, GM_Vec3 up);
 #endif
 
 #if defined(GM_INCLUDE_UTILITY)
@@ -1434,6 +1436,22 @@
         return q;
     }
 
+    GM_Quaternion gm_quat_from_angle_axis(float angle, GM_Vec3 axis) {
+        float half_angle = DEGREES_TO_RAD(angle) * 0.5f;
+        float sin_half = sinf(half_angle);
+        float cos_half = cosf(half_angle);
+
+        GM_Quaternion q;
+        axis = gm_vec3_normalize(axis);
+
+        q.w     = cos_half;
+        q.v.x   = axis.x * sin_half;
+        q.v.y   = axis.y * sin_half;
+        q.v.z   = axis.z * sin_half;
+
+        return q;
+    }
+
     GM_Matrix4 gm_quat_to_mat4(GM_Quaternion q) {
         GM_Matrix4 result = gm_mat4_identity();
 
@@ -1606,6 +1624,26 @@
         GM_Quaternion term1 = gm_quat_scale(q, cosf(theta));
         GM_Quaternion term2 = gm_quat_scale(q3, sinf(theta));
         return gm_quat_add(term1, term2);
+    }
+
+    GM_Quaternion gm_quat_look_at(GM_Vec3 position, GM_Vec3 target, GM_Vec3 up) {
+        GM_Vec3 direction = gm_vec3_normalize(gm_vec3_sub(target, position));
+        GM_Vec3 forward = {0, 0, 1};
+
+        if (NEAR_ZERO(gm_vec3_length_squared(gm_vec3_sub(direction, forward)))) {
+            return GM_QuaternionLit(1, 0, 0, 0);
+        }
+
+        GM_Vec3 axis = gm_vec3_cross(forward, direction);
+        float angle = acosf(gm_vec3_dot(forward, direction));
+
+        if (NEAR_ZERO(gm_vec3_length_squared(axis))) {
+            axis = gm_vec3_normalize(up);
+        } else {
+            axis = gm_vec3_normalize(axis);
+        }
+
+        return gm_quat_from_angle_axis(angle, axis);
     }
 #endif
 
