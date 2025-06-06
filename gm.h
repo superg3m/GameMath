@@ -979,7 +979,7 @@
         return ret;
     }
 
-    // Found at: https://www.scratchapixel.com/lessons/3d-basic-rendering/perspective-and-orthographic-projection-matrix/orthographic-projection-matrix.html
+    // Found at: https://en.wikipedia.org/wiki/Orthographic_projection
     GM_Matrix4 gm_mat4_orthographic(float left, float right, float bottom, float top, float near_plane, float far_plane) {
         const float A = 2.0f / (right - left);
         const float B = 2.0f / (top - bottom);
@@ -990,10 +990,10 @@
 
         GM_Matrix4 ret = {
             .data = {
-                A,  0,  0,  0,
-                0,  B,  0,  0,
-                0,  0,  C,  0,
-                D,  E,  F,  1
+                A,  0,  0,  D,
+                0,  B,  0,  E,
+                0,  0,  C,  F,
+                0,  0,  0,  1
             }
         };
 
