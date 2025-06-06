@@ -1482,11 +1482,11 @@
     }
 
     void gm_quat_to_axis_angle(GM_Quaternion quat, float* theta, GM_Vec3* vec) {
-        if (NEAR_ZERO(gm_vec3_magnitude_squared(quat.v)))
+        if (NEAR_ZERO(gm_vec3_magnitude_squared(quat.v))) {
             if (vec) {
                 *vec = GM_Vec3Lit(1, 0, 0);
             }
-        else {
+        } else {
             if (vec) {
                 *vec = gm_vec3_normalize(quat.v);
             }
