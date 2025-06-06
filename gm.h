@@ -401,8 +401,8 @@
     GM_API GM_Quaternion gm_quat_sub(GM_Quaternion a, GM_Quaternion b);
     GM_API GM_Quaternion gm_quat_add(GM_Quaternion a, GM_Quaternion b);
     GM_API GM_Quaternion gm_quat_scale(GM_Quaternion a, float scale);
-    GM_API  GM_Quaternion gm_quat_add_scalar(GM_Quaternion a, float scalar);
-    GM_API  GM_Quaternion gm_quat_sub_scalar(GM_Quaternion a, float scalar);
+    GM_API GM_Quaternion gm_quat_add_scalar(GM_Quaternion a, float scalar);
+    GM_API GM_Quaternion gm_quat_sub_scalar(GM_Quaternion a, float scalar);
     GM_API GM_Quaternion gm_quat_power(GM_Quaternion q1, float t);
     GM_API GM_Quaternion gm_quat_normalize(GM_Quaternion q);
     GM_API float gm_quat_dot(GM_Quaternion q, GM_Quaternion r);
