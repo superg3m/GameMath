@@ -981,12 +981,12 @@
 
     // Found at: https://www.scratchapixel.com/lessons/3d-basic-rendering/perspective-and-orthographic-projection-matrix/orthographic-projection-matrix.html
     GM_Matrix4 gm_mat4_orthographic(float left, float right, float bottom, float top, float near_plane, float far_plane) {
-        const float A = 2 / (right - left);
-        const float B = 2 / (top - bottom);
-        const float C = -2 / (far_plane - near_plane);
-        const float D = -((right + left) / (right - left));
-        const float E = -((top + bottom) / (top - bottom));
-        const float F = -((far_plane + near_plane) / (far_plane - near_plane));
+        const float A = 2.0f / (right - left);
+        const float B = 2.0f / (top - bottom);
+        const float C = -2.0f / (far_plane - near_plane);
+        const float D = -(right + left) / (right - left);
+        const float E = -(top + bottom) / (top - bottom);
+        const float F = -(far_plane + near_plane) / (far_plane - near_plane);
 
         GM_Matrix4 ret = {
             .data = {
