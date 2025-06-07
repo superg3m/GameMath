@@ -1,4 +1,4 @@
-#include <gm.h>
+#include <gm.hpp>
 
 // --- Global Test Counters ---
 static int g_tests_run = 0;

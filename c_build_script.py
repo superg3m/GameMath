@@ -48,14 +48,14 @@ procedures: Dict[str, ProcedureConfig] = {
     "GameMath": ProcedureConfig(
         build_directory=f"./{build_postfix}",
         output_name="gm.lib",
-        source_files=["../../*.c"]
+        source_files=["../../*.cpp"]
     ),
     
     "GameMathTest": ProcedureConfig(
         build_directory=f"./test/{build_postfix}",
         output_name="test.exe",
         include_paths=["../../../"],
-        source_files=["../../*.c"],
+        source_files=["../../*.cpp"],
         additional_libs=[f"../../../{build_postfix}/gm.lib"]
     )
 }
