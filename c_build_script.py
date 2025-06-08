@@ -40,7 +40,7 @@ if cc.compiler_name == "cl":
     cc.compiler_disable_specific_warnings = ["5105", "4668", "4820", "4996"]
 else:
     cc.compiler_warning_level = "all"
-    cc.compiler_disable_specific_warnings = ["deprecated", "parentheses", "missing-braces"]
+    cc.compiler_disable_specific_warnings = ["deprecated", "parentheses", "missinfg-braces"]
 
 
 build_postfix = f"build_{cc.compiler_name}/{C_BUILD_BUILD_TYPE()}"
@@ -59,6 +59,10 @@ procedures: Dict[str, ProcedureConfig] = {
         additional_libs=[f"../../../{build_postfix}/gm.lib"]
     )
 }
+
+"""
+
+"""
 
 manager: Manager = Manager(cc, pc, procedures)
 manager.build_project()

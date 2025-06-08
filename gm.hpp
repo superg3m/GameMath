@@ -1,27 +1,8 @@
 #pragma once
 
-#ifdef __cplusplus
-    #define GM_API extern "C"
-#else
-    #define GM_API
-#endif
-
-#if defined(GM_IMPL)
-    #define GM_IMPL_COLOR
-    #define GM_IMPL_VECTOR
-    #define GM_IMPL_EULER
-    #define GM_IMPL_MATRIX
-    #define GM_IMPL_SHAPES
-    #define GM_IMPL_INTERSECTION
-    #define GM_IMPL_QUATERNION
-    #define GM_IMPL_UTILITY
-    #define GM_IMPL_EASE_FUNCTIONS
-    #define GM_IMPL_COLLISION
-    #define GM_IMPL_PHYSICS
-#endif
+#include <array>
 
 #define GM_INCLUDE_TYPES
-#define GM_INCLUDE_COLOR
 #define GM_INCLUDE_VECTOR
 #define GM_INCLUDE_EULER
 #define GM_INCLUDE_MATRIX
@@ -30,8 +11,6 @@
 #define GM_INCLUDE_QUATERNION
 #define GM_INCLUDE_UTILITY
 #define GM_INCLUDE_EASE_FUNCTIONS
-#define GM_INCLUDE_COLLISION
-#define GM_INCLUDE_PHYSICS
 
 #if defined(GM_INCLUDE_TYPES)
     #undef NULLPTR
@@ -48,7 +27,7 @@
     #undef MIN
     #undef MAX
     #undef CLAMP
-    #undef SQUARE
+    #undef SQUARED
     #undef local_persist
     #undef internal
     #undef FIRST_DIGIT
@@ -94,7 +73,7 @@
     #define MIN(a, b) (((a) < (b)) ? (a) : (b))
     #define MAX(a, b) (((a) > (b)) ? (a) : (b))
     #define CLAMP(value, min_value, max_value) (MIN(MAX(value, min_value), max_value))
-    #define SQUARE(a) ((a) * (a))
+    #define SQUARED(a) ((a) * (a))
 
     #define local_persist static
     #define internal static
@@ -120,151 +99,148 @@
     #endif
 #endif
 
-#if defined(GM_INCLUDE_COLOR)
-    typedef struct GM_RGBA {
-       union {
-            struct {
-                u8 r;
-                u8 g;
-                u8 b;
-                u8 a;
-            };
-
-            u8 c[4];
-            u32 hex;
-        };
-    } GM_RGBA;
-
-    #ifdef __cplusplus
-        #define GM_RGBALit(r, g, b, a) (GM_RGBA{r, g, b, a})
-    #else
-        #define GM_RGBALit(r, g, b, a) ((GM_RGBA){r, g, b, a})
-    #endif
-
-    GM_API GM_RGBA gm_rgba_from_u32(u32 color);
-    GM_API GM_RGBA gm_argb_from_u32(u32 color);
-    GM_API GM_RGBA gm_rgba_alpha_blend(GM_RGBA front_color, GM_RGBA back_color);
-    GM_API GM_RGBA gm_rgba_u32_alpha_blend(u32 front_color_u32, u32 back_color_u32);
-
-    /**
-     * @brief value from 0.0 to 1.0
-     *
-     * @param color
-     * @param value
-     * @return GM_RGBA
-     */
-    GM_API GM_RGBA gm_rgba_multiply(GM_RGBA color, float value);
-
-    #define GM_RGBA_BLACK GM_RGBALit(0, 0, 0, 255)
-    #define GM_RGBA_RED GM_RGBALit(255, 0, 0, 255)
-    #define GM_RGBA_BLUE GM_RGBALit(0, 0, 255, 255)
-    #define GM_RGBA_GREEN GM_RGBALit(0, 255, 0, 255)
-    #define GM_RGBA_WHITE GM_RGBALit(255, 255, 255, 255)
-    #define GM_RGBA_PINK GM_RGBALit(255, 105, 180, 255)
-    #define GM_RGBA_LIME GM_RGBALit(0, 255, 128, 255)
-    #define GM_RGBA_CYAN GM_RGBALit(0, 255, 255, 255)
-    #define GM_RGBA_PURPLE GM_RGBALit(128, 0, 128, 255)
-    #define GM_RGBA_YELLOW GM_RGBALit(255, 255, 0, 255)
-#endif
-
 #if defined(GM_INCLUDE_VECTOR)
-    // Vectors are typically treated as column vectors for post-multiplication (M * v)
-    // Their memory layout here is simple sequential (x, y, z, w)
-    typedef struct GM_Vec2 {
-        union {
-            struct {
-                float x;
-                float y;
-            };
-            float v[2];
-        };
-    } GM_Vec2;
+    struct GM_Vec2 {
+        float x;
+        float y;
 
-    typedef struct GM_Vec3 {
-        union {
-            struct {
-                float x;
-                float y;
-                float z;
-            };
-            float v[3];
-        };
-    } GM_Vec3;
+        GM_Vec2() = default;
+        explicit GM_Vec2(float fill);
+        explicit GM_Vec2(float x, float y);
 
-    typedef struct GM_Vec4 {
-        union {
-            struct {
-                float x;
-                float y;
-                float z;
-                float w;
-            };
-            float v[4];
-        };
-    } GM_Vec4;
+        float magnitude();
+        float magnitudeSquared();
+        GM_Vec2 normalize();
+        GM_Vec2 scale(float scale);
+        GM_Vec2 scale(GM_Vec2 s);
+        GM_Vec2 scale(float scale_x, float scale_y);
 
-    #ifdef __cplusplus
-        #define GM_Vec2Lit(x, y) GM_Vec2{x, y}
-        #define GM_Vec3Lit(x, y, z) GM_Vec3{x, y, z}
-        #define GM_Vec4Lit(x, y, z) GM_Vec4{x, y, z, w}
-    #else
-        #define GM_Vec2Lit(x, y) (GM_Vec2){x, y}
-        #define GM_Vec3Lit(x, y, z) (GM_Vec3){x, y, z}
-        #define GM_Vec4Lit(x, y, z, w) (GM_Vec4){x, y, z, w}
-    #endif
+        /**
+         * @brief The return value tells you:
+         * -1: the vectors are 180 degrees from eachother in other words they vectors are pointing in opposite directions
+         *  0: the vectors are perpendicular or orthogonal to eachother
+         *  1: the vectors are going the same direction
+         * 
+         * @param a 
+         * @param b 
+         * @return float 
+         */
+        static float dot(GM_Vec2 a, GM_Vec2 b);
+        static float distanfce(GM_Vec2 a, GM_Vec2 b);
+        static float distanfceSquared(GM_Vec2 a, GM_Vec2 b);
+        static GM_Vec2 lerp(GM_Vec2 a, GM_Vec2 b, float t);
 
-    GM_API GM_Vec2 gm_vec2_create(float x, float y);
-    GM_API GM_Vec3 gm_vec3_create(float x, float y, float z);
-    GM_API GM_Vec4 gm_vec4_create(float x, float y, float z, float w);
+        GM_Vec2 operator+(const GM_Vec2 &right);
+        GM_Vec2& operator+=(const GM_Vec2 &right);
 
-    GM_API GM_Vec2 gm_vec2_add(GM_Vec2 A, GM_Vec2 B);
-    GM_API GM_Vec3 gm_vec3_add(GM_Vec3 A, GM_Vec3 B);
-    GM_API GM_Vec4 gm_vec4_add(GM_Vec4 A, GM_Vec4 B);
+        GM_Vec2 operator-(const GM_Vec2 &right);
+        GM_Vec2& operator-=(const GM_Vec2 &right);
 
-    GM_API GM_Vec2 gm_vec2_sub(GM_Vec2 A, GM_Vec2 B);
-    GM_API GM_Vec3 gm_vec3_sub(GM_Vec3 A, GM_Vec3 B);
-    GM_API GM_Vec4 gm_vec4_sub(GM_Vec4 A, GM_Vec4 B);
+        GM_Vec2 operator*(const GM_Vec2 &right);
+        GM_Vec2& operator*=(const GM_Vec2 &right);
 
-    GM_API GM_Vec2 gm_vec2_scale(GM_Vec2 v, float scale);
-    GM_API GM_Vec3 gm_vec3_scale(GM_Vec3 v, float scale);
-    GM_API GM_Vec4 gm_vec4_scale(GM_Vec4 v, float scale);
-    GM_API GM_Vec2 gm_vec2_scale_non_uniform(GM_Vec2 v, GM_Vec2 s);
-    GM_API GM_Vec3 gm_vec3_scale_non_uniform(GM_Vec3 v, GM_Vec3 s);
-    GM_API GM_Vec4 gm_vec4_scale_non_uniform(GM_Vec4 v, GM_Vec4 s);
-    GM_API GM_Vec2 gm_vec2_scale_xyz(GM_Vec2 v, float scale_x, float scale_y);
-    GM_API GM_Vec3 gm_vec3_scale_xyz(GM_Vec3 v, float scale_x, float scale_y, float sacle_z);
-    GM_API GM_Vec4 gm_vec4_scale_xyz(GM_Vec4 v, float scale_x, float scale_y, float sacle_z, float scale_w);
+        GM_Vec2 operator/(const GM_Vec2 &right);
+        GM_Vec2& operator/=(const GM_Vec2 &right);
 
-    GM_API GM_Vec2 gm_vec2_lerp(GM_Vec2 A, GM_Vec2 B, float t);
-    GM_API GM_Vec3 gm_vec3_lerp(GM_Vec3 A, GM_Vec3 B, float t);
-    GM_API GM_Vec4 gm_vec4_lerp(GM_Vec4 A, GM_Vec4 B, float t);
+        bool operator==(const GM_Vec2 &right);
+        bool operator!=(const GM_Vec2 &right);
+    };
 
-    GM_API GM_Vec2 gm_vec2_projection(GM_Vec2 A, GM_Vec2 B);
-    GM_API GM_Vec3 gm_vec3_projection(GM_Vec3 A, GM_Vec3 B);
+    struct GM_Vec3 {
+        float x;
+        float y;
+        float z;
 
-    GM_API GM_Vec2 gm_vec2_normalize(GM_Vec2 A);
-    GM_API GM_Vec3 gm_vec3_normalize(GM_Vec3 A);
-    GM_API GM_Vec4 gm_vec4_normalize(GM_Vec4 A);
+        GM_Vec3() = default;
+        explicit GM_Vec3(float fill);
+        explicit GM_Vec3(float x, float y, float z);
 
-    GM_API float gm_vec2_distance(GM_Vec2 A, GM_Vec2 B);
-    GM_API float gm_vec3_distance(GM_Vec3 A, GM_Vec3 B);
-    GM_API float gm_vec4_distance(GM_Vec4 A, GM_Vec4 B);
+        float magnitude();
+        float magnitudeSquared();
+        GM_Vec3 normalize();
+        GM_Vec3 scale(float scale);
+        GM_Vec3 scale(GM_Vec3 s);
+        GM_Vec3 scale(float scale_x, float scale_y, float scale_z);
 
-    GM_API float gm_vec2_magnitude(GM_Vec2 A);
-    GM_API float gm_vec2_magnitude_squared(GM_Vec2 A);
+        /**
+         * @brief The return value tells you:
+         * -1: the vectors are 180 degrees from eachother in other words they vectors are pointing in opposite directions
+         *  0: the vectors are perpendicular or orthogonal to eachother
+         *  1: the vectors are going the same direction
+         * 
+         * @param a 
+         * @param b 
+         * @return float 
+         */
+        static float dot(GM_Vec3 a, GM_Vec3 b);
+        static float distanfce(GM_Vec3 a, GM_Vec3 b);
+        static float distanfceSquared(GM_Vec3 a, GM_Vec3 b);
+        static GM_Vec3 lerp(GM_Vec3 a, GM_Vec3 b, float t);
+        static GM_Vec3 cross(GM_Vec3 a, GM_Vec3 b);
 
-    GM_API float gm_vec3_magnitude(GM_Vec3 A);
-    GM_API float gm_vec3_magnitude_squared(GM_Vec3 A);
+        GM_Vec3 operator+(const GM_Vec3 &right);
+        GM_Vec3& operator+=(const GM_Vec3 &right);
 
-    GM_API float gm_vec4_magnitude(GM_Vec4 A);
-    GM_API float gm_vec4_magnitude_squared(GM_Vec4 A);
+        GM_Vec3 operator-(const GM_Vec3 &right);
+        GM_Vec3& operator-=(const GM_Vec3 &right);
 
-    GM_API float gm_vec2_dot(GM_Vec2 A, GM_Vec2 B);
-    GM_API float gm_vec3_dot(GM_Vec3 A, GM_Vec3 B);
-    GM_API float gm_vec4_dot(GM_Vec4 A, GM_Vec4 B);
+        GM_Vec3 operator*(const GM_Vec3 &right);
+        GM_Vec3& operator*=(const GM_Vec3 &right);
 
-    GM_API GM_Vec3 gm_vec3_cross(GM_Vec3 A, GM_Vec3 B);
-    GM_API GM_Vec2 gm_vec2_spline_point(GM_Vec2* spline_points, u32 spline_points_count, float t); // Declaration
+        GM_Vec3 operator/(const GM_Vec3 &right);
+        GM_Vec3& operator/=(const GM_Vec3 &right);
+
+        bool operator==(const GM_Vec3 &right);
+        bool operator!=(const GM_Vec3 &right);
+    };
+
+    struct GM_Vec4 {
+        float x;
+        float y;
+        float z;
+        float w;
+
+        GM_Vec4() = default;
+        explicit GM_Vec4(float fill);
+        explicit GM_Vec4(float x, float y, float z, float w);
+
+        float magnitude();
+        float magnitudeSquared();
+        GM_Vec4 normalize();
+        GM_Vec4 scale(float scale);
+        GM_Vec4 scale(GM_Vec4 s);
+        GM_Vec4 scale(float scale_x, float scale_y, float scale_z, float scale_w);
+
+        /**
+         * @brief The return value tells you:
+         * -1: the vectors are 180 degrees from eachother in other words they vectors are pointing in opposite directions
+         *  0: the vectors are perpendicular or orthogonal to eachother
+         *  1: the vectors are going the same direction
+         * 
+         * @param a 
+         * @param b 
+         * @return float 
+         */
+        static float dot(GM_Vec4 a, GM_Vec4 b);
+        static GM_Vec4 lerp(GM_Vec4 a, GM_Vec4 b, float t);
+        static float distanfce(GM_Vec4 a, GM_Vec4 b);
+        static float distanfceSquared(GM_Vec4 a, GM_Vec4 b);
+
+        GM_Vec4 operator+(const GM_Vec4 &right);
+        GM_Vec4& operator+=(const GM_Vec4 &right);
+
+        GM_Vec4 operator-(const GM_Vec4 &right);
+        GM_Vec4& operator-=(const GM_Vec4 &right);
+
+        GM_Vec4 operator*(const GM_Vec4 &right);
+        GM_Vec4& operator*=(const GM_Vec4 &right);
+
+        GM_Vec4 operator/(const GM_Vec4 &right);
+        GM_Vec4& operator/=(const GM_Vec4 &right);
+
+        bool operator==(const GM_Vec4 &right);
+        bool operator!=(const GM_Vec4 &right);
+    };
 #endif
 
 #if defined(GM_INCLUDE_MATRIX)
@@ -273,110 +249,40 @@
     // data[4-7] = Col 1 (Y-axis)
     // data[8-11] = Col 2 (Z-axis)
     // data[12-15] = Col 3 (Translation)
-    typedef struct GM_Matrix4 {
-        union {
-            float data[16];
-            GM_Vec4 v[4];
-        };
-    } GM_Matrix4;
+    struct GM_Matrix4 {
+        std::array<GM_Vec4, 4> v;
 
-    GM_API GM_Matrix4 gm_mat4_identity();
-    GM_API GM_Matrix4 gm_mat4_translate(GM_Matrix4 mat, GM_Vec3 t);
-    GM_API GM_Matrix4 gm_mat4_translate_xyz(GM_Matrix4 mat, float x, float y, float z);
-    GM_API GM_Matrix4 gm_mat4_scale(GM_Matrix4 mat, GM_Vec3 s);
-    GM_API GM_Matrix4 gm_mat4_scale_xyz(GM_Matrix4 mat, float x, float y, float z);
+        GM_Matrix4();
+        GM_Matrix4(GM_Vec4 r0, GM_Vec4 r1, GM_Vec4 r2, GM_Vec4 r3);
+        GM_Matrix4(float m00, float m01, float m02, float m03,
+                float m10, float m11, float m12, float m13,
+                float m20, float m21, float m22, float m23,
+                float m30, float m31, float m32, float m33);
+        GM_Matrix4 transpose();
 
-    GM_API GM_Matrix4 gm_mat4_rotate(GM_Matrix4 mat, float degrees, GM_Vec3 axis);
-    GM_API GM_Matrix4 gm_mat4_rotate_xyz(GM_Matrix4 mat, float degrees, float x, float y, float z);
+        static GM_Matrix4 identity();
+        static GM_Matrix4 scale(GM_Matrix4 mat, float scale);
+        static GM_Matrix4 scale(GM_Matrix4 mat, GM_Vec3 s);
+        static GM_Matrix4 scale(GM_Matrix4 mat, float scale_x, float scale_y, float scale_z);
+        static GM_Matrix4 rotate(GM_Matrix4 mat, float theta, GM_Vec3 axis);
+        static GM_Matrix4 rotate(GM_Matrix4 mat, float theta, float rot_x, float rot_y, float rot_z);
+        static GM_Matrix4 translate(GM_Matrix4 mat, GM_Vec3 t);
+        static GM_Matrix4 translate(GM_Matrix4 mat, float x, float y, float z);
+        static GM_Matrix4 transform(GM_Vec3 s, float theta, GM_Vec3 axis, GM_Vec3 t);
+        static GM_Matrix4 inverse_transform(GM_Vec3 s, float theta, GM_Vec3 axis, GM_Vec3 t);
 
-    GM_API GM_Matrix4 gm_mat4_perspective(float fov_degrees, float aspect, float near_plane, float far_plane);
+        static GM_Matrix4 perspective(float fov_degrees, float aspect, float near_plane, float far_plane);
+        static GM_Matrix4 orthographic(float left, float right, float bottom, float top, float near_plane, float far_plane);
+        static GM_Matrix4 lookat(GM_Vec3 position, GM_Vec3 target, GM_Vec3 world_up);
 
-    /**
-     * @brief ensure that left, right, top, and bottom account for aspect ratio by multiply it
-     * 
-     * @param left 
-     * @param right 
-     * @param bottom 
-     * @param top 
-     * @param near_plane 
-     * @param far_plane 
-     * @return GM_API 
-     */
-    GM_API GM_Matrix4 gm_mat4_orthographic(float left, float right, float bottom, float top, float near_plane, float far_plane);
-    GM_API GM_Matrix4 gm_mat4_look_at(GM_Vec3 camera_position, GM_Vec3 target_position, GM_Vec3 world_up);
+        static GM_Matrix4 inverse(GM_Matrix4 mat, bool* success);
 
-    GM_API GM_Matrix4 gm_mat4_mult(GM_Matrix4 A, GM_Matrix4 B);
-    GM_API GM_Matrix4 gm_mat4_inverse(GM_Matrix4 m, bool* success);
-    GM_API GM_Matrix4 gm_mat4_transpose(GM_Matrix4 m);
+        GM_Matrix4 operator*(const GM_Matrix4 &right);
+        GM_Matrix4& operator*=(const GM_Matrix4 &right);
 
-    GM_API bool gm_mat4_equal(GM_Matrix4 A, GM_Matrix4 B);
-    GM_API GM_Matrix4 gm_mat4_transform(GM_Vec3 scale, float theta, GM_Vec3 rotation_axis, GM_Vec3 translation);
-    GM_API GM_Matrix4 gm_mat4_inverse_transform(GM_Vec3 scale, float theta, GM_Vec3 rotation_axis, GM_Vec3 translation);
-#endif
-
-#if defined(GM_INCLUDE_SHAPES)
-    typedef struct GM_Rectangle2D {
-        GM_Vec2 center;   // Center in 3D space (x, y, z)
-        float width;  // along the X-axis
-        float height; // along the Y-axis
-    } GM_Rectangle2D;
-
-    typedef struct GM_RectangleReference2D {
-        GM_Vec2* center;   // Center in 3D space (x, y, z)
-        float width;  // along the X-axis
-        float height; // along the Y-axis
-    } GM_RectangleReference2D;
-
-    typedef struct GM_Rectangle3D {
-        GM_Vec3 center;       // Center in 3D space (x, y, z)
-        float width;  // along the X-axis
-        float height; // along the Y-axis
-        float length; // along the Z-axis
-    } GM_Rectangle3D;
-
-    typedef struct GM_RectangleReference3D {
-        GM_Vec3* center;   // Center in 3D space (x, y, z)
-        float width;  // along the X-axis
-        float height; // along the Y-axis
-        float length; // along the Z-axis
-    } GM_RectangleReference3D;
-
-    typedef struct GM_Circle2D {
-        GM_Vec2 center;
-        float radius;
-    } GM_Circle2D;
-
-    typedef struct GM_CircleReference2D {
-        GM_Vec2* center;
-        float radius;
-    } GM_CircleReference2D;
-
-    typedef struct GM_Circle3D {
-        GM_Vec3 center;
-        float radius;
-    } GM_Circle3D;
-
-    typedef struct GM_CircleReference3D {
-        GM_Vec3* center;
-        float radius;
-    } GM_CircleReference3D;
-
-    GM_API GM_Rectangle2D gm_rectangle2d_create(float x, float y, float width, float height);
-    GM_API GM_RectangleReference2D gm_rectangle_reference2d_create(GM_Vec2* center, float width, float height);
-    GM_API GM_Rectangle3D gm_rectangle3d_create(float x, float y, float z, float width, float height, float length);
-    GM_API GM_RectangleReference3D gm_rectangle_reference3d_create(GM_Vec3* center, float width, float height, float length);
-    GM_API bool gm_rectangle_check_aabb_collision(GM_RectangleReference2D rect1, GM_RectangleReference2D rect2);
-    GM_API GM_Circle2D gm_circle2d_create(float x, float y, float radius);
-    GM_API GM_CircleReference2D gm_circle_reference2d_create(GM_Vec2* center, float radius);
-    GM_API GM_Circle3D gm_circle3d_create(float x, float y, float z, float radius);
-    GM_API GM_CircleReference3D gm_circle_reference3d_create(GM_Vec3* center, float radius);
-#endif
-
-#if defined(GM_INCLUDE_INTERSECTION)
-    // Found at: https://imois.in/posts/line-intersections-with-cross-products/
-    GM_API bool gm_intersection2d_line_line(GM_Vec2 a, GM_Vec2 b, GM_Vec2 c, GM_Vec2 d, GM_Vec2* intersection);
-    GM_API bool gm_intersection2d_line_aabb(GM_Vec2 p0, GM_Vec2 p1, GM_RectangleReference2D aabb, GM_Vec2* inPoint, GM_Vec2* outPoint);
-    GM_API bool gm_intersection3d_line_aabb(GM_Vec3 p0, GM_Vec3 p1, GM_RectangleReference3D aabb, GM_Vec3* inPoint, GM_Vec3* outPoint);
+        bool operator==(const GM_Matrix4 &right);
+        bool operator!=(const GM_Matrix4 &right);
+    };
 #endif
 
 #if defined(GM_INCLUDE_QUATERNION)
@@ -391,449 +297,82 @@
         #define GM_QuaternionLit(w, x, y, z) ((GM_Quaternion){w, x, y, z})
     #endif
 
-    GM_API GM_Quaternion gm_quat_create(float theta, GM_Vec3 axis);
-    GM_API GM_Quaternion gm_quat_inverse(GM_Quaternion quat);
-    GM_API GM_Quaternion gm_quat_mult(GM_Quaternion q1, GM_Quaternion q2);
-    GM_API GM_Quaternion gm_quat_from_euler(GM_Vec3 euler_angles_degrees);
-    GM_API GM_Quaternion gm_quat_from_angle_axis(float angle, GM_Vec3 axis);
-    GM_API GM_Matrix4 gm_quat_to_mat4(GM_Quaternion q);
-    GM_API GM_Vec3 gm_quat_vector_mult(GM_Quaternion quat, GM_Vec3 vec);
-    GM_API void gm_quat_to_axis_angle(GM_Quaternion quat, float* theta, GM_Vec3* vec);
-    GM_API GM_Quaternion gm_quat_sub(GM_Quaternion a, GM_Quaternion b);
-    GM_API GM_Quaternion gm_quat_add(GM_Quaternion a, GM_Quaternion b);
-    GM_API GM_Quaternion gm_quat_scale(GM_Quaternion a, float scale);
-    GM_API GM_Quaternion gm_quat_add_scalar(GM_Quaternion a, float scalar);
-    GM_API GM_Quaternion gm_quat_sub_scalar(GM_Quaternion a, float scalar);
-    GM_API GM_Quaternion gm_quat_power(GM_Quaternion q1, float t);
-    GM_API GM_Quaternion gm_quat_normalize(GM_Quaternion q);
-    GM_API float gm_quat_dot(GM_Quaternion q, GM_Quaternion r);
-    GM_API GM_Quaternion gm_quat_slerp(GM_Quaternion q, GM_Quaternion r, float t);
-    GM_API GM_Quaternion gm_quat_look_at(GM_Vec3 position, GM_Vec3 target, GM_Vec3 up);
+    GM_Quaternion gm_quat_create(float theta, GM_Vec3 axis);
+    GM_Quaternion gm_quat_inverse(GM_Quaternion quat);
+    GM_Quaternion gm_quat_mult(GM_Quaternion q1, GM_Quaternion q2);
+    GM_Quaternion gm_quat_from_euler(GM_Vec3 euler_angles_degrees);
+    GM_Quaternion gm_quat_from_angle_axis(float angle, GM_Vec3 axis);
+    GM_Matrix4 gm_quat_to_mat4(GM_Quaternion q);
+    GM_Vec3 gm_quat_vector_mult(GM_Quaternion quat, GM_Vec3 vec);
+    void gm_quat_to_axis_angle(GM_Quaternion quat, float* theta, GM_Vec3* vec);
+    GM_Quaternion gm_quat_sub(GM_Quaternion a, GM_Quaternion b);
+    GM_Quaternion gm_quat_add(GM_Quaternion a, GM_Quaternion b);
+    GM_Quaternion gm_quat_scale(GM_Quaternion a, float scale);
+    GM_Quaternion gm_quat_add_scalar(GM_Quaternion a, float scalar);
+    GM_Quaternion gm_quat_sub_scalar(GM_Quaternion a, float scalar);
+    GM_Quaternion gm_quat_power(GM_Quaternion q1, float t);
+    GM_Quaternion gm_quat_normalize(GM_Quaternion q);
+    float gm_quat_dot(GM_Quaternion q, GM_Quaternion r);
+    GM_Quaternion gm_quat_slerp(GM_Quaternion q, GM_Quaternion r, float t);
+    GM_Quaternion gm_quat_look_at(GM_Vec3 position, GM_Vec3 target, GM_Vec3 up);
 #endif
 
 #if defined(GM_INCLUDE_UTILITY)
-    GM_API float gm_lerp(float a, float b, float t);
-    GM_API float gm_inverse_lerp(float a, float b, float value);
-    GM_API GM_Vec3 gm_barycentric(GM_Vec3 a, GM_Vec3 b, GM_Vec3 c, float u, float v);
+    float gm_lerp(float a, float b, float t);
+    float gm_inverse_lerp(float a, float b, float value);
+    GM_Vec3 gm_barycentric(GM_Vec3 a, GM_Vec3 b, GM_Vec3 c, float u, float v);
 
-    GM_API float gm_remap(float x, float s_min, float s_max, float e_min, float e_max);
-    GM_API float gm_move_toward(float current, float target, float delta);
+    float gm_remap(float x, float s_min, float s_max, float e_min, float e_max);
+    float gm_move_toward(float current, float target, float delta);
 
-    GM_API float gm_smoothstep(float edge0, float edge1, float x);
-    GM_API float gm_smootherstep(float edge0, float edge1, float x);
+    float gm_smoothstep(float edge0, float edge1, float x);
+    float gm_smootherstep(float edge0, float edge1, float x);
 
-    GM_API bool gm_near_equal(float a, float b);
+    bool gm_near_equal(float a, float b);
 #endif
 
 #if defined(GM_INCLUDE_EASE_FUNCTIONS)
     // Date: May 18, 2025
-    // NOTE(Jovanni): Visualize these at: https://easings.net/
-    GM_API float gm_ease_in_sine(float t);
-    GM_API float gm_ease_out_sine(float t);
-    GM_API float gm_ease_in_out_sine(float t);
-    GM_API float gm_ease_in_quad(float t);
-    GM_API float gm_ease_out_quad(float t);
-    GM_API float gm_ease_in_cubic(float t);
-    GM_API float gm_ease_out_cubic(float t);
-    GM_API float gm_ease_in_out_cubic(float t);
-    GM_API float gm_ease_in_quart(float t);
-    GM_API float gm_ease_out_quart(float t);
-    GM_API float gm_ease_in_out_quart(float t);
-    GM_API float gm_ease_in_quint(float t);
-    GM_API float gm_ease_out_quint(float t);
-    GM_API float gm_ease_in_out_quint(float t);
-    GM_API float gm_ease_in_expo(float t);
-    GM_API float gm_ease_out_expo(float t);
-    GM_API float gm_ease_in_out_expo(float t);
-    GM_API float gm_ease_in_circ(float t);
-    GM_API float gm_ease_out_circ(float t);
-    GM_API float gm_ease_in_out_circ(float t);
-    GM_API float gm_ease_in_back(float t);
-    GM_API float gm_ease_out_back(float t);
-    GM_API float gm_ease_in_out_back(float t);
-    GM_API float gm_ease_in_elastic(float t);
-    GM_API float gm_ease_out_elastic(float t);
-    GM_API float gm_ease_in_out_elastic(float t);
-    GM_API float gm_ease_in_bounce(float t);
-    GM_API float gm_ease_out_bounce(float t);
-    GM_API float gm_ease_in_out_bounce(float t);
+    // NOTE(Jovanni): Visualize these at: https://easinfgs.net/
+    float gm_ease_in_sinfe(float t);
+    float gm_ease_out_sinfe(float t);
+    float gm_ease_in_out_sinfe(float t);
+    float gm_ease_in_quad(float t);
+    float gm_ease_out_quad(float t);
+    float gm_ease_in_cubic(float t);
+    float gm_ease_out_cubic(float t);
+    float gm_ease_in_out_cubic(float t);
+    float gm_ease_in_quart(float t);
+    float gm_ease_out_quart(float t);
+    float gm_ease_in_out_quart(float t);
+    float gm_ease_in_quint(float t);
+    float gm_ease_out_quint(float t);
+    float gm_ease_in_out_quint(float t);
+    float gm_ease_in_expo(float t);
+    float gm_ease_out_expo(float t);
+    float gm_ease_in_out_expo(float t);
+    float gm_ease_in_circ(float t);
+    float gm_ease_out_circ(float t);
+    float gm_ease_in_out_circ(float t);
+    float gm_ease_in_back(float t);
+    float gm_ease_out_back(float t);
+    float gm_ease_in_out_back(float t);
+    float gm_ease_in_elastic(float t);
+    float gm_ease_out_elastic(float t);
+    float gm_ease_in_out_elastic(float t);
+    float gm_ease_in_bounce(float t);
+    float gm_ease_out_bounce(float t);
+    float gm_ease_in_out_bounce(float t);
 #endif
 
 #if defined(GM_INCLUDE_EULER)
-    GM_API GM_Vec2 gm_euler_to_vec2(float yaw, float pitch);
-    GM_API GM_Vec3 gm_euler_to_vec3(float yaw, float pitch);
-#endif
-
-#if defined(GM_INCLUDE_COLLISION)
-    typedef struct GM_CollisionInfo2D {
-        GM_Vec2 normal;
-        float depth;
-    } GM_CollisionInfo2D;
-
-    typedef enum GM_Collider2DType { 
-        GM_COLLIDER_AABB,
-        GM_COLLIDER_POINT,
-        GM_COLLIDER_CIRCLE,
-    } GM_Collider2DType;
-
-    typedef struct GM_Collider2D {
-        GM_Collider2DType type;
-        union {
-            GM_RectangleReference2D aabb;
-            GM_CircleReference2D circle;
-        };
-
-        u64 collision_mask; // Checking other layers to see if should actually collide or ignore based on their layer_mask
-        u64 layer_mask; // is used by other colliders to see if it should actually collide or ignore
-
-        // collision_enter(GM_Collider2D* other, GM_Collider2D* other);
-        // collision_persisting(GM_Collider2D* other, GM_Collider2D* other, float time);
-        // collision_function_leave(GM_Collider2D* other, GM_Collider2D* other);
-    } GM_Collider2D;
-
-    GM_API bool gm_collision2d_circles(GM_CircleReference2D c1, GM_CircleReference2D c2, GM_CollisionInfo2D* collision_info);
-
-    // Date: May 28, 2025
-    // TODO(Jovanni): SAT collision
-
-    GM_API GM_Collider2D gm_collider2d_circle_create(GM_CircleReference2D circle);
-    GM_API GM_Collider2D gm_collider2d_aabb_create(GM_RectangleReference2D aabb);
-
-    // 0 - 63
-    GM_API GM_Collider2D gm_collider2d_set_layer_bit(u8 layer_bit);
-    GM_API GM_Collider2D gm_collider2d_unset_layer_bit(u8 layer_bit);
-
-    // 0 - 63
-    GM_API GM_Collider2D gm_collider2d_set_mask_bit(u8 mask_bit_index);
-    GM_API GM_Collider2D gm_collider2d_unset_mask_bit(u8 mask_bit_index);
-
-    // GM_API bool gm_aabb_point_colliding(GM_Vec3 point, GM_AABB aabb);
-    // GM_API bool gm_aabb_aabb_colliding(GM_AABB a, GM_AABB b);
-#endif
-
-#if defined(GM_INCLUDE_PHYSICS)
-    typedef struct GM_RigidBody2D {
-        GM_Vec2* position; // reference to the position
-        GM_Vec2 velocity;
-        GM_Vec2 acceleration;
-        GM_Vec2 force;
-        float mass; // In kilograms (KG)
-    } GM_RigidBody2D;
-
-    typedef struct GM_PhysicsObject2D {
-        GM_RigidBody2D rb;
-        GM_Collider2D collider;
-    } GM_PhysicsObject2D;
-
-    // Date: June 06, 2025
-    // TODO(Jovanni): Probalby want a physiscs world2d
-    // also probably don't want to have PhysicsObject2D it should just be there seperate components
-
-    GM_API void gm_physics2d_resolve_collisions(GM_PhysicsObject2D* objects, int object_count);
-
-    GM_API GM_RigidBody2D gm_physics2d_rb_create(GM_Vec2* position, float mass);
-
-    GM_API GM_PhysicsObject2D gm_physics2d_object_create(GM_Vec2* position, float mass, GM_Collider2D collider);
-
-    GM_API void gm_physics2d_apply_velocity(GM_PhysicsObject2D* object, GM_Vec2 velocity);
-    GM_API void gm_physics2d_apply_velocity_xy(GM_PhysicsObject2D* object, float velocity_x, float velocity_y);
-
-    GM_API void gm_physics2d_apply_force(GM_PhysicsObject2D* object, GM_Vec2 force);
-    GM_API void gm_physics2d_apply_force_xy(GM_PhysicsObject2D* object, float force_x, float force_y);
-
-    GM_API void gm_physics2d_update(GM_PhysicsObject2D* obj, float dt);
-
-    /**
-     * @brief The gravity force vector points towards position_a or mass_a
-     * 
-     * @param G 
-     * @param position_a
-     * @param position_a 
-     * @param mass_a 
-     * @param position_b 
-     * @param mass_b 
-     * @return GM_API 
-     */
-    GM_API GM_Vec2 gm_physics2d_gravity_force(const double G, float min_distance, GM_Vec2 position_a, float mass_a, GM_Vec2 position_b, float mass_b);
+    GM_Vec2 gm_euler_to_vec2(float yaw, float pitch);
+    GM_Vec3 gm_euler_to_vec3(float yaw, float pitch);
 #endif
 
 //
 // ===================================================== GM_IMPL =====================================================
 //
-
-#if defined(GM_IMPL_COLOR)
-    GM_RGBA gm_rgba_from_u32(u32 color) {
-        GM_RGBA ret = {0};
-        ret.r = (u8)((color >> 0) & 0xFF);
-        ret.g = (u8)((color >> 8) & 0xFF);
-        ret.b = (u8)((color >> 16) & 0xFF);
-        ret.a = (u8)((color >> 24) & 0xFF);
-
-        return ret;
-    }
-
-    GM_RGBA gm_argb_from_u32(u32 color) {
-        GM_RGBA ret = {0};
-        ret.r = (u8)((color >> 24) & 0xFF);
-        ret.g = (u8)((color >> 16) & 0xFF);
-        ret.b = (u8)((color >> 8) & 0xFF);
-        ret.a = (u8)((color >> 0) & 0xFF);
-
-        return ret;
-    }
-
-    GM_RGBA gm_rgba_multiply(GM_RGBA color, float value) {
-        GM_RGBA ret = {0};
-        ret.r = (u8)CLAMP(color.r * value, 0, 255);
-        ret.g = (u8)CLAMP(color.g * value, 0, 255);
-        ret.b = (u8)CLAMP(color.b * value, 0, 255);
-        ret.a = (u8)CLAMP(color.a * value, 0, 255);
-
-        return ret;
-    }
-
-    u32 gm_rgba_u32_multiply(u32 color, float value) {
-        u8 r = (u8)(((color >> 24) & 0xFF) * value);
-        u8 g = (u8)(((color >> 16) & 0xFF) * value);
-        u8 b = (u8)(((color >> 8) & 0xFF) * value);
-        u8 a = (u8)(((color >> 0) & 0xFF) * value);
-
-        u32 result = (u32)(r << 24 | g << 16 | b << 8 | a);
-        return result;
-    }
-
-    GM_RGBA gm_rgba_alpha_blend(GM_RGBA front_color, GM_RGBA back_color) {
-        GM_RGBA ret = {0};
-
-        float normalized_front_alpha = (float)front_color.a / 255.0f; // Alpha of the front color
-        float normalized_back_alpha = (float)back_color.a / 255.0f;  // Alpha of the back color
-
-        ret.a = (u8)CLAMP((front_color.a + back_color.a * (1.0f - normalized_front_alpha)), 0, 255);
-        ret.r = (u8)CLAMP((front_color.r * normalized_front_alpha + back_color.r * normalized_back_alpha * (1.0f - normalized_front_alpha)), 0, 255);
-        ret.g = (u8)CLAMP((front_color.g * normalized_front_alpha + back_color.g * normalized_back_alpha * (1.0f - normalized_front_alpha)), 0, 255);
-        ret.b = (u8)CLAMP((front_color.b * normalized_front_alpha + back_color.b * normalized_back_alpha * (1.0f - normalized_front_alpha)), 0, 255);
-
-        return ret;
-    }
-
-    GM_RGBA gm_rgba_u32_alpha_blend(u32 front_color_u32, u32 back_color_u32) {
-        GM_RGBA front_color = gm_rgba_from_u32(front_color_u32);
-        GM_RGBA back_color = gm_rgba_from_u32(back_color_u32);
-        
-        return gm_rgba_alpha_blend(front_color, back_color);
-    }
-#endif
-
-#if defined(GM_IMPL_VECTOR)
-    float gm_vec2_dot(GM_Vec2 A, GM_Vec2 B) {
-        return (A.x * B.x) + (A.y * B.y);
-    }
-
-    float gm_vec3_dot(GM_Vec3 A, GM_Vec3 B) {
-        return (A.x * B.x) + (A.y * B.y) + (A.z * B.z);
-    }
-
-    float gm_vec4_dot(GM_Vec4 A, GM_Vec4 B) {
-        return (A.x * B.x) + (A.y * B.y) + (A.z * B.z) + (A.w * B.w);
-    }
-
-    GM_Vec3 gm_vec3_cross(GM_Vec3 A, GM_Vec3 B) {
-        GM_Vec3 ret;
-        ret.x = A.y * B.z - A.z * B.y;
-        ret.y = A.z * B.x - A.x * B.z;
-        ret.z = A.x * B.y - A.y * B.x;
-        return ret;
-    }
-
-    float gm_vec2_magnitude(GM_Vec2 A) {
-        return sqrtf((A.x*A.x) + (A.y*A.y));
-    }
-
-    float gm_vec2_magnitude_squared(GM_Vec2 A) {
-        return (A.x*A.x) + (A.y*A.y);
-    }
-
-    float gm_vec3_magnitude(GM_Vec3 A) {
-        return sqrtf((A.x*A.x) + (A.y*A.y) + (A.z*A.z));
-    }
-
-    float gm_vec3_magnitude_squared(GM_Vec3 A) {
-        return (A.x*A.x) + (A.y*A.y) + (A.z*A.z);
-    }
-
-    float gm_vec4_magnitude(GM_Vec4 A) {
-        return sqrtf((A.x*A.x) + (A.y*A.y) + (A.z*A.z) + (A.w*A.w));
-    }
-
-    float gm_vec4_magnitude_squared(GM_Vec4 A) {
-        return (A.x*A.x) + (A.y*A.y) + (A.z*A.z) + (A.w*A.w);
-    }
-
-    GM_Vec2 gm_vec2_normalize(GM_Vec2 A) {
-        GM_Vec2 ret;
-        const float magnitude = gm_vec2_magnitude(A);
-        if (magnitude == 0) return (GM_Vec2){0,0};
-        ret.x = A.x / magnitude;
-        ret.y = A.y / magnitude;
-
-        return ret;
-    }
-
-    GM_Vec3 gm_vec3_normalize(GM_Vec3 A) {
-        GM_Vec3 ret;
-        const float magnitude = gm_vec3_magnitude(A);
-        if (magnitude == 0) return (GM_Vec3){0,0,0};
-        ret.x = A.x / magnitude;
-        ret.y = A.y / magnitude;
-        ret.z = A.z / magnitude;
-
-        return ret;
-    }
-
-    GM_Vec4 gm_vec4_normalize(GM_Vec4 A) {
-        GM_Vec4 ret;
-        const float magnitude = gm_vec4_magnitude(A);
-        if (magnitude == 0) return (GM_Vec4){0,0,0,0};
-        ret.x = A.x / magnitude;
-        ret.y = A.y / magnitude;
-        ret.z = A.z / magnitude;
-        ret.w = A.w / magnitude;
-
-        return ret;
-    }
-
-    float gm_vec2_distance(GM_Vec2 A, GM_Vec2 B) {
-        return sqrtf(SQUARE(B.x - A.x) + SQUARE(B.y - A.y));
-    }
-
-    float gm_vec3_distance(GM_Vec3 A, GM_Vec3 B) {
-        return sqrtf(SQUARE(B.x - A.x) + SQUARE(B.y - A.y) + SQUARE(B.z - A.z));
-    }
-
-    float gm_vec4_distance(GM_Vec4 A, GM_Vec4 B) {
-        return sqrtf(SQUARE(B.x - A.x) + SQUARE(B.y - A.y) + SQUARE(B.z - A.z) + SQUARE(B.w - A.w));
-    }
-    
-    GM_Vec2 gm_vec2_create(float x, float y) {
-        GM_Vec2 ret = { .x = x, .y = y };
-        return ret;
-    }
-
-    GM_Vec3 gm_vec3_create(float x, float y, float z) {
-        GM_Vec3 ret = { .x = x, .y = y, .z = z };
-        return ret;
-    }
-
-    GM_Vec4 gm_vec4_create(float x, float y, float z, float w) {
-        GM_Vec4 ret = { .x = x, .y = y, .z = z, .w = w };
-        return ret;
-    }
-
-    GM_Vec2 gm_vec2_add(GM_Vec2 A, GM_Vec2 B) {
-        GM_Vec2 ret = { .x = A.x + B.x, .y = A.y + B.y };
-        return ret;
-    }
-
-    GM_Vec3 gm_vec3_add(GM_Vec3 A, GM_Vec3 B) {
-        GM_Vec3 ret = { .x = A.x + B.x, .y = A.y + B.y, .z = A.z + B.z };
-        return ret;
-    }
-
-    GM_Vec4 gm_vec4_add(GM_Vec4 A, GM_Vec4 B) {
-        GM_Vec4 ret = { .x = A.x + B.x, .y = A.y + B.y, .z = A.z + B.z, .w = A.w + B.w };
-        return ret;
-    }
-
-    GM_Vec2 gm_vec2_sub(GM_Vec2 A, GM_Vec2 B) {
-        GM_Vec2 ret = { .x = A.x - B.x, .y = A.y - B.y };
-        return ret;
-    }
-
-    GM_Vec3 gm_vec3_sub(GM_Vec3 A, GM_Vec3 B) {
-        GM_Vec3 ret = { .x = A.x - B.x, .y = A.y - B.y, .z = A.z - B.z };
-        return ret;
-    }
-
-    GM_Vec4 gm_vec4_sub(GM_Vec4 A, GM_Vec4 B) {
-        GM_Vec4 ret = { .x = A.x - B.x, .y = A.y - B.y, .z = A.z - B.z, .w = A.w - B.w };
-        return ret;
-    }
-
-    GM_Vec2 gm_vec2_scale(GM_Vec2 v, float scale) {
-        GM_Vec2 ret = { .x = v.x * scale, .y = v.y * scale };
-        return ret;
-    }
-
-    GM_Vec2 gm_vec2_scale_non_uniform(GM_Vec2 v, GM_Vec2 s) {
-        GM_Vec2 ret = { .x = v.x * s.x, .y = v.y * s.y };
-        return ret;
-    }
-
-    GM_Vec2 gm_vec2_scale_xyz(GM_Vec2 v, float scale_x, float scale_y) {
-        GM_Vec2 ret = { .x = v.x * scale_x, .y = v.y * scale_y };
-        return ret;
-    }
-
-    GM_Vec3 gm_vec3_scale(GM_Vec3 v, float scale) {
-        GM_Vec3 ret = { .x = v.x * scale, .y = v.y * scale, .z = v.z * scale };
-        return ret;
-    }
-
-    GM_Vec3 gm_vec3_scale_non_uniform(GM_Vec3 v, GM_Vec3 s) {
-        GM_Vec3 ret = { .x = v.x * s.x, .y = v.y * s.y, .z = v.z * s.z };
-        return ret;
-    }
-
-    GM_Vec3 gm_vec3_scale_xyz(GM_Vec3 v, float scale_x, float scale_y, float sacle_z) {
-        GM_Vec3 ret = { .x = v.x * scale_x, .y = v.y * scale_y, .z = v.z * sacle_z };
-        return ret;
-    }
-
-    GM_Vec4 gm_vec4_scale(GM_Vec4 v, float scale) {
-        GM_Vec4 ret = { .x = v.x * scale, .y = v.y * scale, .z = v.z * scale, .w = v.w * scale };
-        return ret;
-    }
-
-    GM_Vec4 gm_vec4_scale_non_uniform(GM_Vec4 v, GM_Vec4 s) {
-        GM_Vec4 ret = { .x = v.x * s.x, .y = v.y * s.y, .z = v.z * s.z, .w = v.w * s.w };
-        return ret;
-    }
-
-    GM_Vec4 gm_vec4_scale_xyz(GM_Vec4 v, float scale_x, float scale_y, float sacle_z, float scale_w) {
-        GM_Vec4 ret = { .x = v.x * scale_x, .y = v.y * scale_y, .z = v.z * sacle_z, .w = v.w * scale_w };
-        return ret;
-    }
-
-    GM_Vec2 gm_vec2_lerp(GM_Vec2 A, GM_Vec2 B, float t) {
-        return gm_vec2_add(A, gm_vec2_scale(gm_vec2_add(B, gm_vec2_scale(A, -1.0f)), t));
-    }
-
-    GM_Vec3 gm_vec3_lerp(GM_Vec3 A, GM_Vec3 B, float t) {
-        return gm_vec3_add(A, gm_vec3_scale(gm_vec3_add(B, gm_vec3_scale(A, -1.0f)), t));
-    }
-
-    GM_Vec4 gm_vec4_lerp(GM_Vec4 A, GM_Vec4 B, float t) {
-        return gm_vec4_add(A, gm_vec4_scale(gm_vec4_add(B, gm_vec4_scale(A, -1.0f)), t));
-    }
-
-    GM_Vec2 gm_vec2_projection(GM_Vec2 A, GM_Vec2 B) {
-        float dot_product = gm_vec2_dot(A, B);
-        float B_mag_sq = gm_vec2_dot(B, B);
-        if (B_mag_sq == 0) return (GM_Vec2){0,0};
-        return gm_vec2_scale(B, dot_product / B_mag_sq);
-    }
-
-    GM_Vec3 gm_vec3_projection(GM_Vec3 A, GM_Vec3 B) {
-        float dot_product = gm_vec3_dot(A, B);
-        float B_mag_sq = gm_vec3_dot(B, B);
-        if (B_mag_sq == 0) return (GM_Vec3){0,0,0};
-
-        return gm_vec3_scale(B, dot_product / B_mag_sq);
-    }
-
-    GM_Vec2 gm_vec2_spline_point(GM_Vec2* spline_points, u32 spline_points_count, float t);
-#endif
-
 
 #if defined(GM_IMPL_EULER)
     GM_Vec2 gm_euler_to_vec2(float yaw, float pitch) {
@@ -867,96 +406,9 @@
         return ret;
     }
 
-    GM_Matrix4 gm_mat4_mult(GM_Matrix4 A, GM_Matrix4 B) {
-        GM_Matrix4 C = {0};
-
-        for (int i = 0; i < 4; i++) {
-            C.v[i].x += A.v[i].x * B.data[0];
-            C.v[i].x += A.v[i].y * B.data[4];
-            C.v[i].x += A.v[i].z * B.data[8];
-            C.v[i].x += A.v[i].w * B.data[12];
-
-            C.v[i].y += A.v[i].x * B.data[1];
-            C.v[i].y += A.v[i].y * B.data[5];
-            C.v[i].y += A.v[i].z * B.data[9];
-            C.v[i].y += A.v[i].w * B.data[13];
-
-            C.v[i].z += A.v[i].x * B.data[2];
-            C.v[i].z += A.v[i].y * B.data[6];
-            C.v[i].z += A.v[i].z * B.data[10];
-            C.v[i].z += A.v[i].w * B.data[14];
-            
-            C.v[i].w += A.v[i].x * B.data[3];
-            C.v[i].w += A.v[i].y * B.data[7];
-            C.v[i].w += A.v[i].z * B.data[11];
-            C.v[i].w += A.v[i].w * B.data[15];
-        }
-        
-        return C;
-    }
-
-    GM_Matrix4 gm_mat4_translate(GM_Matrix4 mat, GM_Vec3 t) {
-        GM_Matrix4 translate_matrix = {
-            .data = {
-                1.0f, 0.0f, 0.0f, t.x,
-                0.0f, 1.0f, 0.0f, t.y,
-                0.0f, 0.0f, 1.0f, t.z,
-                0.0f, 0.0f, 0.0f, 1.0f
-            }
-        };
-
-        return gm_mat4_mult(translate_matrix, mat);
-    }
-
-    GM_Matrix4 gm_mat4_translate_xyz(GM_Matrix4 mat, float x, float y, float z) {
-        return gm_mat4_translate(mat, (GM_Vec3){.x=x, .y=y, .z=z});
-    }
-
-    GM_Matrix4 gm_mat4_scale(GM_Matrix4 mat, GM_Vec3 s) {
-        GM_Matrix4 scale_matrix = {
-            .data = {
-                s.x,  0.0f, 0.0f, 0.0f,
-                0.0f, s.y,  0.0f, 0.0f,
-                0.0f, 0.0f, s.z,  0.0f,
-                0.0f, 0.0f, 0.0f, 1.0f 
-            }
-        };
-        return gm_mat4_mult(scale_matrix, mat);
-    }
-
-    GM_Matrix4 gm_mat4_scale_xyz(GM_Matrix4 mat, float x, float y, float z) {
-        return gm_mat4_scale(mat, (GM_Vec3){.x=x, .y=y, .z=z});
-    }
-
-    GM_Matrix4 gm_mat4_rotate(GM_Matrix4 mat, float degrees, GM_Vec3 axis) {
-        float rad = DEGREES_TO_RAD(degrees);
-        float c = fabsf(cosf(rad));
-        float s = fabsf(sinf(rad));
-        float t = 1.0f - c;
-
-        GM_Vec3 norm_axis = gm_vec3_normalize(axis);
-        float x = norm_axis.x;
-        float y = norm_axis.y;
-        float z = norm_axis.z;
-
-        GM_Matrix4 rot = {
-            .data = {
-                t * x * x + c,     t * x * y - z * s, t * x * z + y * s, 0.0f,
-                t * x * y + z * s, t * y * y + c,     t * y * z - x * s, 0.0f,
-                t * x * z - y * s, t * y * z + x * s, t * z * z + c,     0.0f,
-                0.0f,              0.0f,              0.0f,              1.0f
-            }
-        };
-
-        return gm_mat4_mult(rot, mat);
-    }
 
 
-    GM_API GM_Matrix4 gm_mat4_rotate_xyz(GM_Matrix4 mat, float degrees, float x1, float y1, float z1) {
-        return gm_mat4_rotate(mat, degrees, (GM_Vec3){.x=x1, .y=y1, .z=z1});
-    }
-
-    GM_API GM_Matrix4 gm_mat4_perspective(float fov_degrees, float aspect, float near_plane, float far_plane) {
+    GM_Matrix4 gm_mat4_perspective(float fov_degrees, float aspect, float near_plane, float far_plane) {
         float fov_radians = DEGREES_TO_RAD(fov_degrees);
 
         const float t = tanf(fov_radians / 2) * near_plane;
@@ -1090,7 +542,7 @@
     #undef M_ELEM // Cleanup the macro
 
     
-    GM_API GM_Matrix4 gm_mat4_transpose(GM_Matrix4 m) {
+    GM_Matrix4 gm_mat4_transpose(GM_Matrix4 m) {
         GM_Matrix4 ret = {0};
 
         ret.v[0].x = m.v[0].x;
@@ -1127,26 +579,12 @@
         return true;
     }
 
-    GM_Matrix4 gm_mat4_transform(GM_Vec3 scale, float theta, GM_Vec3 rotation_axis, GM_Vec3 translation) {
-        GM_Matrix4 scale_matrix = gm_mat4_scale(gm_mat4_identity(), scale);
-        GM_Matrix4 rotation_matrix = gm_mat4_rotate(gm_mat4_identity(), theta, rotation_axis);
-        GM_Matrix4 translation_matrix = gm_mat4_translate(gm_mat4_identity(), translation);
 
-        return gm_mat4_mult(translation_matrix, gm_mat4_mult(rotation_matrix, scale_matrix));
-    }
-
-    GM_Matrix4 gm_mat4_inverse_transform(GM_Vec3 scale, float theta, GM_Vec3 rotation_axis, GM_Vec3 translation) {
-        GM_Matrix4 inverse_scale_matrix = gm_mat4_scale(gm_mat4_identity(), gm_vec3_scale_xyz(scale, 1 / scale.x, 1 / scale.y, 1 / scale.z));
-        GM_Matrix4 inverse_rotation_matrix = gm_mat4_transpose(gm_mat4_rotate(gm_mat4_identity(), theta, rotation_axis));
-        GM_Matrix4 inverse_translation_matrix = gm_mat4_translate(gm_mat4_identity(), gm_vec3_scale(translation, -1));
-
-        return gm_mat4_mult(inverse_scale_matrix, gm_mat4_mult(inverse_rotation_matrix, inverse_translation_matrix));
-    }
 #endif
 
 #if defined(GM_IMPL_SHAPES)
-    GM_Rectangle2D gm_rectangle2d_create(float x, float y, float width, float height) {
-        GM_Rectangle2D ret;
+    GM_Rectanfgle2D gm_rectanfgle2d_create(float x, float y, float width, float height) {
+        GM_Rectanfgle2D ret;
         ret.center.x = x;
         ret.center.y = y;
         ret.width = width;
@@ -1155,8 +593,8 @@
         return ret;
     }
 
-    GM_RectangleReference2D gm_rectangle_reference2d_create(GM_Vec2* center, float width, float height) {
-        GM_RectangleReference2D ret;
+    GM_RectanfgleReference2D gm_rectanfgle_reference2d_create(GM_Vec2* center, float width, float height) {
+        GM_RectanfgleReference2D ret;
         ret.center = center;
         ret.width = width;
         ret.height = height;
@@ -1164,8 +602,8 @@
         return ret;
     }
 
-    GM_Rectangle3D gm_rectangle3d_create(float x, float y, float z, float width, float height, float length) {
-        GM_Rectangle3D ret;
+    GM_Rectanfgle3D gm_rectanfgle3d_create(float x, float y, float z, float width, float height, float length) {
+        GM_Rectanfgle3D ret;
         ret.center.x = x;
         ret.center.y = y;
         ret.center.z = z;
@@ -1176,8 +614,8 @@
         return ret;
     }
 
-    GM_RectangleReference3D gm_rectangle_reference3d_create(GM_Vec3* center, float width, float height, float length) {
-        GM_RectangleReference3D ret;
+    GM_RectanfgleReference3D gm_rectanfgle_reference3d_create(GM_Vec3* center, float width, float height, float length) {
+        GM_RectanfgleReference3D ret;
         ret.center = center;
         ret.width = width;
         ret.height = height;
@@ -1222,7 +660,7 @@
     }
 
     /*
-    bool gm_rectangle_check_aabb_collision(GM_RectangleReference2D rect1, GM_RectangleReference2D rect2) {
+    bool gm_rectanfgle_check_aabb_collision(GM_RectanfgleReference2D rect1, GM_RectanfgleReference2D rect2) {
         if (rect1.position->x < rect2.position->x + rect2.width && rect1.position->x + rect1.width > rect2.position->x &&
             rect1.position->y < rect2.position->y + rect2.height && rect1.position->y + rect1.height > rect2.position->y) {
             return true;
@@ -1259,7 +697,7 @@
     }
 
 
-    bool gm_intersection2d_line_aabb(GM_Vec2 p0, GM_Vec2 p1, GM_RectangleReference2D aabb, GM_Vec2* inPoint, GM_Vec2* outPoint) {
+    bool gm_intersection2d_line_aabb(GM_Vec2 p0, GM_Vec2 p1, GM_RectanfgleReference2D aabb, GM_Vec2* inPoint, GM_Vec2* outPoint) {
         float t0 = 0.0f;
         float t1 = 1.0f;
         float dx = p1.x - p0.x;
@@ -1314,7 +752,7 @@
         return true;
     }
 
-    bool gm_intersection3d_line_aabb(GM_Vec3 p0, GM_Vec3 p1, GM_RectangleReference3D aabb, GM_Vec3* inPoint, GM_Vec3* outPoint) {
+    bool gm_intersection3d_line_aabb(GM_Vec3 p0, GM_Vec3 p1, GM_RectanfgleReference3D aabb, GM_Vec3* inPoint, GM_Vec3* outPoint) {
         float t0 = 0.0f;
         float t1 = 1.0f;
 
@@ -1419,9 +857,9 @@
     }
 
     GM_Quaternion gm_quat_from_euler(GM_Vec3 euler_angles_degrees) {
-        float roll_rad_half = DEGREES_TO_RAD(euler_angles_degrees.x) * 0.5f;
-        float pitch_rad_half = DEGREES_TO_RAD(euler_angles_degrees.y) * 0.5f;
-        float yaw_rad_half = DEGREES_TO_RAD(euler_angles_degrees.z) * 0.5f;
+        float roll_rad_half = DEGREES_TO_RAD(euler_angles_degrees.x) * 0.5ff;
+        float pitch_rad_half = DEGREES_TO_RAD(euler_angles_degrees.y) * 0.5ff;
+        float yaw_rad_half = DEGREES_TO_RAD(euler_angles_degrees.z) * 0.5ff;
 
         float cx = cosf(roll_rad_half);
         float sx = sinf(roll_rad_half);
@@ -1441,17 +879,17 @@
     }
 
     GM_Quaternion gm_quat_from_angle_axis(float angle, GM_Vec3 axis) {
-        float half_angle = DEGREES_TO_RAD(angle) * 0.5f;
-        float sin_half = sinf(half_angle);
-        float cos_half = cosf(half_angle);
+        float half_angle = DEGREES_TO_RAD(angle) * 0.5ff;
+        float sinf_half = sinf(half_angle);
+        float cosf_half = cosf(half_angle);
 
         GM_Quaternion q;
         axis = gm_vec3_normalize(axis);
 
-        q.w     = cos_half;
-        q.v.x   = axis.x * sin_half;
-        q.v.y   = axis.y * sin_half;
-        q.v.z   = axis.z * sin_half;
+        q.w     = cosf_half;
+        q.v.x   = axis.x * sinf_half;
+        q.v.y   = axis.y * sinf_half;
+        q.v.z   = axis.z * sinf_half;
 
         return q;
     }
@@ -1505,13 +943,13 @@
 
     void gm_quat_to_axis_angle(GM_Quaternion quat, float* theta, GM_Vec3* vec) {
         quat = gm_quat_normalize(quat);
-        float sin_half_theta = gm_vec3_magnitude(quat.v);
+        float sinf_half_theta = gm_vec3_magnitude(quat.v);
 
         if (vec) {
-            if (sin_half_theta < EPSILON) {
+            if (sinf_half_theta < EPSILON) {
                 *vec = GM_Vec3Lit(1, 0, 0);
             } else {
-                *vec = gm_vec3_scale(quat.v, 1.0f / sin_half_theta);
+                *vec = gm_vec3_scale(quat.v, 1.0f / sinf_half_theta);
             }
         }
 
@@ -1694,15 +1132,15 @@
 #endif
 
 #if defined(GM_IMPL_EASE_FUNCTIONS)
-    float gm_ease_in_sine(float t) {
+    float gm_ease_in_sinfe(float t) {
         return 1.0f - cosf((t * PI) / 2.0f);
     }
 
-    float gm_ease_out_sine(float t) {
+    float gm_ease_out_sinfe(float t) {
         return sinf((t * PI) / 2.0f);
     }
 
-    float gm_ease_in_out_sine(float t) {
+    float gm_ease_in_out_sinfe(float t) {
         return -(cosf(PI * t) - 1.0f) / 2.0f;
     }
 
@@ -1723,7 +1161,7 @@
     }
 
     float gm_ease_in_out_cubic(float t) {
-        return t < 0.5f ? 4.0f * t * t * t : 1.0f - powf(-2.0f * t + 2.0f, 3.0f) / 2.0f;
+        return t < 0.5ff ? 4.0f * t * t * t : 1.0f - powf(-2.0f * t + 2.0f, 3.0f) / 2.0f;
     }
 
     float gm_ease_in_quart(float t) {
@@ -1735,7 +1173,7 @@
     }
 
     float gm_ease_in_out_quart(float t) {
-        return t < 0.5f ? 8.0f * t * t * t * t : 1.0f - powf(-2.0f * t + 2.0f, 4.0f) / 2.0f;
+        return t < 0.5ff ? 8.0f * t * t * t * t : 1.0f - powf(-2.0f * t + 2.0f, 4.0f) / 2.0f;
     }
 
     float gm_ease_in_quint(float t) {
@@ -1747,7 +1185,7 @@
     }
 
     float gm_ease_in_out_quint(float t) {
-        return t < 0.5f ? 16.0f * t * t * t * t * t : 1.0f - powf(-2.0f * t + 2.0f, 5.0f) / 2.0f;
+        return t < 0.5ff ? 16.0f * t * t * t * t * t : 1.0f - powf(-2.0f * t + 2.0f, 5.0f) / 2.0f;
     }
 
     float gm_ease_in_expo(float t) {
@@ -1761,7 +1199,7 @@
     float gm_ease_in_out_expo(float t) {
         if (t == 0.0f) return 0.0f;
         if (t == 1.0f) return 1.0f;
-        if (t < 0.5f) return powf(2.0f, 20.0f * t - 10.0f) / 2.0f;
+        if (t < 0.5ff) return powf(2.0f, 20.0f * t - 10.0f) / 2.0f;
         return (2.0f - powf(2.0f, -20.0f * t + 10.0f)) / 2.0f;
     }
 
@@ -1774,7 +1212,7 @@
     }
 
     float gm_ease_in_out_circ(float t) {
-        if (t < 0.5f) return (1.0f - sqrtf(1.0f - powf(2.0f * t, 2.0f))) / 2.0f;
+        if (t < 0.5ff) return (1.0f - sqrtf(1.0f - powf(2.0f * t, 2.0f))) / 2.0f;
         return (sqrtf(1.0f - powf(-2.0f * t + 2.0f, 2.0f)) + 1.0f) / 2.0f;
     }
 
@@ -1792,8 +1230,8 @@
 
     float gm_ease_in_out_back(float t) {
         float c1 = 1.70158f;
-        float c2 = c1 * 1.525f;
-        if (t < 0.5f) return (powf(2.0f * t, 2.0f) * ((c2 + 1.0f) * 2.0f * t - c2)) / 2.0f;
+        float c2 = c1 * 1.5f25f;
+        if (t < 0.5ff) return (powf(2.0f * t, 2.0f) * ((c2 + 1.0f) * 2.0f * t - c2)) / 2.0f;
         return (powf(2.0f * t - 2.0f, 2.0f) * ((c2 + 1.0f) * (t * 2.0f - 2.0f) + c2) + 2.0f) / 2.0f;
     }
 
@@ -1812,10 +1250,10 @@
     }
 
     float gm_ease_in_out_elastic(float t) {
-        float c5 = (2.0f * PI) / 4.5f;
+        float c5 = (2.0f * PI) / 4.5ff;
         if (t == 0.0f) return 0.0f;
         if (t == 1.0f) return 1.0f;
-        if (t < 0.5f) return -(powf(2.0f, 20.0f * t - 10.0f) * sinf((20.0f * t - 11.125f) * c5)) / 2.0f;
+        if (t < 0.5ff) return -(powf(2.0f, 20.0f * t - 10.0f) * sinf((20.0f * t - 11.125f) * c5)) / 2.0f;
         return (powf(2.0f, -20.0f * t + 10.0f) * sinf((20.0f * t - 11.125f) * c5)) / 2.0f + 1.0f;
     }
 
@@ -1824,13 +1262,13 @@
     }
 
     float gm_ease_out_bounce(float t) {
-        float n1 = 7.5625f;
+        float n1 = 7.5f625f;
         float d1 = 2.75f;
         if (t < 1.0f / d1) {
             return n1 * t * t;
         } else if (t < 2.0f / d1) {
-            return n1 * (t -= 1.5f / d1) * t + 0.75f;
-        } else if (t < 2.5f / d1) {
+            return n1 * (t -= 1.5ff / d1) * t + 0.75f;
+        } else if (t < 2.5ff / d1) {
             return n1 * (t -= 2.25f / d1) * t + 0.9375f;
         } else {
             return n1 * (t -= 2.625f / d1) * t + 0.984375f;
@@ -1838,156 +1276,8 @@
     }
 
     float gm_ease_in_out_bounce(float t) {
-        return t < 0.5f
+        return t < 0.5ff
             ? (1.0f - gm_ease_out_bounce(1.0f - 2.0f * t)) / 2.0f
             : (1.0f + gm_ease_out_bounce(2.0f * t - 1.0f)) / 2.0f;
-    }
-#endif
-
-#if defined(GM_IMPL_COLLISION)
-    // SAT collision
-
-    bool gm_collision2d_circles(GM_CircleReference2D c1, GM_CircleReference2D c2, GM_CollisionInfo2D* collision_info) {
-        float distance = gm_vec2_distance(*c1.center, *c2.center);
-        float total_radius = c1.radius + c2.radius;
-        if (distance >= total_radius) {
-            return false;
-        }
-
-        if (collision_info) {
-            collision_info->normal = gm_vec2_normalize(gm_vec2_sub(*c1.center, *c2.center));
-            collision_info->depth = total_radius - distance;
-        }
-
-        return true;
-    }
-
-    GM_Collider2D gm_collider2d_circle_create(GM_CircleReference2D circle) {
-        GM_Collider2D ret = {0};
-        ret.type = GM_COLLIDER_CIRCLE;
-        ret.circle = circle;
-
-        return ret;
-    }
-
-    GM_Collider2D gm_collider2d_aabb_create(GM_RectangleReference2D aabb) {
-        GM_Collider2D ret = {0};
-        ret.type = GM_COLLIDER_AABB;
-        ret.aabb = aabb;
-
-        return ret;
-    }
-
-    /*
-    bool gm_aabb_point_colliding(GM_Vec3 point, GM_AABB aabb) {
-        return (
-            point.x >= aabb.min.x &&
-            point.x <= aabb.max.x &&
-            point.y >= aabb.min.y &&
-            point.y <= aabb.max.y &&
-            point.z >= aabb.min.z &&
-            point.z <= aabb.max.z
-        );
-    }
-
-    bool gm_aabb_aabb_colliding(GM_AABB a, GM_AABB b) {
-        return (
-            a.min.x <= b.max.x &&
-            a.max.x >= b.min.x &&
-            a.min.y <= b.max.y &&
-            a.max.y >= b.min.y &&
-            a.min.z <= b.max.z &&
-            a.max.z >= b.min.z
-        );
-    }
-    */
-#endif
-
-#if defined(GM_IMPL_PHYSICS)
-    void gm_physics2d_resolve_collisions(GM_PhysicsObject2D* objects, int object_count) {
-        for (int i = 0; i < object_count - 1; i++) {
-            GM_PhysicsObject2D* object_a = &objects[i];
-            for (int j = i + 1; j < object_count; j++) {
-                GM_PhysicsObject2D* object_b = &objects[j];
-
-                if (object_a->collider.type == GM_COLLIDER_CIRCLE && object_b->collider.type == GM_COLLIDER_CIRCLE) {
-                    GM_CollisionInfo2D collision_info = {0};
-                    if (gm_collision2d_circles(object_a->collider.circle, object_b->collider.circle, &collision_info)) {
-                        if (collision_info.depth / object_a->collider.circle.radius >= 0.70) {
-                            *object_a->rb.position = gm_vec2_add(*object_a->rb.position, gm_vec2_scale(collision_info.normal, collision_info.depth / 2.0f));
-                            *object_b->rb.position = gm_vec2_add(*object_b->rb.position, gm_vec2_scale(collision_info.normal, -collision_info.depth / 2.0f));
-                        } else {
-                            gm_physics2d_apply_velocity(object_a, gm_vec2_scale(collision_info.normal, collision_info.depth / 2.0f));
-                            gm_physics2d_apply_velocity(object_b, gm_vec2_scale(collision_info.normal, -collision_info.depth / 2.0f));
-                        }
-                    }
-                }
-            }
-        }
-    }
-
-    GM_RigidBody2D gm_physics2d_rb_create(GM_Vec2* position, float mass) {
-        GM_RigidBody2D ret;
-        ret.position = position;
-        ret.velocity = GM_Vec2Lit(0, 0);
-        ret.acceleration = GM_Vec2Lit(0, 0);
-        ret.mass = mass;
-
-        return ret;
-    }
-
-    GM_PhysicsObject2D gm_physics2d_object_create(GM_Vec2* position, float mass, GM_Collider2D collider) {
-        GM_PhysicsObject2D ret = {0};
-        ret.rb = gm_physics2d_rb_create(position, mass);
-        ret.collider = collider;
-        if (collider.type == GM_COLLIDER_CIRCLE) {
-            ret.collider.circle.center = position;
-        } else if (collider.type == GM_COLLIDER_AABB) {
-            ret.collider.aabb.center = position;
-        }
-
-        return ret;
-    }
-
-    void gm_physics2d_apply_velocity(GM_PhysicsObject2D* obj, GM_Vec2 velocity) {
-        obj->rb.velocity = gm_vec2_add(obj->rb.velocity, velocity);
-    }
-
-    void gm_physics2d_apply_velocity_xy(GM_PhysicsObject2D* obj, float velocity_x, float velocity_y) {
-        obj->rb.velocity = gm_vec2_add(obj->rb.velocity, GM_Vec2Lit(velocity_x, velocity_y));
-    }
-
-    void gm_physics2d_apply_force(GM_PhysicsObject2D* obj, GM_Vec2 force) {
-        obj->rb.force = gm_vec2_add(obj->rb.force, force);
-    }
-
-    void gm_physics2d_apply_force_xy(GM_PhysicsObject2D* obj, float force_x, float force_y) {
-        obj->rb.force = gm_vec2_add(obj->rb.force, GM_Vec2Lit(force_x, force_y));
-    }
-
-    void gm_physics2d_update(GM_PhysicsObject2D* obj, float dt) {
-        obj->rb.acceleration = gm_vec2_scale(obj->rb.force, 1 / obj->rb.mass);
-        *obj->rb.position = gm_vec2_add(*obj->rb.position, gm_vec2_scale(obj->rb.velocity, dt));
-        obj->rb.velocity = gm_vec2_add(obj->rb.velocity, gm_vec2_scale(obj->rb.acceleration, dt));
-
-        if (obj->collider.type == GM_COLLIDER_CIRCLE) {
-            obj->collider.circle.center = obj->rb.position;
-        } else if (obj->collider.type == GM_COLLIDER_AABB) {
-            obj->collider.aabb.center = obj->rb.position;
-        }
-    }
-
-    GM_Vec2 gm_physics2d_gravity_force(const double G, float min_distance, GM_Vec2 position_a, float mass_a, GM_Vec2 position_b, float mass_b) {
-        GM_Vec2 AB = gm_vec2_normalize(gm_vec2_sub(position_b, position_a));
-        float distance = gm_vec2_distance(position_a, position_b);
-
-        if (distance < min_distance) {
-            distance = min_distance;
-        }
-
-        float force_magnitude = (float)(-G * ((mass_a * mass_b) / (distance * distance)));
-        GM_Vec2 gravity_force = gm_vec2_scale(AB, force_magnitude);
-
-        return gravity_force;
     }
 #endif
