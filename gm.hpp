@@ -111,9 +111,9 @@
         float magnitude();
         float magnitudeSquared();
         GM_Vec2 normalize();
-        GM_Vec2 scale(float scale);
-        GM_Vec2 scale(GM_Vec2 s);
-        GM_Vec2 scale(float scale_x, float scale_y);
+        GM_Vec2 scale(float scale) const;
+        GM_Vec2 scale(GM_Vec2 s) const;
+        GM_Vec2 scale(float scale_x, float scale_y) const;
 
         /**
          * @brief The return value tells you:
@@ -126,8 +126,8 @@
          * @return float 
          */
         static float dot(GM_Vec2 a, GM_Vec2 b);
-        static float distanfce(GM_Vec2 a, GM_Vec2 b);
-        static float distanfceSquared(GM_Vec2 a, GM_Vec2 b);
+        static float distance(GM_Vec2 a, GM_Vec2 b);
+        static float distanceSquared(GM_Vec2 a, GM_Vec2 b);
         static GM_Vec2 lerp(GM_Vec2 a, GM_Vec2 b, float t);
 
         GM_Vec2 operator+(const GM_Vec2 &right);
@@ -158,9 +158,9 @@
         float magnitude();
         float magnitudeSquared();
         GM_Vec3 normalize();
-        GM_Vec3 scale(float scale);
-        GM_Vec3 scale(GM_Vec3 s);
-        GM_Vec3 scale(float scale_x, float scale_y, float scale_z);
+        GM_Vec3 scale(float scale) const;
+        GM_Vec3 scale(GM_Vec3 s) const;
+        GM_Vec3 scale(float scale_x, float scale_y, float scale_z) const;
 
         /**
          * @brief The return value tells you:
@@ -173,8 +173,8 @@
          * @return float 
          */
         static float dot(GM_Vec3 a, GM_Vec3 b);
-        static float distanfce(GM_Vec3 a, GM_Vec3 b);
-        static float distanfceSquared(GM_Vec3 a, GM_Vec3 b);
+        static float distance(GM_Vec3 a, GM_Vec3 b);
+        static float distanceSquared(GM_Vec3 a, GM_Vec3 b);
         static GM_Vec3 lerp(GM_Vec3 a, GM_Vec3 b, float t);
         static GM_Vec3 cross(GM_Vec3 a, GM_Vec3 b);
 
@@ -207,9 +207,9 @@
         float magnitude();
         float magnitudeSquared();
         GM_Vec4 normalize();
-        GM_Vec4 scale(float scale);
-        GM_Vec4 scale(GM_Vec4 s);
-        GM_Vec4 scale(float scale_x, float scale_y, float scale_z, float scale_w);
+        GM_Vec4 scale(float scale) const;
+        GM_Vec4 scale(GM_Vec4 s) const;
+        GM_Vec4 scale(float scale_x, float scale_y, float scale_z, float scale_w) const;
 
         /**
          * @brief The return value tells you:
@@ -223,8 +223,8 @@
          */
         static float dot(GM_Vec4 a, GM_Vec4 b);
         static GM_Vec4 lerp(GM_Vec4 a, GM_Vec4 b, float t);
-        static float distanfce(GM_Vec4 a, GM_Vec4 b);
-        static float distanfceSquared(GM_Vec4 a, GM_Vec4 b);
+        static float distance(GM_Vec4 a, GM_Vec4 b);
+        static float distanceSquared(GM_Vec4 a, GM_Vec4 b);
 
         GM_Vec4 operator+(const GM_Vec4 &right);
         GM_Vec4& operator+=(const GM_Vec4 &right);
@@ -289,32 +289,38 @@
     typedef struct GM_Quaternion {
         float w;
         GM_Vec3 v;
+
+        GM_Quaternion() = default;
+        GM_Quaternion(float theta, GM_Vec3 axis);
+        GM_Quaternion(float theta, float x, float y, float z);
+
+        GM_Quaternion inverse();
+        GM_Quaternion normalize();
+        GM_Quaternion scale(float scale);
+        GM_Matrix4 toMatrix4();
+
+        static GM_Quaternion identity();
+        static GM_Quaternion literal(float w, GM_Vec3 axis);
+        static GM_Quaternion literal(float w, float x, float y, float z);
+        static GM_Quaternion fromEuler(GM_Vec3 euler_angles_degrees);
+        static GM_Quaternion fromAngleAxis(float w, GM_Vec3 axis);
+        static GM_Quaternion slerp(GM_Quaternion q, GM_Quaternion r, float t);
+        static float dot(GM_Quaternion a, GM_Quaternion b);
+
+        GM_Quaternion operator+(const GM_Quaternion &right);
+        GM_Quaternion& operator+=(const GM_Quaternion &right);
+        
+        GM_Quaternion operator-(const GM_Quaternion &right);
+        GM_Quaternion& operator-=(const GM_Quaternion &right);
+
+        GM_Quaternion operator*(const GM_Quaternion &right);
+        GM_Quaternion& operator*=(const GM_Quaternion &right);
+
+        GM_Vec3 operator*(const GM_Vec3 &right);
+
+        bool operator==(const GM_Quaternion &right);
+        bool operator!=(const GM_Quaternion &right);
     } GM_Quaternion;
-
-    #ifdef __cplusplus
-        #define GM_QuaternionLit(w, x, y, z) (GM_Quaternion{w, x, y, z})
-    #else
-        #define GM_QuaternionLit(w, x, y, z) ((GM_Quaternion){w, x, y, z})
-    #endif
-
-    GM_Quaternion gm_quat_create(float theta, GM_Vec3 axis);
-    GM_Quaternion gm_quat_inverse(GM_Quaternion quat);
-    GM_Quaternion gm_quat_mult(GM_Quaternion q1, GM_Quaternion q2);
-    GM_Quaternion gm_quat_from_euler(GM_Vec3 euler_angles_degrees);
-    GM_Quaternion gm_quat_from_angle_axis(float angle, GM_Vec3 axis);
-    GM_Matrix4 gm_quat_to_mat4(GM_Quaternion q);
-    GM_Vec3 gm_quat_vector_mult(GM_Quaternion quat, GM_Vec3 vec);
-    void gm_quat_to_axis_angle(GM_Quaternion quat, float* theta, GM_Vec3* vec);
-    GM_Quaternion gm_quat_sub(GM_Quaternion a, GM_Quaternion b);
-    GM_Quaternion gm_quat_add(GM_Quaternion a, GM_Quaternion b);
-    GM_Quaternion gm_quat_scale(GM_Quaternion a, float scale);
-    GM_Quaternion gm_quat_add_scalar(GM_Quaternion a, float scalar);
-    GM_Quaternion gm_quat_sub_scalar(GM_Quaternion a, float scalar);
-    GM_Quaternion gm_quat_power(GM_Quaternion q1, float t);
-    GM_Quaternion gm_quat_normalize(GM_Quaternion q);
-    float gm_quat_dot(GM_Quaternion q, GM_Quaternion r);
-    GM_Quaternion gm_quat_slerp(GM_Quaternion q, GM_Quaternion r, float t);
-    GM_Quaternion gm_quat_look_at(GM_Vec3 position, GM_Vec3 target, GM_Vec3 up);
 #endif
 
 #if defined(GM_INCLUDE_UTILITY)

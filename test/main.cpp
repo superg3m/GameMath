@@ -71,7 +71,7 @@ bool quat_equals_near(GM_Quaternion a, GM_Quaternion b) {
     } } while (0)
 
 #define ASSERT_QUAT_NEAR(actual, expected) \
-    do { if (!quat_equals_near(actual, expected)) { \
+    do { if (actual != expected) { \
         printf("    \033[31mFAIL\033[0m: %s.%s at %s:%d - Expected (w=%.4f, x=%.4f, y=%.4f, z=%.4f), got (w=%.4f, x=%.4f, y=%.4f, z=%.4f)\n", g_current_suite_name, g_current_test_name, __FILE__, __LINE__, expected.w, expected.v.x, expected.v.y, expected.v.z, actual.w, actual.v.x, actual.v.y, actual.v.z); \
         return; \
     } } while (0)
@@ -135,7 +135,7 @@ int main() {
     test_matrix4_inverse();
     test_matrix4_translation_scale_rotation();
     test_matrix4_transform(); // and transform_inverse
-    // test_quaternion_functions();
+    test_quaternion_functions();
     // test_utility_functions();
     // test_euler_functions();
 
@@ -209,7 +209,7 @@ void test_vec2_functions() {
     test_start("gm_vec2_distanfce");
     GM_Vec2 d1 = GM_Vec2(0, 0);
     GM_Vec2 d2 = GM_Vec2(3, 4);
-    ASSERT_NEAR(GM_Vec2::distanfce(d1, d2), 5.0f);
+    ASSERT_NEAR(GM_Vec2::distance(d1, d2), 5.0f);
     test_end();
 
     test_start("gm_vec2_magnitude and gm_vec2_magnitude_squared");
@@ -284,7 +284,7 @@ void test_vec3_functions() {
     test_start("gm_vec3_distanfce");
     GM_Vec3 d1 = GM_Vec3(0, 0, 0);
     GM_Vec3 d2 = GM_Vec3(3, 0, 4);
-    ASSERT_NEAR(GM_Vec3::distanfce(d1, d2), 5.0f);
+    ASSERT_NEAR(GM_Vec3::distance(d1, d2), 5.0f);
     test_end();
 
     test_start("gm_vec3_magnitude and gm_vec3_magnitude_squared");
@@ -372,7 +372,7 @@ void test_vec4_functions() {
     test_start("gm_vec4_distanfce");
     GM_Vec4 d1 = GM_Vec4(0, 0, 0, 0);
     GM_Vec4 d2 = GM_Vec4(1, 2, 2, 0);
-    ASSERT_NEAR(GM_Vec4::distanfce(d1, d2), 3.0f);
+    ASSERT_NEAR(GM_Vec4::distance(d1, d2), 3.0f);
     test_end();
 
     test_start("gm_vec4_magnitude and gm_vec4_magnitude_squared");
@@ -641,69 +641,70 @@ void test_matrix4_transform() {
     test_suite_end();
 }
 
-/*
+
 
 // QUATERNION tests
 void test_quaternion_functions() {
     test_suite_start("GM_Quaternion Functions");
 
     test_start("gm_quat_create (Identity)");
-    GM_Quaternion q_identity = gm_quat_create(0.0f, GM_Vec3(1.0f, 0.0f, 0.0f)); // 0-degree rotation
-    ASSERT_QUAT_NEAR(q_identity, GM_QuaternionLit(1.0f, 0.0f, 0.0f, 0.0f));
+    GM_Quaternion q_identity = GM_Quaternion(0, 1, 0, 0); // 0-degree rotation
+    ASSERT_QUAT_NEAR(q_identity, GM_Quaternion::identity());
     test_end();
 
     test_start("gm_quat_create (X-axis 180 deg)");
-    GM_Quaternion q_x180 = gm_quat_create(180.0f, GM_Vec3(1.0f, 0.0f, 0.0f));
-    ASSERT_QUAT_NEAR(q_x180, GM_QuaternionLit(0.0f, 1.0f, 0.0f, 0.0f));
+    GM_Quaternion q_x180 = GM_Quaternion(180.0f, GM_Vec3(1.0f, 0.0f, 0.0f));
+    ASSERT_QUAT_NEAR(q_x180, GM_Quaternion::literal(0.0f, 1.0f, 0.0f, 0.0f));
     test_end();
 
     test_start("gm_quat_create (Z-axis 90 deg)");
-    GM_Quaternion q_z90 = gm_quat_create(90.0f, GM_Vec3(0.0f, 0.0f, 1.0f));
+    GM_Quaternion q_z90 = GM_Quaternion(90.0f, GM_Vec3(0.0f, 0.0f, 1.0f));
     // cosf(45) = sqrtf(2)/2 = 0.7071
     // sinf(45) = sqrtf(2)/2 = 0.7071
-    ASSERT_QUAT_NEAR(q_z90, GM_QuaternionLit(0.7071f, 0.0f, 0.0f, 0.7071f));
+    ASSERT_QUAT_NEAR(q_z90, GM_Quaternion::literal(0.7071f, 0.0f, 0.0f, 0.7071f));
     test_end();
 
     test_start("gm_quat_mult");
-    GM_Quaternion q_x90 = gm_quat_create(90.0f, GM_Vec3(1.0f, 0.0f, 0.0f)); // w=0.7071, x=0.7071, y=0, z=0
-    GM_Quaternion q_y90 = gm_quat_create(90.0f, GM_Vec3(0.0f, 1.0f, 0.0f)); // w=0.7071, x=0, y=0.7071, z=0
+    GM_Quaternion q_x90 = GM_Quaternion(90.0f, GM_Vec3(1.0f, 0.0f, 0.0f)); // w=0.7071, x=0.7071, y=0, z=0
+    GM_Quaternion q_y90 = GM_Quaternion(90.0f, GM_Vec3(0.0f, 1.0f, 0.0f)); // w=0.7071, x=0, y=0.7071, z=0
 
-    GM_Quaternion q_result = gm_quat_mult(q_y90, q_x90);
-    ASSERT_QUAT_NEAR(q_result, GM_QuaternionLit(0.5ff, 0.5ff, 0.5ff, -0.5ff));
+    GM_Quaternion q_result = q_y90 * q_x90;
+    ASSERT_QUAT_NEAR(q_result, GM_Quaternion(120.0f, GM_Vec3(1.0f, 1.0f, -1.0f)));
     test_end();
 
     test_start("gm_quat_to_mat4 (Identity)");
-    GM_Matrix4 mat_from_identity_quat = gm_quat_to_mat4(gm_quat_create(0.0f, GM_Vec3(1.0f, 0.0f, 0.0f)));
+    GM_Matrix4 mat_from_identity_quat = GM_Quaternion::literal(1, 0, 0, 0).toMatrix4();
     ASSERT_MATRIX4_NEAR(mat_from_identity_quat, GM_Matrix4::identity());
     test_end();
 
     test_start("gm_quat_to_mat4 (Z-axis 90 deg)");
-    GM_Matrix4 mat_from_z90_quat = gm_quat_to_mat4(gm_quat_create(90.0f, GM_Vec3(0.0f, 0.0f, 1.0f)));
+    GM_Matrix4 mat_from_z90_quat = GM_Quaternion(90.0f, GM_Vec3(0.0f, 0.0f, 1.0f)).toMatrix4();
     GM_Matrix4 expected_mat_z90 = GM_Matrix4::identity();
-    expected_mat_z90.data[0] = 0.0f;  expected_mat_z90.data[1] = -1.0f;
-    expected_mat_z90.data[4] = 1.0f; expected_mat_z90.data[5] = 0.0f;
+    expected_mat_z90.v[0].x = 0.0f;  expected_mat_z90.v[0].y = -1.0f;
+    expected_mat_z90.v[1].x = 1.0f; expected_mat_z90.v[1].y = 0.0f;
     ASSERT_MATRIX4_NEAR(mat_from_z90_quat, expected_mat_z90);
     test_end();
 
     test_start("gm_quat_slerp");
-    GM_Quaternion q_from = GM_QuaternionLit(1.0f, 0.0f, 0.0f, 0.0f); // Identity
-    GM_Quaternion q_to = gm_quat_create(180.0f, GM_Vec3(0.0f, 1.0f, 0.0f)); // 180 deg around Y (0, 0, 1, 0)
-    GM_Quaternion slerp_half = gm_quat_slerp(q_from, q_to, 0.5ff);
+    GM_Quaternion q_from = GM_Quaternion::identity(); // Identity
+    GM_Quaternion q_to = GM_Quaternion(180.0f, GM_Vec3(0.0f, 1.0f, 0.0f)); // 180 deg around Y (0, 0, 1, 0)
+    GM_Quaternion slerp_half = GM_Quaternion::slerp(q_from, q_to, 0.5f);
     // Halfway between identity and Y-180 should be Y-90
-    GM_Quaternion expected_y90 = gm_quat_create(90.0f, GM_Vec3(0.0f, 1.0f, 0.0f));
+    GM_Quaternion expected_y90 = GM_Quaternion(90.0f, GM_Vec3(0.0f, 1.0f, 0.0f));
     ASSERT_QUAT_NEAR(slerp_half, expected_y90);
     test_end();
 
     test_start("gm_quat_transform_vec3");
     GM_Vec3 vec_to_rotate = GM_Vec3(1.0f, 0.0f, 0.0f); // X-axis
-    GM_Quaternion rotate_around_z = gm_quat_create(90.0f, GM_Vec3(0.0f, 0.0f, 1.0f));
-    GM_Vec3 rotated_vec = gm_quat_vector_mult(rotate_around_z, vec_to_rotate);
-    ASSERT_VEC3_NEAR(rotated_vec, GM_Vec3(0.0f, 1.0f, 0.0f)); // X rotated 90 deg around Z becomes Y
+    GM_Quaternion rotate_around_z = GM_Quaternion(90.0f, GM_Vec3(0.0f, 0.0f, 1.0f));
+    GM_Vec3 rotated_vec = rotate_around_z * vec_to_rotate;
+    ASSERT_VEC3_NEAR(rotated_vec, GM_Vec3(0.0f, 1.0f, 0.0f));
     test_end();
 
     test_suite_end();
 }
 
+/*
 // UTILITY tests
 void test_utility_functions() {
     test_suite_start("GM_Utility Functions");
@@ -755,14 +756,14 @@ void test_euler_functions() {
     test_start("gm_euler_to_quat (90 deg Yaw)");
     GM_Vec3 euler_yaw90 = GM_Vec3(0.0f, 0.0f, 90.0f); // Yaw (Z-axis rotation)
     GM_Quaternion q_from_euler_yaw90 = gm_quat_from_euler(euler_yaw90);
-    GM_Quaternion expected_z90 = gm_quat_create(90.0f, GM_Vec3(0.0f, 0.0f, 1.0f));
+    GM_Quaternion expected_z90 = GM_Quaternion(90.0f, GM_Vec3(0.0f, 0.0f, 1.0f));
     ASSERT_QUAT_NEAR(q_from_euler_yaw90, expected_z90);
     test_end();
 
     test_start("gm_euler_to_quat (90 deg Pitch)");
     GM_Vec3 euler_pitch90 = GM_Vec3(0.0f, 90.0f, 0.0f); // Pitch (Y-axis rotation)
     GM_Quaternion q_from_euler_pitch90 = gm_quat_from_euler(euler_pitch90);
-    GM_Quaternion expected_y90 = gm_quat_create(90.0f, GM_Vec3(0.0f, 1.0f, 0.0f));
+    GM_Quaternion expected_y90 = GM_Quaternion(90.0f, GM_Vec3(0.0f, 1.0f, 0.0f));
     ASSERT_QUAT_NEAR(q_from_euler_pitch90, expected_y90);
     test_end();
 

@@ -31,15 +31,15 @@ GM_Vec2 GM_Vec2::normalize() {
     return ret;
 }
 
-GM_Vec2 GM_Vec2::scale(float scale) {
+GM_Vec2 GM_Vec2::scale(float scale) const {
     return GM_Vec2(this->x * scale, this->y * scale);
 }
 
-GM_Vec2 GM_Vec2::scale(GM_Vec2 s) {
+GM_Vec2 GM_Vec2::scale(GM_Vec2 s) const {
     return GM_Vec2(this->x * s.x, this->y * s.y);
 }
 
-GM_Vec2 GM_Vec2::scale(float scale_x, float scale_y) {
+GM_Vec2 GM_Vec2::scale(float scale_x, float scale_y) const {
     return GM_Vec2(this->x * scale_x, this->y * scale_y);
 }
 
@@ -47,11 +47,11 @@ float GM_Vec2::dot(GM_Vec2 a, GM_Vec2 b) {
     return (a.x * b.x) + (a.y * b.y);
 }
 
-float GM_Vec2::distanfce(GM_Vec2 a, GM_Vec2 b) {
+float GM_Vec2::distance(GM_Vec2 a, GM_Vec2 b) {
     return sqrtf(SQUARED(b.x - a.x) + SQUARED(b.y - a.y));
 }
 
-float GM_Vec2::distanfceSquared(GM_Vec2 a, GM_Vec2 b) {
+float GM_Vec2::distanceSquared(GM_Vec2 a, GM_Vec2 b) {
     return SQUARED(b.x - a.x) + SQUARED(b.y - a.y);
 }
 
@@ -143,24 +143,24 @@ GM_Vec3 GM_Vec3::normalize() {
     return ret;
 }
 
-GM_Vec3 GM_Vec3::scale(float scale) {
+GM_Vec3 GM_Vec3::scale(float scale) const {
     return GM_Vec3(this->x * scale, this->y * scale, this->z * scale);
 }
 
-GM_Vec3 GM_Vec3::scale(GM_Vec3 s) {
+GM_Vec3 GM_Vec3::scale(GM_Vec3 s) const {
     return GM_Vec3(this->x * s.x, this->y * s.y, this->z * s.z);
 }
 
-GM_Vec3 GM_Vec3::scale(float scale_x, float scale_y, float scale_z) {
+GM_Vec3 GM_Vec3::scale(float scale_x, float scale_y, float scale_z) const {
     return GM_Vec3(this->x * scale_x, this->y * scale_y, this->z * scale_z);
 }
 
 
-float GM_Vec3::distanfce(GM_Vec3 a, GM_Vec3 b) {
+float GM_Vec3::distance(GM_Vec3 a, GM_Vec3 b) {
     return sqrtf(SQUARED(b.x - a.x) + SQUARED(b.y - a.y) + SQUARED(b.z - a.z));
 }
 
-float GM_Vec3::distanfceSquared(GM_Vec3 a, GM_Vec3 b) {
+float GM_Vec3::distanceSquared(GM_Vec3 a, GM_Vec3 b) {
     return SQUARED(b.x - a.x) + SQUARED(b.y - a.y) + SQUARED(b.z - a.z);
 }
 
@@ -272,23 +272,23 @@ GM_Vec4 GM_Vec4::normalize() {
     return ret;
 }
 
-GM_Vec4 GM_Vec4::scale(float scale) {
+GM_Vec4 GM_Vec4::scale(float scale) const {
     return GM_Vec4(this->x * scale, this->y * scale, this->z * scale, this->w * scale);
 }
 
-GM_Vec4 GM_Vec4::scale(GM_Vec4 s) {
+GM_Vec4 GM_Vec4::scale(GM_Vec4 s) const {
     return GM_Vec4(this->x * s.x, this->y * s.y, this->z * s.z, this->w * s.w);
 }
 
-GM_Vec4 GM_Vec4::scale(float scale_x, float scale_y, float scale_z, float scale_w) {
+GM_Vec4 GM_Vec4::scale(float scale_x, float scale_y, float scale_z, float scale_w) const {
     return GM_Vec4(this->x * scale_x, this->y * scale_y, this->z * scale_z, this->w * scale_w);
 }
 
-float GM_Vec4::distanfce(GM_Vec4 a, GM_Vec4 b) {
+float GM_Vec4::distance(GM_Vec4 a, GM_Vec4 b) {
     return sqrtf(SQUARED(b.x - a.x) + SQUARED(b.y - a.y) + SQUARED(b.z - a.z) + SQUARED(b.w - a.w));
 }
 
-float GM_Vec4::distanfceSquared(GM_Vec4 a, GM_Vec4 b) {
+float GM_Vec4::distanceSquared(GM_Vec4 a, GM_Vec4 b) {
     return SQUARED(b.x - a.x) + SQUARED(b.y - a.y) + SQUARED(b.z - a.z) + SQUARED(b.w - a.w);
 }
 
@@ -666,5 +666,237 @@ bool GM_Matrix4::operator==(const GM_Matrix4 &right) {
 }
 
 bool GM_Matrix4::operator!=(const GM_Matrix4 &right) {
+    return !(*this == right);
+}
+
+GM_Quaternion::GM_Quaternion(float theta, GM_Vec3 axis) {
+    float radians = DEGREES_TO_RAD(theta);
+    this->w = cosf(radians / 2.0f);
+    if (NEAR_ZERO(this->w)) {
+        this->w = 0.0f;
+    }
+
+    axis = axis.normalize();
+    this->v = axis.scale(sinf(radians / 2.0f));
+}
+
+GM_Quaternion::GM_Quaternion(float theta, float x, float y, float z) {
+    *this = GM_Quaternion(theta, GM_Vec3(x, y, z));
+}
+
+GM_Quaternion GM_Quaternion::inverse() {
+    GM_Quaternion ret(1, 0, 0, 0);
+
+    float magnitude_squared = SQUARED(this->w) + GM_Vec3::dot(this->v, this->v);
+    if (magnitude_squared == 0.0f) { 
+        return GM_Quaternion::identity();
+    }
+
+    ret.w = this->w / magnitude_squared;
+    ret.v = this->v.scale(-1.0f / magnitude_squared);
+
+    return ret;
+}
+
+GM_Quaternion GM_Quaternion::scale(float scale) {
+    GM_Quaternion ret;
+
+    ret.w   = this->w   * scale;
+    ret.v.x = this->v.x * scale;
+    ret.v.y = this->v.y * scale;
+    ret.v.z = this->v.z * scale;
+
+    return ret;
+}
+
+GM_Quaternion GM_Quaternion::normalize() {
+    GM_Vec4 temp = GM_Vec4(this->w, this->v.x, this->v.y, this->v.z).normalize();
+    
+    GM_Quaternion ret;
+    ret.w = temp.x;
+    ret.v.x = temp.y;
+    ret.v.y = temp.z;
+    ret.v.z = temp.w;
+
+    return ret;
+}
+
+GM_Quaternion GM_Quaternion::identity() {
+    return {1, 0, 0, 0};
+}
+
+GM_Quaternion GM_Quaternion::literal(float w, GM_Vec3 axis) {
+    GM_Quaternion ret;
+    ret.w = w;
+    ret.v = axis;
+
+    return ret;
+}
+GM_Quaternion GM_Quaternion::literal(float w, float x, float y, float z) {
+    GM_Quaternion ret;
+    ret.w = w;
+    ret.v = GM_Vec3(x, y, z);
+
+    return ret;
+}
+
+GM_Quaternion GM_Quaternion::fromEuler(GM_Vec3 euler_angles_degrees) {
+    float roll_rad_half = DEGREES_TO_RAD(euler_angles_degrees.x) * 0.5f;
+    float pitch_rad_half = DEGREES_TO_RAD(euler_angles_degrees.y) * 0.5f;
+    float yaw_rad_half = DEGREES_TO_RAD(euler_angles_degrees.z) * 0.5f;
+
+    float cx = cosf(roll_rad_half);
+    float sx = sinf(roll_rad_half);
+    float cy = cosf(pitch_rad_half);
+    float sy = sinf(pitch_rad_half);
+    float cz = cosf(yaw_rad_half);
+    float sz = sinf(yaw_rad_half);
+
+    GM_Quaternion q = GM_Quaternion::identity();
+    q.w = cx * cy * cz + sx * sy * sz;
+    q.v.x = sx * cy * cz - cx * sy * sz;
+    q.v.y = cx * sy * cz + sx * cy * sz;
+    q.v.z = cx * cy * sz - sx * sy * cz;
+
+    return q;
+}
+
+GM_Quaternion GM_Quaternion::fromAngleAxis(float angle, GM_Vec3 axis) {
+    float half_angle = DEGREES_TO_RAD(angle) * 0.5f;
+    float sinf_half = sinf(half_angle);
+    float cosf_half = cosf(half_angle);
+
+    GM_Quaternion q = GM_Quaternion::identity();
+    axis = axis.normalize();
+
+    q.w     = cosf_half;
+    q.v.x   = axis.x * sinf_half;
+    q.v.y   = axis.y * sinf_half;
+    q.v.z   = axis.z * sinf_half;
+
+    return q;
+}
+
+GM_Matrix4 GM_Quaternion::toMatrix4() {
+    GM_Matrix4 result = GM_Matrix4::identity();
+
+    float x2 = this->v.x * this->v.x;
+    float y2 = this->v.y * this->v.y;
+    float z2 = this->v.z * this->v.z;
+
+    float xy = this->v.x * this->v.y;
+    float xz = this->v.x * this->v.z;
+    float yz = this->v.y * this->v.z;
+    float xw = this->v.x * this->w;
+    float yw = this->v.y * this->w;
+    float zw = this->v.z * this->w;
+
+    result.v[0].x = 1.0f - 2.0f * (y2 + z2);  // m00
+    result.v[0].y = 2.0f * (xy - zw);         // m01
+    result.v[0].z = 2.0f * (xz + yw);         // m02
+    result.v[0].w = 0.0f;                     // m03
+
+    result.v[1].x = 2.0f * (xy + zw);         // m10
+    result.v[1].y = 1.0f - 2.0f * (x2 + z2);  // m11
+    result.v[1].z = 2.0f * (yz - xw);         // m12
+    result.v[1].w = 0.0f;                     // m13
+
+    result.v[2].x  = 2.0f * (xz - yw);        // m20
+    result.v[2].y  = 2.0f * (yz + xw);        // m21
+    result.v[2].z  = 1.0f - 2.0f * (x2 + y2); // m22
+    result.v[2].w  = 0.0f;                    // m23
+
+    result.v[3].x = 0.0f;                     // m30
+    result.v[3].y = 0.0f;                     // m31
+    result.v[3].z = 0.0f;                     // m32
+    result.v[3].w = 1.0f;                     // m33
+
+    return result;
+}
+
+GM_Quaternion GM_Quaternion::slerp(GM_Quaternion q, GM_Quaternion r, float t) {
+    q = q.normalize();
+    r = r.normalize();
+    float dot = GM_Quaternion::dot(q, r);
+
+    if (dot < 0.0f) {
+        r = r.scale(-1.0f);
+        dot = -dot;
+    }
+
+    if (dot > 0.9995f) {
+        GM_Quaternion lerp = q + (r - q).scale(t);
+        return lerp.normalize();
+    }
+
+    float theta_0 = acosf(dot);
+    float theta = theta_0 * t;
+
+    GM_Quaternion q3 = r - q.scale(dot);
+    q3 = q3.normalize();
+
+    GM_Quaternion term1 = q.scale(cosf(theta));
+    GM_Quaternion term2 = q3.scale(sinf(theta));
+    return term1 + term2;
+}
+
+float GM_Quaternion::dot(GM_Quaternion a, GM_Quaternion b) {
+    float dot = a.w   * b.w   +
+                a.v.x * b.v.x +
+                a.v.y * b.v.y +
+                a.v.z * b.v.z;
+
+    return dot;
+}
+
+GM_Quaternion GM_Quaternion::operator+(const GM_Quaternion &right) {
+    GM_Quaternion ret = GM_Quaternion::identity();
+
+    ret.w = this->w + right.w;
+    ret.v = this->v + right.v;
+
+    return ret;
+}
+GM_Quaternion& GM_Quaternion::operator+=(const GM_Quaternion &right) {
+    *this = *this + right;
+    return *this;
+}
+
+GM_Quaternion GM_Quaternion::operator-(const GM_Quaternion &right) {
+    GM_Quaternion ret = GM_Quaternion::identity();
+
+    ret.w = this->w - right.w;
+    ret.v = this->v - right.v;
+
+    return ret;
+}
+GM_Quaternion& GM_Quaternion::operator-=(const GM_Quaternion &right) {
+    *this = *this - right;
+    return *this;
+}
+
+GM_Quaternion GM_Quaternion::operator*(const GM_Quaternion &right) {
+    GM_Quaternion ret = GM_Quaternion::identity();
+    ret.w = (this->w * right.w) - GM_Vec3::dot(this->v, right.v);
+    ret.v = (this->v.scale(right.w) + right.v.scale(this->w)) + GM_Vec3::cross(this->v, right.v);
+    
+    return ret;
+}
+GM_Quaternion& GM_Quaternion::operator*=(const GM_Quaternion &right) {
+    *this = *this * right;
+    return *this;
+}
+
+GM_Vec3 GM_Quaternion::operator*(const GM_Vec3 &right) {
+    GM_Quaternion q = *this;
+    GM_Quaternion p = GM_Quaternion::literal(0, right);
+
+    return ((q * p) * q.inverse()).v;
+}
+
+bool GM_Quaternion::operator==(const GM_Quaternion &right) {
+    return NEAR_ZERO(this->w - right.w) && (this->v == right.v);
+}
+bool GM_Quaternion::operator!=(const GM_Quaternion &right) {
     return !(*this == right);
 }
