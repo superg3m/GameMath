@@ -507,6 +507,13 @@ GM_Matrix4 GM_Matrix4::rotate(GM_Matrix4 mat, float theta, float rot_x, float ro
     return GM_Matrix4::rotate(mat, theta, GM_Vec3(rot_x, rot_y, rot_z));
 }
 
+GM_Matrix4 GM_Matrix4::rotate(GM_Matrix4 mat, GM_Quaternion quat) {
+    float theta;
+    GM_Vec3 axis;
+    quat.toAngleAxis(theta, axis);
+    return GM_Matrix4::rotate(mat, theta, axis);
+}
+
 GM_Matrix4 GM_Matrix4::translate(GM_Matrix4 mat, GM_Vec3 t) {
     GM_Matrix4 translate_matrix;
     translate_matrix.v = {

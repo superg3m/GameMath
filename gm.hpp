@@ -249,6 +249,8 @@
     // data[4-7] = Col 1 (Y-axis)
     // data[8-11] = Col 2 (Z-axis)
     // data[12-15] = Col 3 (Translation)
+    typedef struct GM_Quaternion GM_Quaternion;
+
     struct GM_Matrix4 {
         std::array<GM_Vec4, 4> v;
 
@@ -266,6 +268,7 @@
         static GM_Matrix4 scale(GM_Matrix4 mat, float scale_x, float scale_y, float scale_z);
         static GM_Matrix4 rotate(GM_Matrix4 mat, float theta, GM_Vec3 axis);
         static GM_Matrix4 rotate(GM_Matrix4 mat, float theta, float rot_x, float rot_y, float rot_z);
+        static GM_Matrix4 rotate(GM_Matrix4 mat, GM_Quaternion quat);
         static GM_Matrix4 translate(GM_Matrix4 mat, GM_Vec3 t);
         static GM_Matrix4 translate(GM_Matrix4 mat, float x, float y, float z);
         static GM_Matrix4 transform(GM_Vec3 s, float theta, GM_Vec3 axis, GM_Vec3 t);
@@ -286,7 +289,7 @@
 #endif
 
 #if defined(GM_INCLUDE_QUATERNION)
-    typedef struct GM_Quaternion {
+    struct GM_Quaternion {
         float w;
         GM_Vec3 v;
 
@@ -321,7 +324,7 @@
 
         bool operator==(const GM_Quaternion &right);
         bool operator!=(const GM_Quaternion &right);
-    } GM_Quaternion;
+    };
 #endif
 
 #if defined(GM_INCLUDE_UTILITY)
