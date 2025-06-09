@@ -574,12 +574,11 @@ GM_Matrix4 GM_Matrix4::orthographic(float left, float right, float bottom, float
     const float E = -(top + bottom) / (top - bottom);
     const float F = -(far_plane + near_plane) / (far_plane - near_plane);
 
-    GM_Matrix4 ret;
-    ret.v = {
-        GM_Vec4(A,  0,  0,  D),
-        GM_Vec4(0,  B,  0,  E),
-        GM_Vec4(0,  0,  C,  F),
-        GM_Vec4(0,  0, -1,  0)
+    GM_Matrix4 ret = {
+        A,  0,  0,  D,
+        0,  B,  0,  E,
+        0,  0,  C,  F,
+        0,  0,  0,  1
     };
 
     return ret;
