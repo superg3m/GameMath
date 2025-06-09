@@ -298,6 +298,7 @@
         GM_Quaternion normalize();
         GM_Quaternion scale(float scale);
         GM_Matrix4 toMatrix4();
+        void toAngleAxis(float &theta, GM_Vec3 &vec);
 
         static GM_Quaternion identity();
         static GM_Quaternion literal(float w, GM_Vec3 axis);

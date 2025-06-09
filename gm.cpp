@@ -851,6 +851,22 @@ GM_Matrix4 GM_Quaternion::toMatrix4() {
     return result;
 }
 
+void GM_Quaternion::toAngleAxis(float &theta, GM_Vec3 &vec) {
+    GM_Quaternion quat = this->normalize();
+    float sinf_half_theta = quat.v.magnitude();
+
+    if (sinf_half_theta < EPSILON) {
+        vec = GM_Vec3(1, 0, 0);
+    } else {
+        vec = quat.v.scale(1.0f / sinf_half_theta);
+    }
+
+    // Clamp w to [-1, 1] to avoid NaNs due to precision issues
+    float w = CLAMP(quat.w, -1.0f, 1.0f);
+    theta = 2.0f * acosf(w);
+    theta = RAD_TO_DEGREES(theta);
+}
+
 GM_Quaternion GM_Quaternion::slerp(GM_Quaternion q, GM_Quaternion r, float t) {
     q = q.normalize();
     r = r.normalize();
