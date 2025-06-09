@@ -136,8 +136,8 @@ int main() {
     test_matrix4_translation_scale_rotation();
     test_matrix4_transform(); // and transform_inverse
     test_quaternion_functions();
-    // test_utility_functions();
-    // test_euler_functions();
+    test_utility_functions();
+    test_euler_functions();
 
 
     printf("\n--- All Tests Finished ---\n");
@@ -704,7 +704,6 @@ void test_quaternion_functions() {
     test_suite_end();
 }
 
-/*
 // UTILITY tests
 void test_utility_functions() {
     test_suite_start("GM_Utility Functions");
@@ -728,10 +727,10 @@ void test_utility_functions() {
     test_end();
 
     test_start("gm_utility_lerp_float");
-    ASSERT_NEAR(gm_lerp(0.0f, 10.0f, 0.5ff), 5.0f);
+    ASSERT_NEAR(gm_lerp(0.0f, 10.0f, 0.5f), 5.0f);
     ASSERT_NEAR(gm_lerp(0.0f, 10.0f, 0.0f), 0.0f);
     ASSERT_NEAR(gm_lerp(0.0f, 10.0f, 1.0f), 10.0f);
-    ASSERT_NEAR(gm_lerp(10.0f, 0.0f, 0.5ff), 5.0f);
+    ASSERT_NEAR(gm_lerp(10.0f, 0.0f, 0.5f), 5.0f);
     test_end();
 
     test_start("gm_utility_is_near_zero");
@@ -749,31 +748,30 @@ void test_euler_functions() {
 
     test_start("gm_euler_to_quat (Identity)");
     GM_Vec3 euler_zero = GM_Vec3(0.0f, 0.0f, 0.0f); // Roll, Pitch, Yaw
-    GM_Quaternion q_from_euler_zero = gm_quat_from_euler(euler_zero);
-    ASSERT_QUAT_NEAR(q_from_euler_zero, GM_QuaternionLit(1.0f, 0.0f, 0.0f, 0.0f));
+    GM_Quaternion q_from_euler_zero = GM_Quaternion::fromEuler(euler_zero);
+    ASSERT_QUAT_NEAR(q_from_euler_zero, GM_Quaternion::literal(1.0f, 0.0f, 0.0f, 0.0f));
     test_end();
 
     test_start("gm_euler_to_quat (90 deg Yaw)");
     GM_Vec3 euler_yaw90 = GM_Vec3(0.0f, 0.0f, 90.0f); // Yaw (Z-axis rotation)
-    GM_Quaternion q_from_euler_yaw90 = gm_quat_from_euler(euler_yaw90);
+    GM_Quaternion q_from_euler_yaw90 = GM_Quaternion::fromEuler(euler_yaw90);
     GM_Quaternion expected_z90 = GM_Quaternion(90.0f, GM_Vec3(0.0f, 0.0f, 1.0f));
     ASSERT_QUAT_NEAR(q_from_euler_yaw90, expected_z90);
     test_end();
 
     test_start("gm_euler_to_quat (90 deg Pitch)");
     GM_Vec3 euler_pitch90 = GM_Vec3(0.0f, 90.0f, 0.0f); // Pitch (Y-axis rotation)
-    GM_Quaternion q_from_euler_pitch90 = gm_quat_from_euler(euler_pitch90);
+    GM_Quaternion q_from_euler_pitch90 = GM_Quaternion::fromEuler(euler_pitch90);
     GM_Quaternion expected_y90 = GM_Quaternion(90.0f, GM_Vec3(0.0f, 1.0f, 0.0f));
     ASSERT_QUAT_NEAR(q_from_euler_pitch90, expected_y90);
     test_end();
 
     test_start("gm_euler_to_quat (90 deg Roll)");
     GM_Vec3 euler_roll90 = GM_Vec3(90.0f, 0.0f, 0.0f); // Roll (X-axis rotation)
-    GM_Quaternion q_from_euler_roll90 = gm_quat_from_euler(euler_roll90);
-    GM_Quaternion expected_x90 = gm_quat_create(90.0f, GM_Vec3(1.0f, 0.0f, 0.0f));
+    GM_Quaternion q_from_euler_roll90 = GM_Quaternion::fromEuler(euler_roll90);
+    GM_Quaternion expected_x90 = GM_Quaternion(90.0f, GM_Vec3(1.0f, 0.0f, 0.0f));
     ASSERT_QUAT_NEAR(q_from_euler_roll90, expected_x90);
     test_end();
 
     test_suite_end();
 }
-*/
