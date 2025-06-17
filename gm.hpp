@@ -129,6 +129,7 @@
         static float distance(GM_Vec2 a, GM_Vec2 b);
         static float distanceSquared(GM_Vec2 a, GM_Vec2 b);
         static GM_Vec2 lerp(GM_Vec2 a, GM_Vec2 b, float t);
+        static GM_Vec2 euler(float yaw, float pitch);
 
         GM_Vec2 operator+(const GM_Vec2 &right);
         GM_Vec2& operator+=(const GM_Vec2 &right);
@@ -177,6 +178,7 @@
         static float distanceSquared(GM_Vec3 a, GM_Vec3 b);
         static GM_Vec3 lerp(GM_Vec3 a, GM_Vec3 b, float t);
         static GM_Vec3 cross(GM_Vec3 a, GM_Vec3 b);
+        static GM_Vec3 euler(float yaw, float pitch);
 
         GM_Vec3 operator+(const GM_Vec3 &right);
         GM_Vec3& operator+=(const GM_Vec3 &right);
@@ -371,223 +373,9 @@
     float gm_ease_out_bounce(float t);
     float gm_ease_in_out_bounce(float t);
 #endif
-
-#if defined(GM_INCLUDE_EULER)
-    GM_Vec2 gm_euler_to_vec2(float yaw, float pitch);
-    GM_Vec3 gm_euler_to_vec3(float yaw, float pitch);
-#endif
-
 //
 // ===================================================== GM_IMPL =====================================================
 //
-
-#if defined(GM_IMPL_EULER)
-    GM_Vec2 gm_euler_to_vec2(float yaw, float pitch) {
-        GM_Vec2 ret = GM_Vec2Lit(0, 0);
-        ret.x = cosf(DEGREES_TO_RAD(yaw)) * cosf(DEGREES_TO_RAD(pitch));
-        ret.y = sinf(DEGREES_TO_RAD(pitch));
-
-        return ret;
-    }
-
-    GM_Vec3 gm_euler_to_vec3(float yaw, float pitch) {
-        GM_Vec3 ret = GM_Vec3Lit(0, 0, 0);
-        ret.x = cosf(DEGREES_TO_RAD(yaw)) * cosf(DEGREES_TO_RAD(pitch));
-        ret.y = sinf(DEGREES_TO_RAD(pitch));
-        ret.z = sinf(DEGREES_TO_RAD(yaw)) * cosf(DEGREES_TO_RAD(pitch));
-
-        return ret;
-    }
-#endif
-
-#if defined(GM_IMPL_MATRIX)
-    GM_Matrix4 gm_mat4_identity() {
-        GM_Matrix4 ret = {
-            .data = {
-                1.0f, 0.0f, 0.0f, 0.0f,
-                0.0f, 1.0f, 0.0f, 0.0f,
-                0.0f, 0.0f, 1.0f, 0.0f,
-                0.0f, 0.0f, 0.0f, 1.0f
-            }
-        };
-        return ret;
-    }
-
-
-
-    GM_Matrix4 gm_mat4_perspective(float fov_degrees, float aspect, float near_plane, float far_plane) {
-        float fov_radians = DEGREES_TO_RAD(fov_degrees);
-
-        const float t = tanf(fov_radians / 2) * near_plane;
-        const float b = -t;
-        const float r = t * aspect;
-        const float l = -t * aspect;
-
-        const float p = (2.0f * near_plane);
-
-        const float A = p / (r - l);
-        const float B = p / (t - b);
-        const float C = -((far_plane + near_plane) / (far_plane - near_plane));
-        const float D = -((p * far_plane) / (far_plane - near_plane));
-
-        GM_Matrix4 ret = {
-            .data = {
-                A,  0,  0,  0,
-                0,  B,  0,  0,
-                0,  0,  C,  D,
-                0,  0, -1,  0
-            }
-        };
-
-        return ret;
-    }
-
-    // Found at: https://en.wikipedia.org/wiki/Orthographic_projection
-    GM_Matrix4 gm_mat4_orthographic(float left, float right, float bottom, float top, float near_plane, float far_plane) {
-        const float A = 2.0f / (right - left);
-        const float B = 2.0f / (top - bottom);
-        const float C = -2.0f / (far_plane - near_plane);
-        const float D = -(right + left) / (right - left);
-        const float E = -(top + bottom) / (top - bottom);
-        const float F = -(far_plane + near_plane) / (far_plane - near_plane);
-
-        GM_Matrix4 ret = {
-            .data = {
-                A,  0,  0,  D,
-                0,  B,  0,  E,
-                0,  0,  C,  F,
-                0,  0,  0,  1
-            }
-        };
-
-        return ret;
-    }
-
-    // Found at: https://www.khronos.org/opengl/wiki/GluLookAt_code
-    GM_Matrix4 gm_mat4_look_at(GM_Vec3 position, GM_Vec3 target, GM_Vec3 world_up) {
-        GM_Vec3 forward = gm_vec3_normalize(gm_vec3_sub(position, target));
-        GM_Vec3 right   = gm_vec3_normalize(gm_vec3_cross(world_up, forward));
-        GM_Vec3 up      = gm_vec3_cross(forward, right);
-
-        GM_Matrix4 rotation = {
-            .data = {
-                right.x,   right.y,   right.z,   0,
-                up.x,      up.y,      up.z,      0,
-                forward.x, forward.y, forward.z, 0,
-                0.0f,      0.0f,      0.0f,      1.0f
-            }
-        };
-        
-        GM_Matrix4 translation = gm_mat4_translate_xyz(gm_mat4_identity(), -position.x, -position.y, -position.z);
-
-        return gm_mat4_mult(rotation, translation);
-    }
-
-    #define M_ELEM(mat, row, col) (mat.data[((row) * 4) + (col)])
-
-    float gm_mat3_determinant_helper(float a, float b, float c, float d, float e, float f, float g, float h, float i) {
-        return a * (e * i - f * h) -
-               b * (d * i - f * g) +
-               c * (d * h - e * g);
-    }
-
-
-    GM_Matrix4 gm_mat4_inverse(GM_Matrix4 m, bool* success) {
-        if (success) {
-            *success = false;
-        }
-
-        float m00 = M_ELEM(m, 0, 0), m01 = M_ELEM(m, 0, 1), m02 = M_ELEM(m, 0, 2), m03 = M_ELEM(m, 0, 3);
-        float m10 = M_ELEM(m, 1, 0), m11 = M_ELEM(m, 1, 1), m12 = M_ELEM(m, 1, 2), m13 = M_ELEM(m, 1, 3);
-        float m20 = M_ELEM(m, 2, 0), m21 = M_ELEM(m, 2, 1), m22 = M_ELEM(m, 2, 2), m23 = M_ELEM(m, 2, 3);
-        float m30 = M_ELEM(m, 3, 0), m31 = M_ELEM(m, 3, 1), m32 = M_ELEM(m, 3, 2), m33 = M_ELEM(m, 3, 3);
-
-        float c00 = gm_mat3_determinant_helper(m11, m12, m13, m21, m22, m23, m31, m32, m33);
-        float c01 = gm_mat3_determinant_helper(m10, m12, m13, m20, m22, m23, m30, m32, m33);
-        float c02 = gm_mat3_determinant_helper(m10, m11, m13, m20, m21, m23, m30, m31, m33);
-        float c03 = gm_mat3_determinant_helper(m10, m11, m12, m20, m21, m22, m30, m31, m32);
-
-        float det = m00 * c00 - m01 * c01 + m02 * c02 - m03 * c03;
-        if (NEAR_ZERO(det)) {
-            return gm_mat4_identity();
-        }
-
-        float invDet = 1.0f / det;
-
-        GM_Matrix4 inv;
-
-        // Row 0
-        M_ELEM(inv, 0, 0) = invDet * c00;
-        M_ELEM(inv, 0, 1) = invDet * (-gm_mat3_determinant_helper(m01, m02, m03, m21, m22, m23, m31, m32, m33));
-        M_ELEM(inv, 0, 2) = invDet * gm_mat3_determinant_helper(m01, m02, m03, m11, m12, m13, m31, m32, m33);
-        M_ELEM(inv, 0, 3) = invDet * (-gm_mat3_determinant_helper(m01, m02, m03, m11, m12, m13, m21, m22, m23));
-
-        // Row 1
-        M_ELEM(inv, 1, 0) = invDet * (-c01);
-        M_ELEM(inv, 1, 1) = invDet * gm_mat3_determinant_helper(m00, m02, m03, m20, m22, m23, m30, m32, m33);
-        M_ELEM(inv, 1, 2) = invDet * (-gm_mat3_determinant_helper(m00, m02, m03, m10, m12, m13, m30, m32, m33));
-        M_ELEM(inv, 1, 3) = invDet * gm_mat3_determinant_helper(m00, m02, m03, m10, m12, m13, m20, m22, m23);
-
-        // Row 2
-        M_ELEM(inv, 2, 0) = invDet * c02;
-        M_ELEM(inv, 2, 1) = invDet * (-gm_mat3_determinant_helper(m00, m01, m03, m20, m21, m23, m30, m31, m33));
-        M_ELEM(inv, 2, 2) = invDet * gm_mat3_determinant_helper(m00, m01, m03, m10, m11, m13, m30, m31, m33);
-        M_ELEM(inv, 2, 3) = invDet * (-gm_mat3_determinant_helper(m00, m01, m03, m10, m11, m13, m20, m21, m23));
-
-        // Row 3
-        M_ELEM(inv, 3, 0) = invDet * (-c03);
-        M_ELEM(inv, 3, 1) = invDet * gm_mat3_determinant_helper(m00, m01, m02, m20, m21, m22, m30, m31, m32);
-        M_ELEM(inv, 3, 2) = invDet * (-gm_mat3_determinant_helper(m00, m01, m02, m10, m11, m12, m30, m31, m32));
-        M_ELEM(inv, 3, 3) = invDet * gm_mat3_determinant_helper(m00, m01, m02, m10, m11, m12, m20, m21, m22);
-
-        if (success) {
-            *success = true;
-        }
-        return inv;
-    }
-
-    #undef M_ELEM // Cleanup the macro
-
-    
-    GM_Matrix4 gm_mat4_transpose(GM_Matrix4 m) {
-        GM_Matrix4 ret = {0};
-
-        ret.v[0].x = m.v[0].x;
-        ret.v[0].y = m.v[1].x;
-        ret.v[0].z = m.v[2].x;
-        ret.v[0].w = m.v[3].x;
-
-        ret.v[1].x = m.v[0].y;
-        ret.v[1].y = m.v[1].y;
-        ret.v[1].z = m.v[2].y;
-        ret.v[1].w = m.v[3].y;
-
-        ret.v[2].x = m.v[0].z;
-        ret.v[2].y = m.v[1].z;
-        ret.v[2].z = m.v[2].z;
-        ret.v[2].w = m.v[3].z;
-
-        ret.v[3].x = m.v[0].w;
-        ret.v[3].y = m.v[1].w;
-        ret.v[3].z = m.v[2].w;
-        ret.v[3].w = m.v[3].w;      
-
-        return ret;
-    }
-
-    
-    bool gm_mat4_equal(GM_Matrix4 A, GM_Matrix4 B) {
-        for (int i = 0; i < 16; i++) {
-            if (!NEAR_ZERO(A.data[i] - B.data[i])) {
-                return false;
-            }
-        }
-
-        return true;
-    }
-
-
-#endif
 
 #if defined(GM_IMPL_SHAPES)
     GM_Rectanfgle2D gm_rectanfgle2d_create(float x, float y, float width, float height) {

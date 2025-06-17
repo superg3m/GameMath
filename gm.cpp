@@ -97,6 +97,14 @@ GM_Vec2 GM_Vec2::lerp(GM_Vec2 a, GM_Vec2 b, float t) {
     return a + (ab.scale(t));
 }
 
+GM_Vec2 GM_Vec2::euler(float yaw, float pitch) {
+    GM_Vec2 ret = GM_Vec2(0, 0);
+    ret.x = cosf(DEGREES_TO_RAD(yaw)) * cosf(DEGREES_TO_RAD(pitch));
+    ret.y = sinf(DEGREES_TO_RAD(pitch));
+
+    return ret;
+}
+
 GM_Vec2 GM_Vec2::operator+(const GM_Vec2 &right) {
     return GM_Vec2(this->x + right.x, this->y + right.y);
 }
@@ -192,7 +200,6 @@ GM_Vec3 GM_Vec3::scale(float scale_x, float scale_y, float scale_z) const {
     return GM_Vec3(this->x * scale_x, this->y * scale_y, this->z * scale_z);
 }
 
-
 float GM_Vec3::distance(GM_Vec3 a, GM_Vec3 b) {
     return sqrtf(SQUARED(b.x - a.x) + SQUARED(b.y - a.y) + SQUARED(b.z - a.z));
 }
@@ -215,6 +222,15 @@ GM_Vec3 GM_Vec3::cross(GM_Vec3 A, GM_Vec3 B) {
     ret.x = A.y * B.z - A.z * B.y;
     ret.y = A.z * B.x - A.x * B.z;
     ret.z = A.x * B.y - A.y * B.x;
+
+    return ret;
+}
+
+GM_Vec3 GM_Vec3::euler(float yaw, float pitch) {
+    GM_Vec3 ret = GM_Vec3(0, 0, 0);
+    ret.x = cosf(DEGREES_TO_RAD(yaw)) * cosf(DEGREES_TO_RAD(pitch));
+    ret.y = sinf(DEGREES_TO_RAD(pitch));
+    ret.z = sinf(DEGREES_TO_RAD(yaw)) * cosf(DEGREES_TO_RAD(pitch));
 
     return ret;
 }
