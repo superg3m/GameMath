@@ -715,6 +715,7 @@ GM_Matrix4 GM_Matrix4::operator*(const GM_Matrix4 &right) {
         
     return C;
 }
+
 GM_Matrix4& GM_Matrix4::operator*=(const GM_Matrix4 &right) {
     *this = *this * right;
     return *this;
