@@ -716,6 +716,31 @@ GM_Matrix4 GM_Matrix4::operator*(const GM_Matrix4 &right) {
     return C;
 }
 
+GM_Vec4 GM_Matrix4::operator*(const GM_Vec4 &right) {
+    GM_Vec4 ret;
+    ret.x += this->v[0].x * right.x;
+    ret.x += this->v[0].y * right.y;
+    ret.x += this->v[0].z * right.z;
+    ret.x += this->v[0].w * right.w;
+
+    ret.y += this->v[1].x * right.x;
+    ret.y += this->v[1].y * right.y;
+    ret.y += this->v[1].z * right.z;
+    ret.y += this->v[1].w * right.w;
+
+    ret.z += this->v[2].x * right.x;
+    ret.z += this->v[2].y * right.y;
+    ret.z += this->v[2].z * right.z;
+    ret.z += this->v[2].w * right.w;
+    
+    ret.w += this->v[3].x * right.x;
+    ret.w += this->v[3].y * right.y;
+    ret.w += this->v[3].z * right.z;
+    ret.w += this->v[3].w * right.w;
+        
+    return ret;
+}
+
 GM_Matrix4& GM_Matrix4::operator*=(const GM_Matrix4 &right) {
     *this = *this * right;
     return *this;

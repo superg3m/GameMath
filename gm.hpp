@@ -282,6 +282,7 @@
 
         static GM_Matrix4 inverse(GM_Matrix4 mat, bool* success);
 
+        GM_Vec4 operator*(const GM_Vec4 &right);
         GM_Matrix4 operator*(const GM_Matrix4 &right);
         GM_Matrix4& operator*=(const GM_Matrix4 &right);
 
