@@ -4,6 +4,7 @@
 
 #define GM_INCLUDE_TYPES
 #define GM_INCLUDE_VECTOR
+#define GM_INCLUDE_AABB
 #define GM_INCLUDE_EULER
 #define GM_INCLUDE_MATRIX
 #define GM_INCLUDE_SHAPES
@@ -242,6 +243,21 @@
 
         bool operator==(const GM_Vec4 &right);
         bool operator!=(const GM_Vec4 &right);
+    };
+#endif
+
+#if defined(GM_INCLUDE_AABB)
+    struct GM_AABB {
+        GM_Vec3 min;
+        GM_Vec3 max;
+
+        GM_AABB(GM_Vec3 min, GM_Vec3 max);
+        GM_AABB(float min_x, float min_y, float min_z, float max_x, float max_y, float max_z);
+
+        GM_Vec3 getCenter();
+        GM_Vec3 getExtents();
+
+        static GM_AABB fromCenterExtents(GM_Vec3 center, GM_Vec3 extents);
     };
 #endif
 
@@ -548,7 +564,7 @@
         return true;
     }
 
-    bool gm_intersection3d_line_aabb(GM_Vec3 p0, GM_Vec3 p1, GM_RectanfgleReference3D aabb, GM_Vec3* inPoint, GM_Vec3* outPoint) {
+    bool gm_intersection3d_line_aabb(GM_Vec3 p0, GM_Vec3 p1, GM_RectantgleReference3D aabb, GM_Vec3* inPoint, GM_Vec3* outPoint) {
         float t0 = 0.0f;
         float t1 = 1.0f;
 

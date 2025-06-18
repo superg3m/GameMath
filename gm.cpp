@@ -412,6 +412,34 @@ bool GM_Vec4::operator!=(const GM_Vec4 &right) {
     return !(*this == right);
 }
 
+GM_AABB GM_AABB::fromCenterExtents(GM_Vec3 center, GM_Vec3 extents) {
+    return GM_AABB(center - extents, center + extents);
+}
+
+GM_AABB::GM_AABB(GM_Vec3 min, GM_Vec3 max) {
+    this->min = min;
+    this->max = max;
+}
+
+GM_AABB::GM_AABB(float min_x, float min_y, float min_z, float max_x, float max_y, float max_z) {
+    this->min.x = min_x;
+    this->min.y = min_y;
+    this->min.z = min_z;
+
+    this->max.x = max_x;
+    this->max.y = max_y;
+    this->max.z = max_z;
+}
+
+GM_Vec3 GM_AABB::getCenter() {
+    GM_Vec3 extents = this->getExtents();
+    return GM_Vec3(min.x + extents.x, min.y + extents.y, min.z + extents.z);
+}
+
+GM_Vec3 GM_AABB::getExtents() {
+    return (max - min).scale(0.5f);
+}
+
 GM_Matrix4::GM_Matrix4() {
     v[0] = GM_Vec4(0, 0, 0, 0);
     v[1] = GM_Vec4(0, 0, 0, 0);
