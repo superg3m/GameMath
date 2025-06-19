@@ -422,8 +422,8 @@ bool GM_AABB::intersection(GM_AABB aabb, GM_Vec3 p0, GM_Vec3 p1) {
  
     // X coordinate
     if (fabs(p1.x) > EPSILON) {
-        float t1 = (min.x - p0.x) / p1.x;
-        float t2 = (max.x - p0.x) / p1.x;
+        float t1 = (aabb.min.x - p0.x) / p1.x;
+        float t2 = (aabb.max.x - p0.x) / p1.x;
  
         tmin = MAX(tmin, MIN(t1, t2));
         tmax = MIN(tmax, MAX(t1, t2));
@@ -431,8 +431,8 @@ bool GM_AABB::intersection(GM_AABB aabb, GM_Vec3 p0, GM_Vec3 p1) {
  
     // Y coordinate
     if (fabs(p1.y) > EPSILON) {
-        float t1 = (min.y - p0.y) / p1.y;
-        float t2 = (max.y - p0.y) / p1.y;
+        float t1 = (aabb.min.y - p0.y) / p1.y;
+        float t2 = (aabb.max.y - p0.y) / p1.y;
  
         tmin = MAX(tmin, MIN(t1, t2));
         tmax = MIN(tmax, MAX(t1, t2));
@@ -440,8 +440,8 @@ bool GM_AABB::intersection(GM_AABB aabb, GM_Vec3 p0, GM_Vec3 p1) {
  
     // Z coordinate
     if (fabs(p1.z) > EPSILON) {
-        float t1 = (min.z - p0.z) / p1.z;
-        float t2 = (max.z - p0.z) / p1.z;
+        float t1 = (aabb.min.z - p0.z) / p1.z;
+        float t2 = (aabb.max.z - p0.z) / p1.z;
  
         tmin = MAX(tmin, MIN(t1, t2));
         tmax = MIN(tmax, MAX(t1, t2));
