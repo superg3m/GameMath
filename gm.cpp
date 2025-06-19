@@ -416,6 +416,63 @@ GM_AABB GM_AABB::fromCenterExtents(GM_Vec3 center, GM_Vec3 extents) {
     return GM_AABB(center - extents, center + extents);
 }
 
+bool GM_AABB::intersection(GM_AABB aabb, GM_Vec3 p0, GM_Vec3 p1, GM_Vec3* inPoint, GM_Vec3* outPoint) {
+    float t0 = 0.0f;
+    float t1 = 1.0f;
+
+    float dx = p1.x - p0.x;
+    float dy = p1.y - p0.y;
+    float dz = p1.z - p0.z;
+
+    #define CLIP(p, q)                   \
+    do {                                 \
+        if ((p) == 0.0f && (q) < 0.0f) { \
+            return false;                \
+        }                                \
+        if ((p) < 0.0f) {                \
+            float r = (q) / (p);         \
+            if (r > t1) return false;    \
+            if (r > t0) t0 = r;          \
+        } else if ((p) > 0.0f) {         \
+            float r = (q) / (p);         \
+            if (r < t0) return false;    \
+            if (r < t1) t1 = r;          \
+        }                                \
+    } while (0)                          \
+
+    // X-axis
+    CLIP(-dx, p0.x - aabb.min.x); // Left
+    CLIP( dx, aabb.max.x - p0.x); // Right
+
+    // Y-axis
+    CLIP(-dy, p0.y - aabb.min.y); // Bottom
+    CLIP( dy, aabb.max.y - p0.y); // Top
+
+    // Z-axis
+    CLIP(-dz, p0.z - aabb.min.z); // Near
+    CLIP( dz, aabb.max.z - p0.z); // Far
+
+    #undef CLIP
+
+    if (t1 < t0) {
+        return false;
+    }
+
+    if (inPoint) {
+        inPoint->x = p0.x + t0 * dx;
+        inPoint->y = p0.y + t0 * dy;
+        inPoint->z = p0.z + t0 * dz;
+    }
+
+    if (outPoint) {
+        outPoint->x = p0.x + t1 * dx;
+        outPoint->y = p0.y + t1 * dy;
+        outPoint->z = p0.z + t1 * dz;
+    }
+
+    return true;
+}
+
 GM_AABB::GM_AABB(GM_Vec3 min, GM_Vec3 max) {
     this->min = min;
     this->max = max;
