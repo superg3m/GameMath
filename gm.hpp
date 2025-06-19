@@ -1,6 +1,7 @@
 #pragma once
 
 #include <array>
+#include <limits>
 
 #define GM_INCLUDE_TYPES
 #define GM_INCLUDE_VECTOR
@@ -258,7 +259,7 @@
         GM_Vec3 getExtents();
 
         static GM_AABB fromCenterExtents(GM_Vec3 center, GM_Vec3 extents);
-        static bool intersection(GM_AABB aabb, GM_Vec3 p0, GM_Vec3 p1, GM_Vec3* inPoint, GM_Vec3* outPoint);
+        static bool intersection(GM_AABB aabb, GM_Vec3 p0, GM_Vec3 p1);
     };
 #endif
 
