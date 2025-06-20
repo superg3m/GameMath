@@ -19,8 +19,6 @@
     #undef PI
     #undef DEGREES_TO_RAD
     #undef RAD_TO_DEGREES
-    #undef EPSILON
-    #undef NEAR_ZERO
     #undef stringify
     #undef glue
     #undef KiloBytes
@@ -37,6 +35,12 @@
     #undef SET_BIT
     #undef UNSET_BIT
     #undef ArrayCount
+    #undef PLATFORM_WINDOWS
+    #undef NOMINMAX
+    #undef WIN32_LEAN_AND_MEAN
+    #undef WIN32_LEAN_AND_MEAN
+    #undef PLATFORM_APPLE
+    #undef PLATFORM_LINUX
     #undef OS_DELIMITER
     #undef CRASH
     #undef UNUSED_FUNCTION
