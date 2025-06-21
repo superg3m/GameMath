@@ -162,6 +162,7 @@
         explicit GM_Vec3(float fill);
         explicit GM_Vec3(float x, float y, float z);
         explicit GM_Vec3(GM_Vec2 v, float z);
+        explicit GM_Vec3(GM_Vec4 v);
 
         float magnitude();
         float magnitudeSquared();
