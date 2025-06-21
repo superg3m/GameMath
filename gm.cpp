@@ -166,6 +166,12 @@ GM_Vec3::GM_Vec3(float x, float y, float z) {
     this->z = z;
 }
 
+GM_Vec3::GM_Vec3(GM_Vec2 v, float z) {
+    this->x = v.x;
+    this->y = v.y;
+    this->z = z;
+}
+
 float GM_Vec3::magnitude() {
     return sqrtf(SQUARED(this->x) + SQUARED(this->y) + SQUARED(this->z));
 }
@@ -299,6 +305,13 @@ GM_Vec4::GM_Vec4(float x, float y, float z, float w) {
     this->x = x;
     this->y = y;
     this->z = z;
+    this->w = w;
+}
+
+GM_Vec4::GM_Vec4(GM_Vec3 v, float w) {
+    this->x = v.x;
+    this->y = v.y;
+    this->z = v.z;
     this->w = w;
 }
 
