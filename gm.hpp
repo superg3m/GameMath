@@ -153,6 +153,7 @@
         bool operator!=(const GM_Vec2 &right);
     };
 
+    typedef struct GM_Vec4 GM_Vec4;
     struct GM_Vec3 {
         float x;
         float y;
