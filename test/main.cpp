@@ -481,7 +481,7 @@ void test_matrix4_inverse() {
     test_start("GM_Matrix4::inverse - Identity matrix");
     GM_Matrix4 identity = GM_Matrix4::identity();
     bool success;
-    GM_Matrix4 inverse_identity = GM_Matrix4::inverse(identity, &success);
+    GM_Matrix4 inverse_identity = identity.inverse(success);
     ASSERT_TRUE(success);
     ASSERT_MATRIX4_NEAR(inverse_identity, identity);
     test_end();
@@ -501,7 +501,7 @@ void test_matrix4_inverse() {
         0.0f, 0.0f, 1.0f, 0.0f,
         0.0f, 0.0f, 0.0f, 1.0f
     };
-    GM_Matrix4 inv_m = GM_Matrix4::inverse(m, &success);
+    GM_Matrix4 inv_m = m.inverse(success);
     ASSERT_TRUE(success);
     ASSERT_MATRIX4_NEAR(inv_m, expected_inv);
     test_end();
@@ -514,7 +514,7 @@ void test_matrix4_inverse() {
         GM_Vec4(0.0f, 0.0f, 1.0f, 0.0f),
         GM_Vec4(0.0f, 0.0f, 0.0f, 1.0f)
     }; // Determinant = 2*2 - 1*1 = 3
-    GM_Matrix4 test_mat_inv = GM_Matrix4::inverse(test_mat, &success);
+    GM_Matrix4 test_mat_inv = test_mat.inverse(success);
     ASSERT_TRUE(success);
     GM_Matrix4 product = test_mat * test_mat_inv;
     ASSERT_MATRIX4_NEAR(product, GM_Matrix4::identity());
@@ -527,7 +527,7 @@ void test_matrix4_inverse() {
         0.0f, 0.0f, 1.0f, 0.0f,
         0.0f, 0.0f, 0.0f, 1.0f
     };
-    GM_Matrix4 inv_sinfgular = GM_Matrix4::inverse(sinfgular_matrix, &success);
+    GM_Matrix4 inv_sinfgular = sinfgular_matrix.inverse(success);
     ASSERT_FALSE(success); // Should report failure
     // When sinfgular, the function should return identity or some default error matrix.
     // The specific return value when `success` is false might vary, but for this test,
