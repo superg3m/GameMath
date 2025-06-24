@@ -731,23 +731,19 @@ GM_Matrix4 GM_Matrix4::lookat(GM_Vec3 position, GM_Vec3 target, GM_Vec3 world_up
     return rotation * translation;
 }
 
-#define M_ELEM(mat, row, col) (mat.data[((row) * 4) + (col)])
-
 float gm_mat3_determinant_helper(float a, float b, float c, float d, float e, float f, float g, float h, float i) {
     return a * (e * i - f * h) -
             b * (d * i - f * g) +
             c * (d * h - e * g);
 }
 
-GM_Matrix4 GM_Matrix4::inverse(GM_Matrix4 mat, bool* success) {
-    if (success) {
-        *success = false;
-    }
+GM_Matrix4 GM_Matrix4::inverse(bool &success) {
+    success = false;
 
-    float m00 = mat.v[0].x, m01 = mat.v[0].y, m02 = mat.v[0].z, m03 = mat.v[0].w;
-    float m10 = mat.v[1].x, m11 = mat.v[1].y, m12 = mat.v[1].z, m13 = mat.v[1].w;
-    float m20 = mat.v[2].x, m21 = mat.v[2].y, m22 = mat.v[2].z, m23 = mat.v[2].w;
-    float m30 = mat.v[3].x, m31 = mat.v[3].y, m32 = mat.v[3].z, m33 = mat.v[3].w;
+    float m00 = this->v[0].x, m01 = this->v[0].y, m02 = this->v[0].z, m03 = this->v[0].w;
+    float m10 = this->v[1].x, m11 = this->v[1].y, m12 = this->v[1].z, m13 = this->v[1].w;
+    float m20 = this->v[2].x, m21 = this->v[2].y, m22 = this->v[2].z, m23 = this->v[2].w;
+    float m30 = this->v[3].x, m31 = this->v[3].y, m32 = this->v[3].z, m33 = this->v[3].w;
 
     float c00 = gm_mat3_determinant_helper(m11, m12, m13, m21, m22, m23, m31, m32, m33);
     float c01 = gm_mat3_determinant_helper(m10, m12, m13, m20, m22, m23, m30, m32, m33);
@@ -786,9 +782,7 @@ GM_Matrix4 GM_Matrix4::inverse(GM_Matrix4 mat, bool* success) {
     inv.v[3].z = invDet * (-gm_mat3_determinant_helper(m00, m01, m02, m10, m11, m12, m30, m31, m32));
     inv.v[3].w = invDet * gm_mat3_determinant_helper(m00, m01, m02, m10, m11, m12, m20, m21, m22);
 
-    if (success) {
-        *success = true;
-    }
+    success = true;
 
     return inv;
 }

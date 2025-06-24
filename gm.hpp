@@ -289,6 +289,7 @@
                 float m20, float m21, float m22, float m23,
                 float m30, float m31, float m32, float m33);
         GM_Matrix4 transpose();
+        GM_Matrix4 inverse(bool &success);
 
         static GM_Matrix4 identity();
         static GM_Matrix4 scale(GM_Matrix4 mat, float scale);
@@ -305,8 +306,6 @@
         static GM_Matrix4 perspective(float fov_degrees, float aspect, float near_plane, float far_plane);
         static GM_Matrix4 orthographic(float left, float right, float bottom, float top, float near_plane, float far_plane);
         static GM_Matrix4 lookat(GM_Vec3 position, GM_Vec3 target, GM_Vec3 world_up);
-
-        static GM_Matrix4 inverse(GM_Matrix4 mat, bool* success);
 
         GM_Vec4 operator*(const GM_Vec4 &right);
         GM_Matrix4 operator*(const GM_Matrix4 &right);
