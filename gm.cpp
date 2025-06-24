@@ -37,6 +37,11 @@ bool gm_near_equal(float a, float b) {
     return fabsf(a - b) < EPSILON;
 }
 
+GM_Vec2::GM_Vec2() {
+    this->x = 0.0f;
+    this->y = 0.0f;
+}
+
 GM_Vec2::GM_Vec2(float fill) {
     this->x = fill;
     this->y = fill;
@@ -152,6 +157,12 @@ bool GM_Vec2::operator==(const GM_Vec2 &right) {
 
 bool GM_Vec2::operator!=(const GM_Vec2 &right) {
     return !(*this == right);
+}
+
+GM_Vec3::GM_Vec3() {
+    this->x = 0.0f;
+    this->y = 0.0f;
+    this->z = 0.0f;
 }
 
 GM_Vec3::GM_Vec3(float fill) {
@@ -299,6 +310,14 @@ bool GM_Vec3::operator==(const GM_Vec3 &right) {
 bool GM_Vec3::operator!=(const GM_Vec3 &right) {
     return !(*this == right);
 }
+
+GM_Vec4::GM_Vec4() {
+    this->x = 0.0f;
+    this->y = 0.0f;
+    this->z = 0.0f;
+    this->w = 0.0f;
+}
+
 
 GM_Vec4::GM_Vec4(float fill) {
     this->x = fill;
@@ -838,6 +857,11 @@ bool GM_Matrix4::operator==(const GM_Matrix4 &right) {
 
 bool GM_Matrix4::operator!=(const GM_Matrix4 &right) {
     return !(*this == right);
+}
+
+GM_Quaternion::GM_Quaternion() {
+    this->w = 1;
+    this->v = GM_Vec3(0, 0, 0);
 }
 
 GM_Quaternion::GM_Quaternion(float theta, GM_Vec3 axis) {

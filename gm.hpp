@@ -110,7 +110,7 @@
         float x;
         float y;
 
-        GM_Vec2() = default;
+        GM_Vec2();
         explicit GM_Vec2(float fill);
         explicit GM_Vec2(float x, float y);
 
@@ -159,7 +159,7 @@
         float y;
         float z;
 
-        GM_Vec3() = default;
+        GM_Vec3();
         explicit GM_Vec3(float fill);
         explicit GM_Vec3(float x, float y, float z);
         explicit GM_Vec3(GM_Vec2 v, float z);
@@ -211,7 +211,7 @@
         float z;
         float w;
 
-        GM_Vec4() = default;
+        GM_Vec4();
         explicit GM_Vec4(float fill);
         explicit GM_Vec4(float x, float y, float z, float w);
         explicit GM_Vec4(GM_Vec3 v, float w);
@@ -322,7 +322,7 @@
         float w;
         GM_Vec3 v;
 
-        GM_Quaternion() = default;
+        GM_Quaternion();
         GM_Quaternion(float theta, GM_Vec3 axis);
         GM_Quaternion(float theta, float x, float y, float z);
 
