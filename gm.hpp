@@ -260,6 +260,7 @@
         GM_Vec3 min;
         GM_Vec3 max;
 
+        GM_AABB();
         GM_AABB(GM_Vec3 min, GM_Vec3 max);
         GM_AABB(float min_x, float min_y, float min_z, float max_x, float max_y, float max_z);
 

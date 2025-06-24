@@ -493,6 +493,11 @@ bool GM_AABB::intersection(GM_AABB aabb, GM_Vec3 p0, GM_Vec3 p1) {
     }
 }
 
+GM_AABB::GM_AABB() {
+    this->min = GM_Vec3(0, 0, 0);
+    this->max = GM_Vec3(0, 0, 0);
+}
+
 GM_AABB::GM_AABB(GM_Vec3 min, GM_Vec3 max) {
     this->min = min;
     this->max = max;
