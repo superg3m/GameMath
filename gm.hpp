@@ -155,9 +155,19 @@
 
     typedef struct GM_Vec4 GM_Vec4;
     struct GM_Vec3 {
-        float x;
-        float y;
-        float z;
+        union {
+            struct {
+                float x;
+                float y;
+                float z;
+            };
+
+            struct {
+                float r;
+                float g;
+                float b;
+            };
+        };
 
         GM_Vec3();
         explicit GM_Vec3(float fill);
@@ -206,10 +216,21 @@
     };
 
     struct GM_Vec4 {
-        float x;
-        float y;
-        float z;
-        float w;
+        union {
+            struct {
+                float x;
+                float y;
+                float z;
+                float w;
+            };
+
+            struct {
+                float r;
+                float g;
+                float b;
+                float a;
+            };
+        };
 
         GM_Vec4();
         explicit GM_Vec4(float fill);
