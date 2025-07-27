@@ -689,7 +689,7 @@ void GM_Matrix4::decompose(GM_Matrix4 mat, GM_Vec3* out_position, GM_Quaternion*
     GM_Vec3 scale = GM_Vec3(0);
     {
         GM_Vec3 column1 = GM_Vec3(mat.v[0].x, mat.v[1].x, mat.v[2].x);
-        GM_Vec3 column2 = GM_Vec3(mat.v[0].y, mat.v[1].y, mat.v[1].y);
+        GM_Vec3 column2 = GM_Vec3(mat.v[0].y, mat.v[1].y, mat.v[2].y);
         GM_Vec3 column3 = GM_Vec3(mat.v[0].z, mat.v[1].z, mat.v[2].z);
         
         float scale_x = column1.magnitude();
