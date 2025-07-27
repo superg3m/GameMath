@@ -1039,27 +1039,43 @@ GM_Quaternion GM_Quaternion::fromRotationMatrix(const float m[16]) {
     float m00 = m[0],  m01 = m[1],  m02 = m[2];
     float m10 = m[4],  m11 = m[5],  m12 = m[6];
     float m20 = m[8],  m21 = m[9],  m22 = m[10];
-    
-    float t = 0;
+
+    float t;
     if (m22 < 0) {
         if (m00 > m11) {
             t = 1 + m00 - m11 - m22;
-            q = GM_Quaternion( t, m01+m10, m20+m02, m12-m21 );
+            q.v.x = t;
+            q.v.y = m01 + m10;
+            q.v.z = m02 + m20;
+            q.w = m21 - m12;
         } else {
             t = 1 - m00 + m11 - m22;
-            q = GM_Quaternion( m01+m10, t, m12 + m21, m20-m02 );
+            q.v.x = m01 + m10;
+            q.v.y = t;
+            q.v.z = m12 + m21;
+            q.w = m02 - m20;
         }
     } else {
         if (m00 < -m11) {
             t = 1 - m00 - m11 + m22;
-            q = GM_Quaternion( m20+m02, m12+m21, t, m01-m10 );
+            q.v.x = m02 + m20;
+            q.v.y = m12 + m21;
+            q.v.z = t;
+            q.w = m10 - m01;
         } else {
             t = 1 + m00 + m11 + m22;
-            q = GM_Quaternion( m12-m21, m20-m02, m01-m10, t ); 
+            q.v.x = m21 - m12;
+            q.v.y = m02 - m20;
+            q.v.z = m10 - m01;
+            q.w = t;
         }
     }
 
-    q.scale(0.5f / sqrtf(t));
+    float s = 0.5f / sqrtf(t);
+    q.v.x *= s;
+    q.v.y *= s;
+    q.v.z *= s;
+    q.w *= s;
 
     return q;
 }
