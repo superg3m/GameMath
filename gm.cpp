@@ -698,6 +698,7 @@ void GM_Matrix4::decompose(GM_Matrix4 mat, GM_Vec3* out_position, GM_Quaternion*
     }
     GM_Quaternion orientation = GM_Quaternion::identity();
     {
+        /*
         GM_Vec3 column1 = GM_Vec3(mat.v[0].x, mat.v[1].x, mat.v[2].x);
         GM_Vec3 column2 = GM_Vec3(mat.v[0].y, mat.v[1].y, mat.v[2].y);
         GM_Vec3 column3 = GM_Vec3(mat.v[0].z, mat.v[1].z, mat.v[2].z);
@@ -712,7 +713,11 @@ void GM_Matrix4::decompose(GM_Matrix4 mat, GM_Vec3* out_position, GM_Quaternion*
             GM_Vec4{column1.z, column2.z, column3.z, 0},
             GM_Vec4{0,         0,         0,         0}
         );
+        */
 
+        GM_Matrix4 inverse_scale_matrix = GM_Matrix4::scale(GM_Matrix4::identity(), scale.scale(1 / scale.x, 1 / scale.y, 1 / scale.z));
+        GM_Matrix4 inverse_translation_matrix = GM_Matrix4::translate(GM_Matrix4::identity(), translation.scale(-1));
+        GM_Matrix4 rotation_matrix =  (mat * inverse_scale_matrix) * inverse_translation_matrix;
         orientation = GM_Quaternion::fromRotationMatrix(rotation_matrix);
     }
 
