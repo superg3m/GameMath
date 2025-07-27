@@ -715,12 +715,12 @@ void GM_Matrix4::decompose(GM_Matrix4 mat, GM_Vec3* out_position, GM_Quaternion*
         );
         */
 
-        GM_Vec3 s = scale;
-        GM_Vec3 t = translation;
-        GM_Matrix4 inverse_scale_matrix = GM_Matrix4::scale(GM_Matrix4::identity(), s.scale(1 / scale.x, 1 / scale.y, 1 / scale.z));
-        GM_Matrix4 inverse_translation_matrix = GM_Matrix4::translate(GM_Matrix4::identity(), t.scale(-1));
-        GM_Matrix4 rotation_matrix = inverse_translation_matrix * mat * inverse_scale_matrix;
+        // This is the correct order: R = S⁻¹ * (T⁻¹ * M)
+        GM_Matrix4 inverse_translation_matrix = GM_Matrix4::translate(GM_Matrix4::identity(), translation.scale(-1));
+        GM_Matrix4 inverse_scale_matrix = GM_Matrix4::scale(GM_Matrix4::identity(), GM_Vec3(1 / scale.x, 1 / scale.y, 1 / scale.z));
+        GM_Matrix4 rotation_matrix = inverse_scale_matrix * (inverse_translation_matrix * mat);
         orientation = GM_Quaternion::fromRotationMatrix(rotation_matrix);
+
     }
 
     if (out_position) {
