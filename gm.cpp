@@ -685,38 +685,34 @@ GM_Matrix4 GM_Matrix4::inverse_transform(GM_Vec3 s, float theta, GM_Vec3 axis, G
 
 void GM_Matrix4::decompose(GM_Matrix4 mat, GM_Vec3* out_position, GM_Quaternion* out_orientation, GM_Vec3* out_scale) {
     GM_Vec3 translation = GM_Vec3(mat.v[0].w, mat.v[1].w, mat.v[2].w);
-
     GM_Vec3 scale = GM_Vec3(0);
     {
         GM_Vec3 column1 = GM_Vec3(mat.v[0].x, mat.v[1].x, mat.v[2].x);
         GM_Vec3 column2 = GM_Vec3(mat.v[0].y, mat.v[1].y, mat.v[2].y);
         GM_Vec3 column3 = GM_Vec3(mat.v[0].z, mat.v[1].z, mat.v[2].z);
-        
+       
         float scale_x = column1.magnitude();
         float scale_y = column2.magnitude();
         float scale_z = column3.magnitude();
-
         scale = GM_Vec3(scale_x, scale_y, scale_z);
     }
-
     GM_Quaternion orientation = GM_Quaternion::identity();
     {
         GM_Vec3 column1 = GM_Vec3(mat.v[0].x, mat.v[1].x, mat.v[2].x);
         GM_Vec3 column2 = GM_Vec3(mat.v[0].y, mat.v[1].y, mat.v[2].y);
         GM_Vec3 column3 = GM_Vec3(mat.v[0].z, mat.v[1].z, mat.v[2].z);
-
-        // Normalize columns to get pure rotation basis
-        column1 = column1.scale(scale.x);
-        column2 = column2.scale(scale.y);
-        column3 = column3.scale(scale.z);
-
+        
+        // Normalize columns to get pure rotation basis - DIVIDE by scale
+        column1 = column1.scale(1.0f / scale.x);  // Fixed: divide by scale
+        column2 = column2.scale(1.0f / scale.y);  // Fixed: use column2
+        column3 = column3.scale(1.0f / scale.z);  // Fixed: use column3
+        
         GM_Matrix4 rotation_matrix = GM_Matrix4(
             GM_Vec4{column1.x, column2.x, column3.x, 0},
             GM_Vec4{column1.y, column2.y, column3.y, 0},
             GM_Vec4{column1.z, column2.z, column3.z, 0},
             GM_Vec4{0,         0,         0,         0}
         );
-
         orientation = GM_Quaternion::fromRotationMatrix(rotation_matrix);
     }
 
@@ -732,6 +728,7 @@ void GM_Matrix4::decompose(GM_Matrix4 mat, GM_Vec3* out_position, GM_Quaternion*
         *out_orientation = orientation;
     }
 }
+
 
 GM_Matrix4 GM_Matrix4::perspective(float fov_degrees, float aspect, float near_plane, float far_plane) {
     float fov_radians = DEGREES_TO_RAD(fov_degrees);
