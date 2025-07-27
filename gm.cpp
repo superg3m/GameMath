@@ -709,6 +709,9 @@ void GM_Matrix4::decompose(GM_Matrix4 mat, GM_Vec3* out_position, GM_Quaternion*
         // inv_T * (TRS) * inv_S = R
         GM_Matrix4 rotation_matrix = inverse_translation_matrix * mat * inverse_scale_matrix;
         orientation = GM_Quaternion::fromRotationMatrix(rotation_matrix);
+        float theta;
+        GM_Vec3 axis = GM_Vec3(0); 
+        orientation.toAngleAxis(theta, axis);
     }
 
     if (out_position) {
