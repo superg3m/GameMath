@@ -314,6 +314,7 @@
         GM_Matrix4 inverse(bool &success);
 
         static GM_Matrix4 identity();
+        static GM_Matrix4 fromColumnMajor(const float mat[16]);
         static GM_Matrix4 scale(GM_Matrix4 mat, float scale);
         static GM_Matrix4 scale(GM_Matrix4 mat, GM_Vec3 s);
         static GM_Matrix4 scale(GM_Matrix4 mat, float scale_x, float scale_y, float scale_z);
@@ -324,6 +325,7 @@
         static GM_Matrix4 translate(GM_Matrix4 mat, float x, float y, float z);
         static GM_Matrix4 transform(GM_Vec3 s, float theta, GM_Vec3 axis, GM_Vec3 t);
         static GM_Matrix4 inverse_transform(GM_Vec3 s, float theta, GM_Vec3 axis, GM_Vec3 t);
+        static void decompose(GM_Matrix4 mat, GM_Vec3* out_position, GM_Quaternion* out_orientation, GM_Vec3* out_scale);
 
         static GM_Matrix4 perspective(float fov_degrees, float aspect, float near_plane, float far_plane);
         static GM_Matrix4 orthographic(float left, float right, float bottom, float top, float near_plane, float far_plane);
@@ -358,6 +360,8 @@
         static GM_Quaternion literal(float w, float x, float y, float z);
         static GM_Quaternion fromEuler(GM_Vec3 euler_angles_degrees);
         static GM_Quaternion fromAngleAxis(float w, GM_Vec3 axis);
+        static GM_Quaternion fromRotationMatrix(const float m[16]);
+        static GM_Quaternion fromRotationMatrix(GM_Matrix4 mat);
         static GM_Quaternion slerp(GM_Quaternion q, GM_Quaternion r, float t);
         static float dot(GM_Quaternion a, GM_Quaternion b);
 

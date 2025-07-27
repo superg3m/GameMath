@@ -586,6 +586,17 @@ GM_Matrix4 GM_Matrix4::identity() {
     return ret;
 }
 
+GM_Matrix4 GM_Matrix4::fromColumnMajor(const float mat[16]) {
+    GM_Matrix4 ret = {
+        GM_Vec4{mat[0], mat[4], mat[8], mat[12]},
+        GM_Vec4{mat[1], mat[5], mat[9], mat[13]},
+        GM_Vec4{mat[2], mat[6], mat[10], mat[14]},
+        GM_Vec4{mat[3], mat[7], mat[11], mat[15]},
+    };
+
+    return ret;
+}
+
 GM_Matrix4 GM_Matrix4::scale(GM_Matrix4 mat, float scale) {
     return GM_Matrix4::scale(mat, GM_Vec3(scale, scale, scale));
 }
@@ -670,6 +681,47 @@ GM_Matrix4 GM_Matrix4::inverse_transform(GM_Vec3 s, float theta, GM_Vec3 axis, G
     GM_Matrix4 inverse_translation_matrix = GM_Matrix4::translate(GM_Matrix4::identity(), t.scale(-1));
 
     return inverse_scale_matrix * inverse_rotation_matrix * inverse_translation_matrix;
+}
+
+void GM_Matrix4::decompose(GM_Matrix4 mat, GM_Vec3* out_position, GM_Quaternion* out_orientation, GM_Vec3* out_scale) {
+    GM_Vec3 translation = GM_Vec3(mat.v[0].w, mat.v[1].w, mat.v[2].w);
+
+    GM_Vec3 scale = GM_Vec3(0);
+    {
+        GM_Vec3 column1 = GM_Vec3(mat.v[0].x, mat.v[1].x, mat.v[2].x);
+        GM_Vec3 column2 = GM_Vec3(mat.v[0].y, mat.v[1].y, mat.v[1].y);
+        GM_Vec3 column3 = GM_Vec3(mat.v[0].z, mat.v[1].z, mat.v[2].z);
+        
+        float scale_x = column1.magnitude();
+        float scale_y = column2.magnitude();
+        float scale_z = column3.magnitude();
+
+        scale = GM_Vec3(scale_x, scale_y, scale_z);
+    }
+
+    GM_Quaternion orientation = GM_Quaternion::identity();
+    {
+        GM_Matrix4 inverse_scale_matrix = GM_Matrix4::scale(GM_Matrix4::identity(), scale.scale(1 / scale.x, 1 / scale.y, 1 / scale.z));
+        GM_Matrix4 inverse_translation_matrix = GM_Matrix4::translate(GM_Matrix4::identity(), translation.scale(-1));
+
+        // TRS = M
+        // inv_T * (M) * inv_S = R
+        // inv_T * (TRS) * inv_S = R
+        GM_Matrix4 rotation_matrix = inverse_translation_matrix * mat * inverse_scale_matrix;
+        orientation = GM_Quaternion::fromRotationMatrix(rotation_matrix);
+    }
+
+    if (out_position) {
+        *out_position = translation;
+    }
+
+    if (out_scale) {
+        *out_scale = scale;
+    }
+
+    if (out_orientation) {
+        *out_orientation = orientation;
+    }
 }
 
 GM_Matrix4 GM_Matrix4::perspective(float fov_degrees, float aspect, float near_plane, float far_plane) {
@@ -926,6 +978,7 @@ GM_Quaternion GM_Quaternion::literal(float w, GM_Vec3 axis) {
 
     return ret;
 }
+
 GM_Quaternion GM_Quaternion::literal(float w, float x, float y, float z) {
     GM_Quaternion ret;
     ret.w = w;
@@ -969,6 +1022,41 @@ GM_Quaternion GM_Quaternion::fromAngleAxis(float angle, GM_Vec3 axis) {
     q.v.z   = axis.z * sinf_half;
 
     return q;
+}
+
+GM_Quaternion GM_Quaternion::fromRotationMatrix(const float m[16]) {
+    GM_Quaternion q;
+
+    float m00 = m[0],  m01 = m[1],  m02 = m[2];
+    float m10 = m[4],  m11 = m[5],  m12 = m[6];
+    float m20 = m[8],  m21 = m[9],  m22 = m[10];
+    
+    float t = 0;
+    if (m22 < 0) {
+        if (m00 > m11) {
+            t = 1 + m00 - m11 - m22;
+            q = GM_Quaternion( t, m01+m10, m20+m02, m12-m21 );
+        } else {
+            t = 1 - m00 + m11 - m22;
+            q = GM_Quaternion( m01+m10, t, m12 + m21, m20-m02 );
+        }
+    } else {
+        if (m00 < -m11) {
+            t = 1 - m00 - m11 + m22;
+            q = GM_Quaternion( m20+m02, m12+m21, t, m01-m10 );
+        } else {
+            t = 1 + m00 + m11 + m22;
+            q = GM_Quaternion( m12-m21, m20-m02, m01-m10, t ); 
+        }
+    }
+
+    q.scale(0.5f / sqrtf(t));
+
+    return q;
+}
+
+GM_Quaternion GM_Quaternion::fromRotationMatrix(GM_Matrix4 mat) {
+    return GM_Quaternion::fromRotationMatrix(&mat.v[0].x);
 }
 
 GM_Matrix4 GM_Quaternion::toMatrix4() {
