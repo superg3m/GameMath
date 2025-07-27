@@ -707,8 +707,8 @@ void GM_Matrix4::decompose(GM_Matrix4 mat, GM_Vec3* out_position, GM_Quaternion*
 
         // Normalize columns to get pure rotation basis
         column1 = column1.scale(scale.x);
-        column2 = column1.scale(scale.y);
-        column3 = column1.scale(scale.z);
+        column2 = column2.scale(scale.y);
+        column3 = column3.scale(scale.z);
 
         GM_Matrix4 rotation_matrix = GM_Matrix4(
             GM_Vec4{column1.x, column2.x, column3.x, 0},
@@ -1039,7 +1039,7 @@ GM_Quaternion GM_Quaternion::fromRotationMatrix(const float m[16]) {
     float m00 = m[0],  m01 = m[1],  m02 = m[2];
     float m10 = m[4],  m11 = m[5],  m12 = m[6];
     float m20 = m[8],  m21 = m[9],  m22 = m[10];
-
+    
     float t;
     if (m22 < 0) {
         if (m00 > m11) {
@@ -1070,12 +1070,12 @@ GM_Quaternion GM_Quaternion::fromRotationMatrix(const float m[16]) {
             q.w = t;
         }
     }
-
+    
     float s = 0.5f / sqrtf(t);
     q.v.x *= s;
     q.v.y *= s;
     q.v.z *= s;
-    q.w *= s;
+    q.w   *= s;
 
     return q;
 }
