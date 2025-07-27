@@ -702,10 +702,9 @@ void GM_Matrix4::decompose(GM_Matrix4 mat, GM_Vec3* out_position, GM_Quaternion*
         GM_Vec3 column2 = GM_Vec3(mat.v[0].y, mat.v[1].y, mat.v[2].y);
         GM_Vec3 column3 = GM_Vec3(mat.v[0].z, mat.v[1].z, mat.v[2].z);
         
-        // Normalize columns to get pure rotation basis - DIVIDE by scale
-        column1 = column1.scale(1.0f / scale.x);  // Fixed: divide by scale
-        column2 = column2.scale(1.0f / scale.y);  // Fixed: use column2
-        column3 = column3.scale(1.0f / scale.z);  // Fixed: use column3
+        column1 = column1.scale(1.0f / scale.x);
+        column2 = column2.scale(1.0f / scale.y);
+        column3 = column3.scale(1.0f / scale.z);
         
         GM_Matrix4 rotation_matrix = GM_Matrix4(
             GM_Vec4{column1.x, column2.x, column3.x, 0},
