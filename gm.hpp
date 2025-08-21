@@ -28,8 +28,6 @@
     #undef MAX
     #undef CLAMP
     #undef SQUARED
-    #undef local_persist
-    #undef internal
     #undef FIRST_DIGIT
     #undef GET_BIT
     #undef SET_BIT
@@ -80,9 +78,6 @@
     #define MAX(a, b) (((a) > (b)) ? (a) : (b))
     #define CLAMP(value, min_value, max_value) (MIN(MAX(value, min_value), max_value))
     #define SQUARED(a) ((a) * (a))
-
-    #define local_persist static
-    #define internal static
 
     #if defined _MSC_VER && !defined _CRT_USE_BUILTIN_OFFSETOF
         #define OFFSET_OF(type, member) (size_t)(&(((type*)0)->member))
