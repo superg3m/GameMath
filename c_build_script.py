@@ -40,14 +40,14 @@ if cc.compiler_name == "cl":
     cc.compiler_disable_specific_warnings = ["5105", "4668", "4820", "4996"]
 else:
     cc.compiler_warning_level = "all"
-    cc.compiler_disable_specific_warnings = ["deprecated", "parentheses", "missinfg-braces"]
+    cc.compiler_disable_specific_warnings = ["deprecated", "parentheses", "missing-braces"]
 
 
 build_postfix = f"build_{cc.compiler_name}/{C_BUILD_BUILD_TYPE()}"
 procedures: Dict[str, ProcedureConfig] = {
     "GameMath": ProcedureConfig(
         build_directory=f"./{build_postfix}",
-        output_name="gm.lib",
+        output_name=GET_LIB_NAME(cc, "gm"),
         source_files=["../../*.cpp"]
     ),
     
@@ -56,7 +56,7 @@ procedures: Dict[str, ProcedureConfig] = {
         output_name="test.exe",
         include_paths=["../../../"],
         source_files=["../../*.cpp"],
-        additional_libs=[f"../../../{build_postfix}/gm.lib"]
+        additional_libs=[f"../../../{build_postfix}/{GET_LIB_NAME(cc, "gm")}"]
     )
 }
 
