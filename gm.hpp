@@ -107,6 +107,7 @@
 
         GM_Vec2();
         explicit GM_Vec2(float fill);
+        explicit GM_Vec2(float v[2]);
         explicit GM_Vec2(float x, float y);
 
         float magnitude();
@@ -167,8 +168,10 @@
         GM_Vec3();
         explicit GM_Vec3(float fill);
         explicit GM_Vec3(float x, float y, float z);
+        explicit GM_Vec3(float v[3]);
         explicit GM_Vec3(GM_Vec2 v, float z);
         explicit GM_Vec3(GM_Vec4 v);
+
 
         float magnitude();
         float magnitudeSquared();
@@ -230,6 +233,7 @@
         GM_Vec4();
         explicit GM_Vec4(float fill);
         explicit GM_Vec4(float x, float y, float z, float w);
+        explicit GM_Vec4(float v[4]);
         explicit GM_Vec4(GM_Vec3 v, float w);
 
         float magnitude();
@@ -300,6 +304,7 @@
         std::array<GM_Vec4, 4> v;
 
         GM_Matrix4();
+        GM_Matrix4(const float row_major_matrix[16]);
         GM_Matrix4(GM_Vec4 r0, GM_Vec4 r1, GM_Vec4 r2, GM_Vec4 r3);
         GM_Matrix4(float m00, float m01, float m02, float m03,
                 float m10, float m11, float m12, float m13,

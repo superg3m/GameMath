@@ -47,6 +47,11 @@ GM_Vec2::GM_Vec2(float fill) {
     this->y = fill;
 }
 
+GM_Vec2::GM_Vec2(float v[2]) {
+    this->x = v[0];
+    this->y = v[1];
+}
+
 GM_Vec2::GM_Vec2(float x, float y) {
     this->x = x;
     this->y = y;
@@ -169,6 +174,12 @@ GM_Vec3::GM_Vec3(float fill) {
     this->x = fill;
     this->y = fill;
     this->z = fill;
+}
+
+GM_Vec3::GM_Vec3(float v[3]) {
+    this->x = v[0];
+    this->y = v[1];
+    this->z = v[2];
 }
 
 GM_Vec3::GM_Vec3(float x, float y, float z) {
@@ -318,12 +329,18 @@ GM_Vec4::GM_Vec4() {
     this->w = 0.0f;
 }
 
-
 GM_Vec4::GM_Vec4(float fill) {
     this->x = fill;
     this->y = fill;
     this->z = fill;
     this->w = fill;
+}
+
+GM_Vec4::GM_Vec4(float v[4]) {
+    this->x = v[0];
+    this->y = v[1];
+    this->z = v[2];
+    this->w = v[3];
 }
 
 GM_Vec4::GM_Vec4(float x, float y, float z, float w) {
@@ -529,6 +546,14 @@ GM_Matrix4::GM_Matrix4() {
     v[3] = GM_Vec4(0, 0, 0, 0);
 }
 
+
+GM_Matrix4::GM_Matrix4(const float row_major_matrix[16]) {
+    v[0] = GM_Vec4(row_major_matrix[1], row_major_matrix[2], row_major_matrix[3], row_major_matrix[4]);
+    v[1] = GM_Vec4(row_major_matrix[0], row_major_matrix[0], row_major_matrix[0], row_major_matrix[0]);
+    v[2] = GM_Vec4(row_major_matrix[0], row_major_matrix[0], row_major_matrix[0], row_major_matrix[0]);
+    v[3] = GM_Vec4(row_major_matrix[0], row_major_matrix[0], row_major_matrix[0], row_major_matrix[0]);
+}
+
 GM_Matrix4::GM_Matrix4(GM_Vec4 r0, GM_Vec4 r1, GM_Vec4 r2, GM_Vec4 r3) {
     this->v = {
         r0, 
@@ -586,12 +611,12 @@ GM_Matrix4 GM_Matrix4::identity() {
     return ret;
 }
 
-GM_Matrix4 GM_Matrix4::fromColumnMajor(const float mat[16]) {
+GM_Matrix4 GM_Matrix4::fromColumnMajor(const float column_major_matix[16]) {
     GM_Matrix4 ret = {
-        GM_Vec4{mat[0], mat[4], mat[8], mat[12]},
-        GM_Vec4{mat[1], mat[5], mat[9], mat[13]},
-        GM_Vec4{mat[2], mat[6], mat[10], mat[14]},
-        GM_Vec4{mat[3], mat[7], mat[11], mat[15]},
+        GM_Vec4{column_major_matix[0], column_major_matix[4], column_major_matix[8],  column_major_matix[12]},
+        GM_Vec4{column_major_matix[1], column_major_matix[5], column_major_matix[9],  column_major_matix[13]},
+        GM_Vec4{column_major_matix[2], column_major_matix[6], column_major_matix[10], column_major_matix[14]},
+        GM_Vec4{column_major_matix[3], column_major_matix[7], column_major_matix[11], column_major_matix[15]},
     };
 
     return ret;
@@ -685,7 +710,7 @@ GM_Matrix4 GM_Matrix4::inverse_transform(GM_Vec3 s, float theta, GM_Vec3 axis, G
 
 void GM_Matrix4::decompose(GM_Matrix4 mat, GM_Vec3* out_position, GM_Quaternion* out_orientation, GM_Vec3* out_scale) {
     GM_Vec3 translation = GM_Vec3(mat.v[0].w, mat.v[1].w, mat.v[2].w);
-    GM_Vec3 scale = GM_Vec3(0);
+    GM_Vec3 scale = GM_Vec3(0.0f);
     {
         GM_Vec3 column1 = GM_Vec3(mat.v[0].x, mat.v[1].x, mat.v[2].x);
         GM_Vec3 column2 = GM_Vec3(mat.v[0].y, mat.v[1].y, mat.v[2].y);
