@@ -47,16 +47,16 @@ build_postfix = f"build_{cc.compiler_name}/{C_BUILD_BUILD_TYPE()}"
 procedures: Dict[str, ProcedureConfig] = {
     "GameMath": ProcedureConfig(
         build_directory=f"./{build_postfix}",
-        output_name="gm.lib",
-        source_files=["../../*.c"]
+        output_name=GET_LIB_NAME(cc, "gm"),
+        source_files=["../../*.cpp"]
     ),
     
     "GameMathTest": ProcedureConfig(
         build_directory=f"./test/{build_postfix}",
         output_name="test.exe",
         include_paths=["../../../"],
-        source_files=["../../*.c"],
-        additional_libs=[f"../../../{build_postfix}/gm.lib"]
+        source_files=["../../*.cpp"],
+        additional_libs=[f"../../../{build_postfix}/{GET_LIB_NAME(cc, "gm")}"]
     )
 }
 
